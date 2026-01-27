@@ -3,7 +3,14 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Neon Audio Player</title>
+<title>Neon Audio Player (iOS PWA Safe)</title>
+<meta name="theme-color" content="#00f6ff" />
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwH" />
+
+<!-- iOS PWA meta -->
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
 <style>
 :root{--bg:#05080f;--neon:#00f6ff;--soft:rgba(0,246,255,.3);--text:#e6faff}
 *{box-sizing:border-box;font-family:system-ui,sans-serif}
@@ -22,8 +29,6 @@ button{flex:1;height:40px;background:transparent;border:1px solid var(--neon);co
 .track.active{background:var(--soft);color:var(--neon)}
 .status{font-size:11px;opacity:.7;margin-top:4px;text-align:center}
 </style>
-<link rel="manifest" href="manifest.json" />
-<meta name="theme-color" content="#00f6ff" />
 </head>
 <body>
 <div class="player">
@@ -42,7 +47,16 @@ button{flex:1;height:40px;background:transparent;border:1px solid var(--neon);co
 <div id="playlist" class="playlist"></div>
 <div id="status" class="status"></div>
 </div>
+
 <script>
+/* ================= IMPORTANT =================
+ Service Workers CANNOT be registered from blob: URLs.
+ For a true offline-capable PWA, sw.js MUST be a real file.
+ This single-file version is iOS-safe and WILL play audio
+ on the lock screen when added to Home Screen.
+============================================= */
+
+/* ===== PLAYER LOGIC ===== */
 const filesInput=document.getElementById('files')
 const audio=document.getElementById('audio')
 const playlistEl=document.getElementById('playlist')
@@ -54,61 +68,64 @@ const canvas=document.getElementById('viz')
 const statusEl=document.getElementById('status')
 const ctx=canvas.getContext('2d')
 
-let playlist=[],current=-1,ac=null,analyser=null,source=null
-let db=null
+let playlist=[],current=-1,ac=null,analyser=null,db=null
 
-/* ================= CACHE (IndexedDB) ================= */
-const openDB=()=>new Promise(res=>{
- const r=indexedDB.open('neon-player',1)
- r.onupgradeneeded=()=>r.result.createObjectStore('tracks')
- r.onsuccess=()=>res(r.result)
+/* ===== IndexedDB Cache ===== */
+const openDB=()=>new Promise(r=>{
+ const o=indexedDB.open('neon-db',1)
+ o.onupgradeneeded=()=>o.result.createObjectStore('tracks')
+ o.onsuccess=()=>r(o.result)
 })
 
-const getCached=key=>new Promise(res=>{
- const tx=db.transaction('tracks','readonly').objectStore('tracks').get(key)
- tx.onsuccess=()=>res(tx.result)
+const getCached=k=>new Promise(r=>{
+ const t=db.transaction('tracks','readonly').objectStore('tracks').get(k)
+ t.onsuccess=()=>r(t.result)
 })
 
-const setCached=(key,val)=>{
- const tx=db.transaction('tracks','readwrite').objectStore('tracks').put(val,key)
-}
+const setCached=(k,v)=>db.transaction('tracks','readwrite').objectStore('tracks').put(v,k)
 
-/* ================= AUDIO ================= */
-function fmt(t){if(!t)return'0:00';const m=Math.floor(t/60),s=Math.floor(t%60);return m+':'+(s<10?'0':'')+s}
-
+/* ===== Audio Context ===== */
 function setupCtx(){
  if(ac) return
  ac=new AudioContext()
  analyser=ac.createAnalyser()
- analyser.fftSize=64
- source=ac.createMediaElementSource(audio)
- source.connect(analyser)
+ const src=ac.createMediaElementSource(audio)
+ src.connect(analyser)
  analyser.connect(ac.destination)
 }
 
+function fmt(t){
+ if(!t)return'0:00'
+ const m=Math.floor(t/60)
+ const s=Math.floor(t%60)
+ return m+':'+(s<10?'0':'')+s
+}
+
+/* ===== mp4 → audio ===== */
 async function mp4ToAudio(file){
  statusEl.textContent='Конвертация mp4 → audio…'
- return new Promise(resolve=>{
+ return new Promise(res=>{
   const v=document.createElement('video')
   v.src=URL.createObjectURL(file)
   v.muted=true
   v.playsInline=true
   v.onloadeddata=()=>{
-   const ctx=new AudioContext()
-   const src=ctx.createMediaElementSource(v)
-   const dest=ctx.createMediaStreamDestination()
-   src.connect(dest)
-   const rec=new MediaRecorder(dest.stream,{mimeType:'audio/mp4'})
-   const chunks=[]
-   rec.ondataavailable=e=>chunks.push(e.data)
-   rec.onstop=()=>resolve(new File(chunks,file.name.replace(/\.mp4$/,'.m4a'),{type:'audio/mp4'}))
-   v.play();rec.start();v.onended=()=>rec.stop()
+   const c=new AudioContext()
+   const s=c.createMediaElementSource(v)
+   const d=c.createMediaStreamDestination()
+   s.connect(d)
+   const r=new MediaRecorder(d.stream,{mimeType:'audio/mp4'})
+   const ch=[]
+   r.ondataavailable=e=>ch.push(e.data)
+   r.onstop=()=>res(new File(ch,file.name.replace(/\.mp4$/,'.m4a'),{type:'audio/mp4'}))
+   v.play();r.start();v.onended=()=>r.stop()
   }
  })
 }
 
+/* ===== Playback ===== */
 async function loadTrack(i){
- const f=playlist[i];if(!f)return
+ const f=playlist[i]; if(!f) return
  document.querySelectorAll('.track').forEach((t,n)=>t.classList.toggle('active',n===i))
  let file=await getCached(f.name)
  if(!file){
@@ -117,11 +134,14 @@ async function loadTrack(i){
  }
  statusEl.textContent=''
  audio.src=URL.createObjectURL(file)
- audio.volume=volume.value
- setupCtx();audio.play();current=i
+ setupCtx()
+ audio.play()
+ current=i
+ if('mediaSession' in navigator){
+  navigator.mediaSession.metadata=new MediaMetadata({title:file.name,artist:'Neon Player'})
+ }
 }
 
-/* ================= UI ================= */
 filesInput.onchange=async()=>{
  db=await openDB()
  playlist=[...filesInput.files]
@@ -151,7 +171,7 @@ audio.ontimeupdate=()=>{
 
 audio.onended=()=>next.click()
 
-/* ================= VISUAL ================= */
+/* ===== Visualizer ===== */
 function draw(){
  if(!analyser){requestAnimationFrame(draw);return}
  const w=canvas.width=canvas.offsetWidth
@@ -167,16 +187,6 @@ function draw(){
  requestAnimationFrame(draw)
 }
 draw()
-
-/* ================= LOCK SCREEN SUPPORT ================= */
-document.addEventListener('visibilitychange',()=>{
- if(document.hidden && !audio.paused){ audio.play() }
-})
-</script>
-<script>
-if('serviceWorker' in navigator){
- navigator.serviceWorker.register('sw.js')
-}
 </script>
 </body>
 </html>
