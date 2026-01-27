@@ -1,255 +1,211 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Fitness App</title>
-
-<link rel="manifest" href="manifest.json">
-
-<style>
-body{margin:0;padding:16px;font-family:-apple-system,BlinkMacSystemFont,system-ui;background:#0e1621;color:#e7e8ea;display:flex;justify-content:center}
-.container{width:100%;max-width:420px}
-h1,h3{text-align:center}
-.card{background:#17212b;padding:14px;border-radius:16px;margin-bottom:16px}
-select,input,button{width:100%;padding:14px;margin-top:10px;border-radius:14px;border:none;background:#0e1621;color:#fff;font-size:16px}
-select{font-size:18px;font-weight:600}
-button{background:#2aabee;font-weight:600;cursor:pointer}
-.exercise{border-top:1px solid #22303c;padding-top:8px;margin-top:8px}
-.actions{display:flex;gap:6px;margin-top:6px}
-.day{margin-top:14px}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center}
-.modal .card{width:100%;max-width:360px}
-.progress{font-size:18px;margin-left:4px}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fitness App</title>
+  <style>
+    body{margin:0;padding:16px;font-family:-apple-system,BlinkMacSystemFont,system-ui;background:#0e1621;color:#e7e8ea;display:flex;justify-content:center}
+    .container{width:100%;max-width:420px}
+    h1,h3{text-align:center}
+    .card{background:#17212b;padding:14px;border-radius:16px;margin-bottom:16px}
+    select,input,button{width:100%;padding:14px;margin-top:10px;border-radius:14px;border:none;background:#0e1621;color:#fff;font-size:16px}
+    select{font-size:18px;font-weight:600}
+    button{background:#2aabee;font-weight:600;cursor:pointer}
+    .exercise{border-top:1px solid #22303c;padding-top:8px;margin-top:8px}
+    .actions{display:flex;gap:6px;margin-top:6px}
+    .actions.hidden{display:none}
+    .day{margin-top:14px}
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center}
+    .modal .card{width:100%;max-width:360px}
+  </style>
 </head>
-
 <body>
 <div class="container">
 
-<h1 style="display:flex;justify-content:space-between;align-items:center">
-🏋️ Fitness
-<div style="display:flex;gap:12px">
-<span onclick="openExerciseManager()" style="cursor:pointer">⚙️</span>
-<span onclick="toggleEditMode()" style="cursor:pointer">🔒</span>
-</div>
+<h1 style="display:flex;justify-content:space-between;align-items:center">🏋️ Fitness
+  <div style="display:flex;gap:12px;align-items:center">
+    <span style="cursor:pointer" onclick="openExerciseManager()">⚙️</span>
+    <span style="cursor:pointer" onclick="toggleEditMode()">
+      <svg id="lockIcon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect id="lockBody" x="5" y="10" width="14" height="10" rx="2" stroke="#aaa" stroke-width="2"/>
+        <path id="lockArc" d="M8 10V7a4 4 0 0 1 8 0v3" stroke="#aaa" stroke-width="2"/>
+      </svg>
+    </span>
+  </div>
 </h1>
 
 <div class="card">
-<select id="exercise"></select>
-<div id="setsContainer"></div>
-<button onclick="addSet()">➕ Добавить подход</button>
-<button onclick="saveWorkout()">💾 Сохранить</button>
+  <select id="exercise"></select>
+  <div id="setsContainer"></div>
+  <button onclick="addSet()">➕ Добавить подход</button>
+  <button onclick="saveWorkout()">💾 Сохранить упражнение</button>
 </div>
 
 <div class="card">
-<h3>История</h3>
-<select id="filterExercise" onchange="render()">
-<option value="">Все упражнения</option>
-</select>
-<div id="history"></div>
-<button onclick="exportToExcel()">📤 Excel</button>
-<button onclick="exportBackup()">💾 Backup</button>
-<input type="file" onchange="importBackup(this.files[0])">
+  <h3 style="display:flex;justify-content:space-between;align-items:center">История
+    <button id="exportBtn" style="width:auto;padding:8px 12px;font-size:14px">📤 Excel</button>
+  </h3>
+  <select id="filterExercise" onchange="render()">
+    <option value="">Все упражнения</option>
+  </select>
+  <div id="history"></div>
 </div>
 
 </div>
 
 <div class="modal" id="exerciseModal">
-<div class="card">
-<h3>Упражнения</h3>
-<div id="exerciseList"></div>
-<input id="newExercise" placeholder="Новое упражнение">
-<button onclick="addExercise()">➕ Добавить</button>
-<button onclick="closeExerciseManager()">Закрыть</button>
-</div>
+  <div class="card">
+    <h3>Упражнения</h3>
+    <div id="exerciseList" style="max-height:260px;overflow:auto"></div>
+    <input id="newExercise" placeholder="Новое упражнение" />
+    <button onclick="addExercise()">➕ Добавить</button>
+    <button onclick="closeExerciseManager()">Закрыть</button>
+  </div>
 </div>
 
 <script>
-const STORAGE_KEY='fitness_local'
-const EXERCISES_KEY='fitness_exercises'
+const STORAGE_KEY = 'fitness_local'
+const EXERCISES_KEY = 'fitness_exercises'
 
-let currentSets=[]
-let editId=null
-let editMode=false
+let editId = null
+let currentSets = []
+let editMode = false
 
-const getData=()=>JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]')
-const saveData=d=>localStorage.setItem(STORAGE_KEY,JSON.stringify(d))
+function toggleEditMode(){
+  editMode = !editMode
+  const body = document.getElementById('lockBody')
+  const arc = document.getElementById('lockArc')
+
+  if(editMode){
+    body.setAttribute('stroke','#2aabee')
+    arc.setAttribute('stroke','#2aabee')
+    arc.setAttribute('d','M8 10V7a4 4 0 0 1 8 0')
+  } else {
+    body.setAttribute('stroke','#aaa')
+    arc.setAttribute('stroke','#aaa')
+    arc.setAttribute('d','M8 10V7a4 4 0 0 1 8 0v3')
+  }
+  render()
+}
+
+function getData(){
+  const raw = JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]')
+  return raw.map(w=>({...w,sets:Array.isArray(w.sets)?w.sets:[]}))
+}
+function saveData(d){localStorage.setItem(STORAGE_KEY,JSON.stringify(d))}
 
 function getExercises(){
-let e=JSON.parse(localStorage.getItem(EXERCISES_KEY)||'[]')
-if(!e.length){
-e=['Жим лёжа','Присед','Становая тяга','Жим плеч','Подтягивания']
-saveExercises(e)
+  let l = JSON.parse(localStorage.getItem(EXERCISES_KEY)||'[]')
+  if(!l.length){
+    l=['Жим лёжа','Присед','Становая тяга','Жим плеч','Подтягивания']
+    saveExercises(l)
+  }
+  return l
 }
-return e
-}
-const saveExercises=e=>localStorage.setItem(EXERCISES_KEY,JSON.stringify(e))
+function saveExercises(l){localStorage.setItem(EXERCISES_KEY,JSON.stringify(l))}
 
 function renderExercises(){
-const s=document.getElementById('exercise')
-s.innerHTML='<option value="">Выбери упражнение</option>'
-getExercises().forEach(e=>{
-const o=document.createElement('option')
-o.value=e;o.textContent=e;s.appendChild(o)
-})
+  const s=document.getElementById('exercise')
+  s.innerHTML='<option value="">Выбери упражнение</option>'
+  getExercises().forEach(e=>{
+    const o=document.createElement('option')
+    o.value=e;o.textContent=e;s.appendChild(o)
+  })
 }
 
-function toggleEditMode(){editMode=!editMode;render()}
+function openExerciseManager(){document.getElementById('exerciseModal').style.display='flex';renderExerciseManager()}
+function closeExerciseManager(){document.getElementById('exerciseModal').style.display='none'}
+
+function renderExerciseManager(){
+  const l=document.getElementById('exerciseList');l.innerHTML=''
+  getExercises().forEach((e,i)=>{
+    const d=document.createElement('div');d.className='exercise'
+    d.innerHTML=`${e} <button onclick="removeExercise(${i})">❌</button>`
+    l.appendChild(d)
+  })
+}
+
+function addExercise(){
+  const i=document.getElementById('newExercise')
+  if(!i.value.trim())return
+  const l=getExercises();l.push(i.value.trim());saveExercises(l)
+  i.value='';renderExerciseManager();renderExercises()
+  document.getElementById('exerciseList').lastElementChild?.scrollIntoView({behavior:'smooth'})
+}
+
+function removeExercise(i){
+  const l=getExercises();const n=l[i]
+  if(getData().some(w=>w.name===n))return alert('Нельзя удалить упражнение с историей')
+  l.splice(i,1);saveExercises(l);renderExerciseManager();renderExercises()
+}
+
+function saveWorkout(){
+  const ex=document.getElementById('exercise')
+  if(!ex.value)return alert('Выбери упражнение')
+  if(!currentSets.length)return alert('Добавь подход')
+  const d=getData()
+  if(editId){
+    const w=d.find(x=>x.id===editId)
+    if(w){w.name=ex.value;w.sets=currentSets;w.date=Date.now()}
+    editId=null
+  } else d.push({id:crypto.randomUUID(),name:ex.value,sets:currentSets,date:Date.now()})
+  saveData(d);ex.value='';currentSets=[];renderSets();render()
+}
+
+function editWorkout(id){
+  if(!editMode)return
+  const w=getData().find(x=>x.id===id);if(!w)return
+  document.getElementById('exercise').value=w.name
+  currentSets=JSON.parse(JSON.stringify(w.sets));editId=id;renderSets()
+}
+
+function deleteWorkout(id){if(!editMode)return;saveData(getData().filter(x=>x.id!==id));render()}
+
+function render(){
+  const h=document.getElementById('history');h.innerHTML=''
+  const f=document.getElementById('filterExercise');const prev=f.value;const d=getData()
+  f.innerHTML='<option value="">Все упражнения</option>'
+  ;[...new Set(d.map(w=>w.name))].forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;f.appendChild(o)})
+  f.value=prev
+  const g={}
+  d.forEach(w=>{if(f.value&&w.name!==f.value)return;const day=new Date(w.date).toLocaleDateString();(g[day]??=[]).push(w)})
+  Object.keys(g).reverse().forEach(day=>{
+    const dd=document.createElement('div');dd.className='day';dd.innerHTML=`<b>📅 ${day}</b>`
+    g[day].forEach(w=>{
+      const div=document.createElement('div');div.className='exercise'
+      const sh=w.sets.map((s,i)=>`Подход ${i+1}: ${s.reps} × ${s.weight} кг`).join('<br>')
+      const actions = editMode
+        ? `<div class="actions"><button onclick="editWorkout('${w.id}')">✏️</button><button onclick="deleteWorkout('${w.id}')">❌</button></div>`
+        : ''
+      div.innerHTML=`<b>${w.name}</b><br>${sh}${actions}`
+      dd.appendChild(div)
+    });h.appendChild(dd)
+  })
+}
 
 function addSet(){currentSets.push({reps:'',weight:''});renderSets()}
 
 function renderSets(){
-const c=document.getElementById('setsContainer')
-c.innerHTML=''
-currentSets.forEach((s,i)=>{
-const d=document.createElement('div')
-d.className='exercise'
-d.innerHTML=`
-<input type="number" placeholder="Повторы" value="${s.reps}" oninput="currentSets[${i}].reps=this.value">
-<input type="number" placeholder="Вес" value="${s.weight}" oninput="currentSets[${i}].weight=this.value">
-<button onclick="currentSets.splice(${i},1);renderSets()">❌</button>`
-c.appendChild(d)
-})
-}
-
-function validateSets(){
-return currentSets.every(s=>Number(s.reps)>0&&Number(s.weight)>0)
-}
-
-function saveWorkout(){
-const ex=document.getElementById('exercise')
-if(!ex.value)return alert('Выбери упражнение')
-if(!currentSets.length)return alert('Добавь подход')
-if(!validateSets())return alert('Заполни все подходы')
-
-const d=getData()
-if(editId){
-const w=d.find(x=>x.id===editId)
-if(w){w.name=ex.value;w.sets=currentSets;w.date=Date.now()}
-editId=null
-}else{
-d.push({id:crypto.randomUUID(),name:ex.value,sets:currentSets,date:Date.now()})
-}
-saveData(d)
-currentSets=[]
-renderSets()
-render()
-}
-
-function getLastWorkout(name,date){
-return getData().filter(w=>w.name===name&&w.date<date).sort((a,b)=>b.date-a.date)[0]
-}
-
-function render(){
-const h=document.getElementById('history')
-h.innerHTML=''
-const f=document.getElementById('filterExercise')
-const d=getData()
-
-f.innerHTML='<option value="">Все упражнения</option>'
-;[...new Set(d.map(w=>w.name))].forEach(n=>{
-const o=document.createElement('option')
-o.value=n;o.textContent=n;f.appendChild(o)
-})
-
-const g={}
-d.forEach(w=>{
-if(f.value&&w.name!==f.value)return
-const day=new Date(w.date).toLocaleDateString()
-;(g[day]??=[]).push(w)
-})
-
-Object.keys(g).reverse().forEach(day=>{
-const dayDiv=document.createElement('div')
-dayDiv.className='day'
-dayDiv.innerHTML=`<b>📅 ${day}</b>`
-g[day].forEach(w=>{
-const prev=getLastWorkout(w.name,w.date)
-let trend='⚪'
-if(prev){
-const pm=Math.max(...prev.sets.map(s=>+s.weight))
-const cm=Math.max(...w.sets.map(s=>+s.weight))
-trend=cm>pm?'🟢':cm<pm?'🔴':'⚪'
-}
-const sets=w.sets.map((s,i)=>`Подход ${i+1}: ${s.reps}×${s.weight}`).join('<br>')
-dayDiv.innerHTML+=`<div class="exercise"><b>${w.name} <span class="progress">${trend}</span></b><br>${sets}</div>`
-})
-h.appendChild(dayDiv)
-})
+  const c=document.getElementById('setsContainer');c.innerHTML=''
+  currentSets.forEach((s,i)=>{
+    const d=document.createElement('div');d.className='exercise'
+    d.innerHTML=`<input type="number" placeholder="Повторы" value="${s.reps}" oninput="currentSets[${i}].reps=this.value"><input type="number" placeholder="Вес" value="${s.weight}" oninput="currentSets[${i}].weight=this.value"><button onclick="currentSets.splice(${i},1);renderSets()">❌</button>`
+    c.appendChild(d)
+  })
 }
 
 function exportToExcel(){
-const d=getData()
-if(!d.length)return alert('История пуста')
-let csv='Дата;Упражнение;Подход;Повторы;Вес;Объём\n'
-d.forEach(w=>{
-const date=new Date(w.date).toLocaleDateString()
-w.sets.forEach((s,i)=>{
-csv+=`${date};"${w.name}";${i+1};${s.reps};${s.weight};${s.reps*s.weight}\n`
-})
-})
-const a=document.createElement('a')
-a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}))
-a.download='fitness_history.csv'
-a.click()
+  const data=getData();if(!data.length)return alert('История пуста')
+  let csv='Дата,Упражнение,Подход,Повторы,Вес\n'
+  data.forEach(w=>{const date=new Date(w.date).toLocaleDateString();w.sets.forEach((s,i)=>{csv+=`${date},"${w.name}",${i+1},${s.reps},${s.weight}\n`})})
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});const url=URL.createObjectURL(blob)
+  const a=document.createElement('a');a.href=url;a.download='fitness_history.csv';a.click();URL.revokeObjectURL(url)
 }
 
-function exportBackup(){
-const blob=new Blob([JSON.stringify({workouts:getData(),exercises:getExercises()})],{type:'application/json'})
-const a=document.createElement('a')
-a.href=URL.createObjectURL(blob)
-a.download='fitness_backup.json'
-a.click()
-}
+document.getElementById('exportBtn').addEventListener('click', exportToExcel)
 
-function importBackup(file){
-if(!file)return
-const r=new FileReader()
-r.onload=()=>{
-const d=JSON.parse(r.result)
-saveData(d.workouts||[])
-saveExercises(d.exercises||[])
-renderExercises()
-render()
-}
-r.readAsText(file)
-}
-
-function openExerciseManager(){
-document.getElementById('exerciseModal').style.display='flex'
-const l=document.getElementById('exerciseList')
-l.innerHTML=''
-getExercises().forEach((e,i)=>{
-l.innerHTML+=`${e} <button onclick="removeExercise(${i})">❌</button><br>`
-})
-}
-
-function closeExerciseManager(){document.getElementById('exerciseModal').style.display='none'}
-
-function addExercise(){
-const i=document.getElementById('newExercise')
-if(!i.value.trim())return
-const e=getExercises()
-e.push(i.value.trim())
-saveExercises(e)
-i.value=''
-openExerciseManager()
-renderExercises()
-}
-
-function removeExercise(i){
-const e=getExercises()
-const n=e[i]
-if(getData().some(w=>w.name===n))return alert('Есть история')
-e.splice(i,1)
-saveExercises(e)
-openExerciseManager()
-renderExercises()
-}
-
-renderExercises()
-render()
+renderExercises();render()
 </script>
 </body>
 </html>
