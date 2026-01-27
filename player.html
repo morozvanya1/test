@@ -22,7 +22,7 @@ body{margin:0;min-height:100vh;background:radial-gradient(circle at top,#0a1633,
 input[type=file]{display:none}
 canvas{width:100%;height:70px;border-radius:12px;background:rgba(0,0,0,.25)}
 .controls{display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:12px}
-.ctrl-btn{width:60px;height:60px;border-radius:50%;border:1px solid var(--neon);background:rgba(0,246,255,.05);color:var(--neon);display:flex;align-items:center;justify-content:center;transition:.15s}
+.ctrl-btn{width:60px;height:60px;border-radius:50%;border:1px solid var(--neon);background:rgba(0,246,255,.05);display:flex;align-items:center;justify-content:center;transition:.15s}
 .ctrl-btn.play{width:72px;height:72px}
 .ctrl-btn .icon{width:28px;height:28px;fill:var(--neon)}
 .ctrl-btn:active{transform:scale(.9);box-shadow:0 0 30px var(--neon)}
@@ -48,7 +48,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
     <input id="files" type="file" multiple accept="audio/*,.mp3,.m4a,.aac" />
   </label>
 
-  <audio id="audio" playsinline></audio>
+  <audio id="audio" playsinline webkit-playsinline preload="auto"></audio>
   <canvas id="viz"></canvas>
 
   <div class="time"><span id="cur">0:00</span><span id="dur">0:00</span></div>
@@ -82,13 +82,14 @@ const playIcon = document.getElementById('playIcon')
 
 let playlist = []
 let current = -1
-let ac, analyser
+let ac = null
+let analyser = null
 
 function fmt(t){if(!t||isNaN(t))return'0:00';const m=Math.floor(t/60);const s=Math.floor(t%60);return m+':'+(s<10?'0':'')+s}
 
 function setupAudio(){
  if(ac) return
- ac = new AudioContext()
+ ac = new (window.AudioContext || window.webkitAudioContext)()
  analyser = ac.createAnalyser()
  const src = ac.createMediaElementSource(audio)
  src.connect(analyser)
@@ -107,12 +108,12 @@ function updateVolumeUI(){
 
 files.onchange = ()=>{
  playlist = [...files.files]
- playlistEl.innerHTML=''
+ playlistEl.innerHTML = ''
  playlist.forEach((f,i)=>{
-  const d=document.createElement('div')
-  d.className='track'
-  d.textContent=f.name
-  d.onclick=()=>loadTrack(i)
+  const d = document.createElement('div')
+  d.className = 'track'
+  d.textContent = f.name
+  d.onclick = ()=>loadTrack(i)
   playlistEl.appendChild(d)
  })
 }
@@ -124,17 +125,17 @@ async function loadTrack(i){
  audio.src = URL.createObjectURL(f)
  setupAudio()
  await audio.play()
- current=i
+ current = i
 }
 
-toggleBtn.onclick=()=>audio.paused?audio.play():audio.pause()
-document.getElementById('next').onclick=()=>playlist.length&&loadTrack((current+1)%playlist.length)
-document.getElementById('prev').onclick=()=>playlist.length&&loadTrack((current-1+playlist.length)%playlist.length)
+toggleBtn.onclick = ()=> audio.paused ? audio.play() : audio.pause()
+document.getElementById('next').onclick = ()=> playlist.length && loadTrack((current+1)%playlist.length)
+document.getElementById('prev').onclick = ()=> playlist.length && loadTrack((current-1+playlist.length)%playlist.length)
 
-volume.oninput=()=>{audio.volume=volume.value;updateVolumeUI()}
-seek.oninput=()=>{audio.currentTime = seek.value;updateSeekUI()}
+volume.oninput = ()=>{ audio.volume = volume.value; updateVolumeUI() }
+seek.oninput = ()=>{ audio.currentTime = seek.value; updateSeekUI() }
 
-audio.ontimeupdate=()=>{
+audio.ontimeupdate = ()=>{
  seek.max = audio.duration || 0
  seek.value = audio.currentTime || 0
  updateSeekUI()
@@ -142,32 +143,34 @@ audio.ontimeupdate=()=>{
  dur.textContent = fmt(audio.duration)
 }
 
-audio.onplay=()=>{
- playIcon.innerHTML='<rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/>'
+audio.onplay = ()=>{
+ playIcon.innerHTML = '<rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/>'
  toggleBtn.classList.add('playing')
 }
 
-audio.onpause=()=>{
- playIcon.innerHTML='<polygon points="8,5 19,12 8,19"/>'
+audio.onpause = ()=>{
+ playIcon.innerHTML = '<polygon points="8,5 19,12 8,19"/>'
  toggleBtn.classList.remove('playing')
 }
 
-audio.onended=()=>document.getElementById('next').click()
+audio.onended = ()=> document.getElementById('next').click()
 
 function draw(){
- if(!analyser){requestAnimationFrame(draw);return}
- const w=canvas.width=canvas.offsetWidth
- const h=canvas.height=canvas.offsetHeight
- const data=new Uint8Array(analyser.frequencyBinCount)
+ if(!analyser){ requestAnimationFrame(draw); return }
+ const w = canvas.width = canvas.offsetWidth
+ const h = canvas.height = canvas.offsetHeight
+ const data = new Uint8Array(analyser.frequencyBinCount)
  analyser.getByteFrequencyData(data)
  ctx.clearRect(0,0,w,h)
- let bass=0;for(let i=0;i<12;i++)bass+=data[i];bass/=12
+ let bass = 0
+ for(let i=0;i<12;i++) bass += data[i]
+ bass /= 12
  data.forEach((v,i)=>{
-  const bw=w/data.length
-  ctx.fillStyle='rgba(0,246,255,.8)'
-  ctx.fillRect(i*bw,h,h-(v/255*h),bw-1)
+  const bw = w / data.length
+  ctx.fillStyle = 'rgba(0,246,255,.8)'
+  ctx.fillRect(i*bw, h, bw-1, -(v/255*h))
  })
- document.querySelectorAll('.track').forEach((t,i)=>i===current&&t.classList.toggle('beat',bass>140))
+ document.querySelectorAll('.track').forEach((t,i)=> i===current && t.classList.toggle('beat', bass>140))
  requestAnimationFrame(draw)
 }
 
