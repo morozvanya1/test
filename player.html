@@ -17,15 +17,14 @@ body{margin:0;min-height:100vh;background:radial-gradient(circle at top,#0a1633,
 input[type=file]{display:none}
 canvas{width:100%;height:70px;border-radius:12px;background:rgba(0,0,0,.25)}
 .controls{display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:12px}
-.ctrl-btn{width:60px;height:60px;border-radius:50%;border:1px solid var(--neon);background:rgba(0,246,255,.05);color:var(--neon);display:flex;align-items:center;justify-content:center;transition:.15s}
+.ctrl-btn{width:60px;height:60px;border-radius:50%;border:1px solid var(--neon);background:rgba(0,246,255,.05);display:flex;align-items:center;justify-content:center;transition:.15s}
 .ctrl-btn.play{width:72px;height:72px}
-.ctrl-btn .icon{width:28px;height:28px;fill:var(--neon)}}
 .ctrl-btn:active{transform:scale(.9);box-shadow:0 0 30px var(--neon)}
-.ctrl-btn.play{width:72px;height:72px;font-size:28px}
+.ctrl-btn .icon{width:28px;height:28px;fill:var(--neon)}
 .ctrl-btn.play.playing{background:rgba(0,246,255,.2);animation:pulse 1.2s infinite}
 @keyframes pulse{0%{box-shadow:0 0 10px var(--soft)}50%{box-shadow:0 0 32px var(--neon)}100%{box-shadow:0 0 10px var(--soft)}}
 .time{display:flex;justify-content:space-between;font-size:12px;opacity:.85;margin-top:6px}
-input[type=range]{-webkit-appearance:none;width:100%;height:6px;border-radius:6px;outline:none;background:linear-gradient(90deg,var(--neon) 100%,rgba(255,255,255,.25) 0%)}
+input[type=range]{-webkit-appearance:none;width:100%;height:6px;border-radius:6px;outline:none;background:rgba(255,255,255,.25)}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--neon);box-shadow:0 0 10px var(--neon)}
 .playlist{margin-top:12px;max-height:160px;overflow-y:auto;font-size:14px}
 .track{padding:10px 12px;border-radius:14px;cursor:pointer;transition:.15s;display:flex;gap:8px}
@@ -74,6 +73,7 @@ const cur = document.getElementById('cur')
 const dur = document.getElementById('dur')
 const volume = document.getElementById('volume')
 const toggleBtn = document.getElementById('toggle')
+const playIcon = document.getElementById('playIcon')
 
 let playlist = []
 let current = -1
@@ -88,6 +88,11 @@ function setupAudio(){
  const src = ac.createMediaElementSource(audio)
  src.connect(analyser)
  analyser.connect(ac.destination)
+}
+
+function updateSeekUI(){
+ const p = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0
+ seek.style.background = `linear-gradient(90deg,var(--neon) ${p}%,rgba(255,255,255,.25) ${p}%)`
 }
 
 function updateVolumeUI(){
@@ -122,23 +127,29 @@ document.getElementById('next').onclick=()=>playlist.length&&loadTrack((current+
 document.getElementById('prev').onclick=()=>playlist.length&&loadTrack((current-1+playlist.length)%playlist.length)
 
 volume.oninput=()=>{audio.volume=volume.value;updateVolumeUI()}
-seek.oninput=()=>audio.currentTime=seek.value
+seek.oninput=()=>{
+ audio.currentTime = seek.value
+ updateSeekUI()
+}
 
 audio.ontimeupdate=()=>{
- seek.max=audio.duration||0
- seek.value=audio.currentTime||0
- cur.textContent=fmt(audio.currentTime)
- dur.textContent=fmt(audio.duration)
+ seek.max = audio.duration || 0
+ seek.value = audio.currentTime || 0
+ updateSeekUI()
+ cur.textContent = fmt(audio.currentTime)
+ dur.textContent = fmt(audio.duration)
 }
 
 audio.onplay=()=>{
  playIcon.innerHTML='<rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/>'
  toggleBtn.classList.add('playing')
 }
+
 audio.onpause=()=>{
  playIcon.innerHTML='<polygon points="8,5 19,12 8,19"/>'
  toggleBtn.classList.remove('playing')
 }
+
 audio.onended=()=>document.getElementById('next').click()
 
 function draw(){
@@ -159,6 +170,7 @@ function draw(){
 }
 
 updateVolumeUI()
+updateSeekUI()
 draw()
 </script>
 </body>
