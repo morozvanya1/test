@@ -40,10 +40,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 
   <label class="file-btn">
     Выбрать музыку (mp3 / mp4 из Файлов)
-    <input id="files" type="file" multiple accept="video/*,audio/*" />
+    <input id="files" type="file" multiple accept="audio/*,video/mp4" />
   </label>
 
-  <audio id="audio" playsinline></audio>
+  <video id="audio" playsinline webkit-playsinline muted></video>
   <canvas id="viz"></canvas>
 
   <div class="time"><span id="cur">0:00</span><span id="dur">0:00</span></div>
