@@ -9,7 +9,6 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Fitness">
-  <link rel="manifest" href="manifest.json">
 
   <style>
     :root {
@@ -25,8 +24,8 @@
     body {
       margin: 0;
       padding: env(safe-area-inset-top) 14px env(safe-area-inset-bottom);
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui;
-      background: linear-gradient(180deg, #020617, #020617);
+      font-family: -apple-system, BlinkMacSystemFont, system-ui;
+      background: #020617;
       color: var(--text);
     }
 
@@ -34,12 +33,11 @@
     h2 { font-size: 1.1rem; margin-bottom: 8px; }
 
     .card {
-      background: rgba(2,6,23,.85);
+      background: rgba(2,6,23,.9);
       border-radius: 16px;
       padding: 14px;
       margin-bottom: 14px;
       box-shadow: 0 10px 30px rgba(0,0,0,.45);
-      backdrop-filter: blur(6px);
     }
 
     input, button {
@@ -89,7 +87,6 @@
     }
 
     .tabbar button { flex: 1; }
-
   </style>
 </head>
 <body>
@@ -102,7 +99,7 @@
   <input id="sets" type="number" placeholder="Подходы" />
   <input id="reps" type="number" placeholder="Повторы" />
   <input id="weight" type="number" placeholder="Вес (кг)" />
-  <button onclick="saveWorkout()">Сохранить</button>
+  <button id="saveBtn">Сохранить</button>
 </div>
 
 <div class="card">
@@ -111,63 +108,74 @@
 </div>
 
 <div class="tabbar">
-  <button class="secondary" onclick="clearAll()">Очистить</button>
-  <button onclick="scrollTo({top:0,behavior:'smooth'})">Наверх</button>
+  <button class="secondary" id="clearBtn">Очистить</button>
+  <button onclick="scrollTo({ top: 0, behavior: 'smooth' })">Наверх</button>
 </div>
 
 <script>
-  const historyEl = document.getElementById('history')
+  const historyEl = document.getElementById('history');
+  const saveBtn = document.getElementById('saveBtn');
+  const clearBtn = document.getElementById('clearBtn');
 
   function getData() {
-    return JSON.parse(localStorage.getItem('fitness') || '[]')
+    try {
+      return JSON.parse(localStorage.getItem('fitness')) || [];
+    } catch {
+      return [];
+    }
   }
 
   function saveWorkout() {
-    const exerciseInput = document.getElementById('exercise')
-    const setsInput = document.getElementById('sets')
-    const repsInput = document.getElementById('reps')
-    const weightInput = document.getElementById('weight')
+    const exercise = document.getElementById('exercise').value.trim();
+    if (!exercise) return;
 
-    const data = getData()
-    data.push({
-      name: exerciseInput.value,
-      sets: setsInput.value,
-      reps: repsInput.value,
-      weight: weightInput.value,
-      date: Date.now()
-    })
-    localStorage.setItem('fitness', JSON.stringify(data))
+    const sets = Number(document.getElementById('sets').value) || 0;
+    const reps = Number(document.getElementById('reps').value) || 0;
+    const weight = Number(document.getElementById('weight').value) || 0;
 
-    exerciseInput.value = ''
-    setsInput.value = ''
-    repsInput.value = ''
-    weightInput.value = ''
+    const data = getData();
+    data.push({ exercise, sets, reps, weight, date: Date.now() });
+    localStorage.setItem('fitness', JSON.stringify(data));
 
-    render()
+    document.getElementById('exercise').value = '';
+    document.getElementById('sets').value = '';
+    document.getElementById('reps').value = '';
+    document.getElementById('weight').value = '';
+
+    render();
   }
 
   function render() {
-    historyEl.innerHTML = ''
-    getData().reverse().forEach(w => {
-      const div = document.createElement('div')
-      div.className = 'exercise'
+    historyEl.innerHTML = '';
+    const data = getData().slice().reverse();
+
+    data.forEach(w => {
+      const div = document.createElement('div');
+      div.className = 'exercise';
       div.innerHTML = `
-        <b>${w.name}</b><br>
+        <b>${w.exercise}</b><br>
         ${w.sets} × ${w.reps} • ${w.weight} кг<br>
         <span class="date">${new Date(w.date).toLocaleString()}</span>
-      `
-      historyEl.appendChild(div)
-    })
+      `;
+      historyEl.appendChild(div);
+    });
   }
 
   function clearAll() {
     if (confirm('Удалить все данные?')) {
-      localStorage.removeItem('fitness')
-      render()
+      localStorage.removeItem('fitness');
+      render();
     }
   }
 
-  render()
+  saveBtn.addEventListener('click', saveWorkout);
+  clearBtn.addEventListener('click', clearAll);
+
+  // sanity checks
+  console.assert(typeof saveWorkout === 'function', 'saveWorkout must exist');
+  console.assert(Array.isArray(getData()), 'getData must return array');
+
+  render();
 </script>
 
 </body>
