@@ -4,203 +4,61 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Neon Audio Player</title>
-
 <meta name="theme-color" content="#00f6ff" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-
 <style>
-:root{
-  --bg:#05080f;
-  --panel:#0b1428;
-  --neon:#00f6ff;
-  --soft:rgba(0,246,255,.25);
-  --text:#e6faff;
-}
-
-*{
-  box-sizing:border-box;
-  font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
-  -webkit-tap-highlight-color:transparent;
-}
-
-body{
-  margin:0;
-  min-height:100vh;
-  background:radial-gradient(circle at top,#0a1633,var(--bg));
-  color:var(--text);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-
-.player{
-  width:360px;
-  max-width:94vw;
-  background:linear-gradient(180deg,rgba(20,40,80,.7),rgba(10,20,40,.8));
-  backdrop-filter:blur(14px);
-  border-radius:26px;
-  padding:18px;
-  box-shadow:0 0 60px rgba(0,246,255,.25);
-  border:1px solid rgba(0,246,255,.35);
-}
-
-.title{
-  text-align:center;
-  color:var(--neon);
-  letter-spacing:3px;
-  font-weight:600;
-  margin-bottom:10px;
-}
-
-input[type=file]{
-  width:100%;
-  margin-bottom:10px;
-  color:var(--text);
-}
-
-canvas{
-  width:100%;
-  height:70px;
-  margin-top:8px;
-  border-radius:12px;
-  background:rgba(0,0,0,.25);
-}
-
-.controls{
-  display:flex;
-  gap:10px;
-  margin-top:12px;
-}
-
-button{
-  flex:1;
-  height:46px;
-  background:rgba(0,246,255,.05);
-  border:1px solid var(--neon);
-  color:var(--neon);
-  border-radius:16px;
-  cursor:pointer;
-  font-size:18px;
-  transition:transform .15s,box-shadow .15s,background .15s;
-}
-
-button:active{
-  transform:scale(.94);
-  box-shadow:0 0 26px var(--neon);
-}
-
-button.playing{
-  background:rgba(0,246,255,.15);
-  animation:pulse 1.2s infinite;
-}
-
-@keyframes pulse{
-  0%{box-shadow:0 0 8px var(--soft)}
-  50%{box-shadow:0 0 28px var(--neon)}
-  100%{box-shadow:0 0 8px var(--soft)}
-}
-
-.time{
-  display:flex;
-  justify-content:space-between;
-  font-size:12px;
-  opacity:.85;
-  margin-top:6px;
-}
-
-/* RANGE */
-input[type=range]{
-  -webkit-appearance:none;
-  width:100%;
-  height:4px;
-  border-radius:4px;
-  background:rgba(255,255,255,.25);
-  outline:none;
-}
-
-input[type=range]::-webkit-slider-thumb{
-  -webkit-appearance:none;
-  width:16px;
-  height:16px;
-  border-radius:50%;
-  background:var(--neon);
-  box-shadow:0 0 10px var(--neon);
-}
-
-.playlist{
-  margin-top:12px;
-  max-height:140px;
-  overflow-y:auto;
-  font-size:14px;
-}
-
-.track{
-  padding:10px 12px;
-  border-radius:14px;
-  cursor:pointer;
-  transition:background .15s,box-shadow .15s,transform .15s;
-  display:flex;
-  gap:8px;
-}
-
+:root{--bg:#05080f;--neon:#00f6ff;--soft:rgba(0,246,255,.25);--text:#e6faff}
+*{box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
+body{margin:0;min-height:100vh;background:radial-gradient(circle at top,#0a1633,var(--bg));color:var(--text);display:flex;align-items:center;justify-content:center}
+.player{width:360px;max-width:94vw;background:linear-gradient(180deg,rgba(20,40,80,.7),rgba(10,20,40,.85));backdrop-filter:blur(16px);border-radius:26px;padding:18px;box-shadow:0 0 60px rgba(0,246,255,.25);border:1px solid rgba(0,246,255,.35)}
+.title{text-align:center;color:var(--neon);letter-spacing:3px;font-weight:600;margin-bottom:12px}
+.file-btn{display:flex;align-items:center;justify-content:center;width:100%;padding:14px;border-radius:18px;border:1px dashed var(--neon);color:var(--neon);text-align:center;margin-bottom:12px;cursor:pointer}
+input[type=file]{display:none}
+canvas{width:100%;height:70px;border-radius:12px;background:rgba(0,0,0,.25)}
+.controls{display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:12px}
+.ctrl-btn{width:60px;height:60px;border-radius:50%;border:1px solid var(--neon);background:rgba(0,246,255,.05);color:var(--neon);font-size:22px;display:flex;align-items:center;justify-content:center;transition:.15s}
+.ctrl-btn:active{transform:scale(.9);box-shadow:0 0 30px var(--neon)}
+.ctrl-btn.play{width:72px;height:72px;font-size:28px}
+.ctrl-btn.play.playing{background:rgba(0,246,255,.2);animation:pulse 1.2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 10px var(--soft)}50%{box-shadow:0 0 32px var(--neon)}100%{box-shadow:0 0 10px var(--soft)}}
+.time{display:flex;justify-content:space-between;font-size:12px;opacity:.85;margin-top:6px}
+input[type=range]{-webkit-appearance:none;width:100%;height:6px;border-radius:6px;outline:none;background:linear-gradient(90deg,var(--neon) 100%,rgba(255,255,255,.25) 0%)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--neon);box-shadow:0 0 10px var(--neon)}
+.playlist{margin-top:12px;max-height:160px;overflow-y:auto;font-size:14px}
+.track{padding:10px 12px;border-radius:14px;cursor:pointer;transition:.15s;display:flex;gap:8px}
 .track::before{content:'♪';opacity:.5}
-
-.track.active{
-  background:rgba(0,246,255,.18);
-  color:var(--neon);
-  box-shadow:0 0 14px var(--soft);
-}
-
-.track.active.beat{
-  box-shadow:0 0 30px var(--neon);
-  transform:scale(1.04);
-}
-
-.slider{
-  font-size:12px;
-  margin-top:10px;
-  opacity:.9;
-}
-
-.status{
-  font-size:11px;
-  opacity:.7;
-  margin-top:6px;
-  text-align:center;
-}
+.track.active{background:rgba(0,246,255,.18);color:var(--neon);box-shadow:0 0 14px var(--soft)}
+.track.active.beat{box-shadow:0 0 30px var(--neon);transform:scale(1.04)}
+.slider{font-size:12px;margin-top:10px;opacity:.9}
 </style>
 </head>
-
 <body>
 <div class="player">
-  <div class="title">NEON AUDIO PLAYER</div>
+  <div class="title">NEON PLAYER</div>
 
-  <input id="files" type="file" multiple accept="audio/*,video/mp4" />
+  <label class="file-btn">
+    Выбрать музыку (.mp3 / .mp4)
+    <input id="files" type="file" multiple accept="audio/*,video/mp4" />
+  </label>
+
   <audio id="audio" playsinline></audio>
-
   <canvas id="viz"></canvas>
 
-  <div class="time">
-    <span id="cur">0:00</span>
-    <span id="dur">0:00</span>
-  </div>
-
+  <div class="time"><span id="cur">0:00</span><span id="dur">0:00</span></div>
   <input id="seek" type="range" min="0" value="0" />
 
   <div class="controls">
-    <button id="prev">⏮</button>
-    <button id="toggle">▶</button>
-    <button id="next">⏭</button>
+    <button id="prev" class="ctrl-btn">⏮</button>
+    <button id="toggle" class="ctrl-btn play">▶</button>
+    <button id="next" class="ctrl-btn">⏭</button>
   </div>
 
-  <div class="slider">
-    Громкость
+  <div class="slider">Громкость
     <input id="volume" type="range" min="0" max="1" step="0.01" value="1" />
   </div>
 
   <div id="playlist" class="playlist"></div>
-  <div id="status" class="status"></div>
 </div>
 
 <script>
@@ -213,113 +71,86 @@ const seek = document.getElementById('seek')
 const cur = document.getElementById('cur')
 const dur = document.getElementById('dur')
 const volume = document.getElementById('volume')
-const statusEl = document.getElementById('status')
 const toggleBtn = document.getElementById('toggle')
 
 let playlist = []
 let current = -1
 let ac, analyser
 
-function fmt(t){
-  if(!t || isNaN(t)) return '0:00'
-  const m = Math.floor(t/60)
-  const s = Math.floor(t%60)
-  return m+':'+(s<10?'0':'')+s
-}
+function fmt(t){if(!t||isNaN(t))return'0:00';const m=Math.floor(t/60);const s=Math.floor(t%60);return m+':'+(s<10?'0':'')+s}
 
 function setupAudio(){
-  if(ac) return
-  ac = new AudioContext()
-  analyser = ac.createAnalyser()
-  const src = ac.createMediaElementSource(audio)
-  src.connect(analyser)
-  analyser.connect(ac.destination)
+ if(ac) return
+ ac = new AudioContext()
+ analyser = ac.createAnalyser()
+ const src = ac.createMediaElementSource(audio)
+ src.connect(analyser)
+ analyser.connect(ac.destination)
 }
 
 function updateVolumeUI(){
-  const p = volume.value * 100
-  volume.style.background =
-    `linear-gradient(90deg,var(--neon) ${p}%,rgba(255,255,255,.25) ${p}%)`
+ const p = volume.value * 100
+ volume.style.background = `linear-gradient(90deg,var(--neon) ${p}%,rgba(255,255,255,.25) ${p}%)`
 }
-
-volume.oninput = ()=>{
-  audio.volume = volume.value
-  updateVolumeUI()
-}
-updateVolumeUI()
 
 files.onchange = ()=>{
-  playlist = [...files.files]
-  playlistEl.innerHTML = ''
-  playlist.forEach((f,i)=>{
-    const d = document.createElement('div')
-    d.className = 'track'
-    d.textContent = f.name
-    d.onclick = ()=>loadTrack(i)
-    playlistEl.appendChild(d)
-  })
+ playlist = [...files.files]
+ playlistEl.innerHTML=''
+ playlist.forEach((f,i)=>{
+  const d=document.createElement('div')
+  d.className='track'
+  d.textContent=f.name
+  d.onclick=()=>loadTrack(i)
+  playlistEl.appendChild(d)
+ })
 }
 
 async function loadTrack(i){
-  const f = playlist[i]
-  if(!f) return
-  document.querySelectorAll('.track')
-    .forEach((t,n)=>t.classList.toggle('active',n===i))
-  audio.src = URL.createObjectURL(f)
-  setupAudio()
-  await audio.play()
-  current = i
+ const f = playlist[i]
+ if(!f) return
+ document.querySelectorAll('.track').forEach((t,n)=>t.classList.toggle('active',n===i))
+ audio.src = URL.createObjectURL(f)
+ setupAudio()
+ await audio.play()
+ current=i
 }
 
-toggleBtn.onclick = ()=>{
-  audio.paused ? audio.play() : audio.pause()
+toggleBtn.onclick=()=>audio.paused?audio.play():audio.pause()
+document.getElementById('next').onclick=()=>playlist.length&&loadTrack((current+1)%playlist.length)
+document.getElementById('prev').onclick=()=>playlist.length&&loadTrack((current-1+playlist.length)%playlist.length)
+
+volume.oninput=()=>{audio.volume=volume.value;updateVolumeUI()}
+seek.oninput=()=>audio.currentTime=seek.value
+
+audio.ontimeupdate=()=>{
+ seek.max=audio.duration||0
+ seek.value=audio.currentTime||0
+ cur.textContent=fmt(audio.currentTime)
+ dur.textContent=fmt(audio.duration)
 }
 
-document.getElementById('next').onclick = ()=>{
-  if(playlist.length) loadTrack((current+1)%playlist.length)
-}
-document.getElementById('prev').onclick = ()=>{
-  if(playlist.length) loadTrack((current-1+playlist.length)%playlist.length)
-}
-
-seek.oninput = ()=> audio.currentTime = seek.value
-
-audio.ontimeupdate = ()=>{
-  seek.max = audio.duration || 0
-  seek.value = audio.currentTime || 0
-  cur.textContent = fmt(audio.currentTime)
-  dur.textContent = fmt(audio.duration)
-}
-
-audio.onended = ()=>document.getElementById('next').click()
-audio.onplay = ()=>{
-  toggleBtn.textContent='⏸'
-  toggleBtn.classList.add('playing')
-}
-audio.onpause = ()=>{
-  toggleBtn.textContent='▶'
-  toggleBtn.classList.remove('playing')
-}
+audio.onplay=()=>{toggleBtn.textContent='⏸';toggleBtn.classList.add('playing')}
+audio.onpause=()=>{toggleBtn.textContent='▶';toggleBtn.classList.remove('playing')}
+audio.onended=()=>document.getElementById('next').click()
 
 function draw(){
-  if(!analyser){requestAnimationFrame(draw);return}
-  const w = canvas.width = canvas.offsetWidth
-  const h = canvas.height = canvas.offsetHeight
-  const data = new Uint8Array(analyser.frequencyBinCount)
-  analyser.getByteFrequencyData(data)
-  ctx.clearRect(0,0,w,h)
-  let bass=0
-  for(let i=0;i<12;i++) bass+=data[i]
-  bass/=12
-  data.forEach((v,i)=>{
-    const bw=w/data.length
-    ctx.fillStyle='rgba(0,246,255,.8)'
-    ctx.fillRect(i*bw,h,h-(v/255*h),bw-1)
-  })
-  document.querySelectorAll('.track')
-    .forEach((t,i)=>i===current && t.classList.toggle('beat',bass>140))
-  requestAnimationFrame(draw)
+ if(!analyser){requestAnimationFrame(draw);return}
+ const w=canvas.width=canvas.offsetWidth
+ const h=canvas.height=canvas.offsetHeight
+ const data=new Uint8Array(analyser.frequencyBinCount)
+ analyser.getByteFrequencyData(data)
+ ctx.clearRect(0,0,w,h)
+ let bass=0;for(let i=0;i<12;i++)bass+=data[i];bass/=12
+ data.forEach((v,i)=>{
+  const bw=w/data.length
+  ctx.fillStyle='rgba(0,246,255,.8)'
+  ctx.fillRect(i*bw,h,h-(v/255*h),bw-1)
+ })
+ document.querySelectorAll('.track').forEach((t,i)=>i===current&&t.classList.toggle('beat',bass>140))
+ requestAnimationFrame(draw)
 }
+
+updateVolumeUI()
 draw()
 </script>
 </body>
