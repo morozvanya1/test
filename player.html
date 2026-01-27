@@ -5,62 +5,70 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Neon Audio Player</title>
 
-<!-- iOS PWA -->
+<meta name="theme-color" content="#00f6ff" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="Neon Player" />
-<meta name="theme-color" content="#00f6ff" />
-<link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%2300f6ff'/><polygon points='38,28 72,50 38,72' fill='%2305080f'/></svg>">
 
 <style>
 :root{--bg:#05080f;--neon:#00f6ff;--soft:rgba(0,246,255,.25);--text:#e6faff}
 *{box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
 body{margin:0;min-height:100vh;background:radial-gradient(circle at top,#0a1633,var(--bg));color:var(--text);display:flex;align-items:center;justify-content:center}
-.player{width:360px;max-width:94vw;background:linear-gradient(180deg,rgba(20,40,80,.7),rgba(10,20,40,.85));backdrop-filter:blur(16px);border-radius:26px;padding:18px;box-shadow:0 0 60px rgba(0,246,255,.25);border:1px solid rgba(0,246,255,.35)}
+.player{width:360px;max-width:94vw;background:linear-gradient(180deg,rgba(20,40,80,.7),rgba(10,20,40,.85));backdrop-filter:blur(20px);border-radius:26px;padding:18px;box-shadow:0 0 60px rgba(0,246,255,.25);border:1px solid rgba(0,246,255,.35)}
 .title{text-align:center;color:var(--neon);letter-spacing:3px;font-weight:600;margin-bottom:12px}
-.file-btn{display:flex;align-items:center;justify-content:center;width:100%;padding:14px;border-radius:18px;border:1px dashed var(--neon);color:var(--neon);text-align:center;margin-bottom:12px;cursor:pointer}
+.file-btn{display:flex;align-items:center;justify-content:center;width:100%;padding:14px;border-radius:18px;border:1px dashed var(--neon);color:var(--neon);margin-bottom:12px;cursor:pointer}
 input[type=file]{display:none}
-canvas{width:100%;height:70px;border-radius:12px;background:rgba(0,0,0,.25)}
+canvas{width:100%;height:60px;border-radius:12px;background:rgba(0,0,0,.25)}
 .controls{display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:12px}
-.ctrl-btn{width:60px;height:60px;border-radius:50%;border:1px solid var(--neon);background:rgba(0,246,255,.05);display:flex;align-items:center;justify-content:center;transition:.15s}
+.ctrl-btn{width:56px;height:56px;border-radius:50%;border:1px solid var(--neon);background:rgba(0,246,255,.05);display:flex;align-items:center;justify-content:center;transition:.15s}
 .ctrl-btn.play{width:72px;height:72px}
-.ctrl-btn .icon{width:28px;height:28px;fill:var(--neon)}
-.ctrl-btn:active{transform:scale(.9);box-shadow:0 0 30px var(--neon)}
-.ctrl-btn.play.playing{background:rgba(0,246,255,.2);animation:pulse 1.2s infinite}
-@keyframes pulse{0%{box-shadow:0 0 10px var(--soft)}50%{box-shadow:0 0 32px var(--neon)}100%{box-shadow:0 0 10px var(--soft)}}
+.ctrl-btn svg{width:26px;height:26px;fill:var(--neon)}
+.ctrl-btn:active{transform:scale(.92);box-shadow:0 0 28px var(--neon)}
+.ctrl-btn.play.playing{background:rgba(0,246,255,.2);animation:pulse 1.3s infinite}
+@keyframes pulse{0%{box-shadow:0 0 12px var(--soft)}50%{box-shadow:0 0 36px var(--neon)}100%{box-shadow:0 0 12px var(--soft)}}
 .time{display:flex;justify-content:space-between;font-size:12px;opacity:.85;margin-top:6px}
 input[type=range]{-webkit-appearance:none;width:100%;height:6px;border-radius:6px;outline:none;background:rgba(255,255,255,.25)}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--neon);box-shadow:0 0 10px var(--neon)}
 .playlist{margin-top:12px;max-height:160px;overflow-y:auto;font-size:14px}
-.track{padding:10px 12px;border-radius:14px;cursor:pointer;transition:.15s;display:flex;gap:8px}
-.track::before{content:'♪';opacity:.5}
-.track.active{background:rgba(0,246,255,.18);color:var(--neon);box-shadow:0 0 14px var(--soft)}
-.track.active.beat{box-shadow:0 0 30px var(--neon);transform:scale(1.04)}
+.track{padding:10px 12px;border-radius:14px;cursor:pointer;transition:.15s}
+.track.active{background:rgba(0,246,255,.18);color:var(--neon)}
 .slider{font-size:12px;margin-top:10px;opacity:.9}
 </style>
 </head>
+
 <body>
 <div class="player">
   <div class="title">NEON PLAYER</div>
 
   <label class="file-btn">
-    Выбрать музыку (mp3 / m4a из Файлов)
+    Выбрать музыку
     <input id="files" type="file" multiple accept="audio/*,.mp3,.m4a,.aac" />
   </label>
 
   <audio id="audio" playsinline webkit-playsinline preload="auto"></audio>
   <canvas id="viz"></canvas>
 
-  <div class="time"><span id="cur">0:00</span><span id="dur">0:00</span></div>
+  <div class="time">
+    <span id="cur">0:00</span>
+    <span id="dur">0:00</span>
+  </div>
   <input id="seek" type="range" min="0" value="0" />
 
   <div class="controls">
-    <button id="prev" class="ctrl-btn"><svg class="icon" viewBox="0 0 24 24"><polygon points="11,6 5,12 11,18"/><polygon points="19,6 13,12 19,18"/></svg></button>
-    <button id="toggle" class="ctrl-btn play"><svg id="playIcon" class="icon" viewBox="0 0 24 24"><polygon points="8,5 19,12 8,19"/></svg></button>
-    <button id="next" class="ctrl-btn"><svg class="icon" viewBox="0 0 24 24"><polygon points="5,6 11,12 5,18"/><polygon points="13,6 19,12 13,18"/></svg></button>
+    <button id="prev" class="ctrl-btn">
+      <svg viewBox="0 0 24 24"><polygon points="11,6 5,12 11,18"/><polygon points="19,6 13,12 19,18"/></svg>
+    </button>
+
+    <button id="toggle" class="ctrl-btn play">
+      <svg id="icon" viewBox="0 0 24 24"><polygon points="8,5 19,12 8,19"/></svg>
+    </button>
+
+    <button id="next" class="ctrl-btn">
+      <svg viewBox="0 0 24 24"><polygon points="5,6 11,12 5,18"/><polygon points="13,6 19,12 13,18"/></svg>
+    </button>
   </div>
 
-  <div class="slider">Громкость
+  <div class="slider">
+    Громкость
     <input id="volume" type="range" min="0" max="1" step="0.01" value="1" />
   </div>
 
@@ -68,114 +76,106 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 </div>
 
 <script>
-const files = document.getElementById('files')
 const audio = document.getElementById('audio')
+const files = document.getElementById('files')
 const playlistEl = document.getElementById('playlist')
-const canvas = document.getElementById('viz')
-const ctx = canvas.getContext('2d')
 const seek = document.getElementById('seek')
+const volume = document.getElementById('volume')
 const cur = document.getElementById('cur')
 const dur = document.getElementById('dur')
-const volume = document.getElementById('volume')
-const toggleBtn = document.getElementById('toggle')
-const playIcon = document.getElementById('playIcon')
+const toggle = document.getElementById('toggle')
+const icon = document.getElementById('icon')
+const nextBtn = document.getElementById('next')
+const prevBtn = document.getElementById('prev')
 
-let playlist = []
-let current = -1
+let playlist = JSON.parse(localStorage.getItem('playlist') || '[]')
+let current = Number(localStorage.getItem('current')) || 0
 let ac = null
-let analyser = null
+let userUnlocked = false
 
-function fmt(t){if(!t||isNaN(t))return'0:00';const m=Math.floor(t/60);const s=Math.floor(t%60);return m+':'+(s<10?'0':'')+s}
+const fmt = t => !t ? '0:00' : Math.floor(t/60)+':' + ('0'+Math.floor(t%60)).slice(-2)
+
+function save(){
+ localStorage.setItem('playlist', JSON.stringify(playlist))
+ localStorage.setItem('current', current)
+}
 
 function setupAudio(){
  if(ac) return
  ac = new (window.AudioContext || window.webkitAudioContext)()
- analyser = ac.createAnalyser()
- const src = ac.createMediaElementSource(audio)
- src.connect(analyser)
- analyser.connect(ac.destination)
 }
 
-function updateSeekUI(){
- const p = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0
- seek.style.background = `linear-gradient(90deg,var(--neon) ${p}%,rgba(255,255,255,.25) ${p}%)`
+function loadIndex(i){
+ const t = playlist[i]
+ if(!t) return
+ current = i
+ save()
+ document.querySelectorAll('.track').forEach((el,n)=>el.classList.toggle('active',n===i))
+ audio.src = t.url
 }
 
-function updateVolumeUI(){
- const p = volume.value * 100
- volume.style.background = `linear-gradient(90deg,var(--neon) ${p}%,rgba(255,255,255,.25) ${p}%)`
+function togglePlay(force){
+ if(!userUnlocked){
+  setupAudio()
+  if(ac.state === 'suspended') ac.resume()
+  userUnlocked = true
+ }
+ if(force === true) audio.play()
+ else audio.paused ? audio.play() : audio.pause()
 }
 
-files.onchange = ()=>{
- playlist = [...files.files]
+files.onchange = () => {
+ [...files.files].forEach(f => playlist.push({ name:f.name, url:URL.createObjectURL(f) }))
+ save()
+ render()
+}
+
+function render(){
  playlistEl.innerHTML = ''
- playlist.forEach((f,i)=>{
+ playlist.forEach((t,i)=>{
   const d = document.createElement('div')
   d.className = 'track'
-  d.textContent = f.name
-  d.onclick = ()=>loadTrack(i)
+  d.textContent = t.name
+  d.onclick = () => { loadIndex(i); togglePlay(true) }
   playlistEl.appendChild(d)
  })
+ if(playlist[current]) loadIndex(current)
 }
 
-async function loadTrack(i){
- const f = playlist[i]
- if(!f) return
- document.querySelectorAll('.track').forEach((t,n)=>t.classList.toggle('active',n===i))
- audio.src = URL.createObjectURL(f)
- setupAudio()
- await audio.play()
- current = i
+toggle.onclick = () => togglePlay()
+nextBtn.onclick = () => togglePlay(true) || loadIndex((current+1)%playlist.length)
+prevBtn.onclick = () => togglePlay(true) || loadIndex((current-1+playlist.length)%playlist.length)
+
+volume.oninput = () => {
+ audio.volume = volume.value
+ volume.style.background = `linear-gradient(90deg,var(--neon) ${volume.value*100}%,rgba(255,255,255,.25) ${volume.value*100}%)`
 }
 
-toggleBtn.onclick = ()=> audio.paused ? audio.play() : audio.pause()
-document.getElementById('next').onclick = ()=> playlist.length && loadTrack((current+1)%playlist.length)
-document.getElementById('prev').onclick = ()=> playlist.length && loadTrack((current-1+playlist.length)%playlist.length)
-
-volume.oninput = ()=>{ audio.volume = volume.value; updateVolumeUI() }
-seek.oninput = ()=>{ audio.currentTime = seek.value; updateSeekUI() }
-
-audio.ontimeupdate = ()=>{
- seek.max = audio.duration || 0
- seek.value = audio.currentTime || 0
- updateSeekUI()
+audio.ontimeupdate = () => {
+ if(!audio.duration) return
+ seek.max = audio.duration
+ seek.value = audio.currentTime
+ const p = audio.currentTime/audio.duration*100
+ seek.style.background = `linear-gradient(90deg,var(--neon) ${p}%,rgba(255,255,255,.25) ${p}%)`
  cur.textContent = fmt(audio.currentTime)
  dur.textContent = fmt(audio.duration)
 }
 
-audio.onplay = ()=>{
- playIcon.innerHTML = '<rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/>'
- toggleBtn.classList.add('playing')
+seek.oninput = () => audio.currentTime = seek.value
+
+audio.onplay = () => {
+ icon.innerHTML = '<rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/>'
+ toggle.classList.add('playing')
 }
 
-audio.onpause = ()=>{
- playIcon.innerHTML = '<polygon points="8,5 19,12 8,19"/>'
- toggleBtn.classList.remove('playing')
+audio.onpause = () => {
+ icon.innerHTML = '<polygon points="8,5 19,12 8,19"/>'
+ toggle.classList.remove('playing')
 }
 
-audio.onended = ()=> document.getElementById('next').click()
+audio.onended = () => loadIndex((current+1)%playlist.length)
 
-function draw(){
- if(!analyser){ requestAnimationFrame(draw); return }
- const w = canvas.width = canvas.offsetWidth
- const h = canvas.height = canvas.offsetHeight
- const data = new Uint8Array(analyser.frequencyBinCount)
- analyser.getByteFrequencyData(data)
- ctx.clearRect(0,0,w,h)
- let bass = 0
- for(let i=0;i<12;i++) bass += data[i]
- bass /= 12
- data.forEach((v,i)=>{
-  const bw = w / data.length
-  ctx.fillStyle = 'rgba(0,246,255,.8)'
-  ctx.fillRect(i*bw, h, bw-1, -(v/255*h))
- })
- document.querySelectorAll('.track').forEach((t,i)=> i===current && t.classList.toggle('beat', bass>140))
- requestAnimationFrame(draw)
-}
-
-updateVolumeUI()
-draw()
+render()
 </script>
 </body>
 </html>
