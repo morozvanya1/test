@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Neon Media Player</title>
+<title>Neon Audio Player</title>
 <style>
 :root{--bg:#05080f;--neon:#00f6ff;--soft:rgba(0,246,255,.3);--text:#e6faff}
 *{box-sizing:border-box;font-family:system-ui,sans-serif}
@@ -20,13 +20,16 @@ button{flex:1;height:40px;background:transparent;border:1px solid var(--neon);co
 .playlist{margin-top:8px;max-height:110px;overflow-y:auto;font-size:13px}
 .track{padding:6px;border-radius:6px;cursor:pointer}
 .track.active{background:var(--soft);color:var(--neon)}
+.status{font-size:11px;opacity:.7;margin-top:4px;text-align:center}
 </style>
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#00f6ff" />
 </head>
 <body>
 <div class="player">
 <div class="title">NEON AUDIO PLAYER</div>
 <input id="files" type="file" multiple accept="audio/*,video/mp4,.mp3,.m4a" />
-<audio id="audio" controls></audio>
+<audio id="audio" controls playsinline></audio>
 <canvas id="viz"></canvas>
 <div class="time"><span id="cur">0:00</span><span id="dur">0:00</span></div>
 <input id="seek" type="range" min="0" value="0" />
@@ -37,6 +40,7 @@ button{flex:1;height:40px;background:transparent;border:1px solid var(--neon);co
 <input id="volume" type="range" min="0" max="1" step="0.01" value="1" />
 </div>
 <div id="playlist" class="playlist"></div>
+<div id="status" class="status"></div>
 </div>
 <script>
 const filesInput=document.getElementById('files')
@@ -47,10 +51,29 @@ const seek=document.getElementById('seek')
 const cur=document.getElementById('cur')
 const dur=document.getElementById('dur')
 const canvas=document.getElementById('viz')
+const statusEl=document.getElementById('status')
 const ctx=canvas.getContext('2d')
 
 let playlist=[],current=-1,ac=null,analyser=null,source=null
+let db=null
 
+/* ================= CACHE (IndexedDB) ================= */
+const openDB=()=>new Promise(res=>{
+ const r=indexedDB.open('neon-player',1)
+ r.onupgradeneeded=()=>r.result.createObjectStore('tracks')
+ r.onsuccess=()=>res(r.result)
+})
+
+const getCached=key=>new Promise(res=>{
+ const tx=db.transaction('tracks','readonly').objectStore('tracks').get(key)
+ tx.onsuccess=()=>res(tx.result)
+})
+
+const setCached=(key,val)=>{
+ const tx=db.transaction('tracks','readwrite').objectStore('tracks').put(val,key)
+}
+
+/* ================= AUDIO ================= */
 function fmt(t){if(!t)return'0:00';const m=Math.floor(t/60),s=Math.floor(t%60);return m+':'+(s<10?'0':'')+s}
 
 function setupCtx(){
@@ -64,40 +87,43 @@ function setupCtx(){
 }
 
 async function mp4ToAudio(file){
+ statusEl.textContent='Конвертация mp4 → audio…'
  return new Promise(resolve=>{
-   const v=document.createElement('video')
-   v.src=URL.createObjectURL(file)
-   v.muted=true
-   v.playsInline=true
-   v.onloadeddata=()=>{
-     const ctx=new AudioContext()
-     const src=ctx.createMediaElementSource(v)
-     const dest=ctx.createMediaStreamDestination()
-     src.connect(dest)
-     src.connect(ctx.destination)
-     const rec=new MediaRecorder(dest.stream,{mimeType:'audio/mp4'})
-     const chunks=[]
-     rec.ondataavailable=e=>chunks.push(e.data)
-     rec.onstop=()=>resolve(new File(chunks,file.name.replace(/\.mp4$/,'.m4a'),{type:'audio/mp4'}))
-     v.play();rec.start();
-     v.onended=()=>rec.stop()
-   }
+  const v=document.createElement('video')
+  v.src=URL.createObjectURL(file)
+  v.muted=true
+  v.playsInline=true
+  v.onloadeddata=()=>{
+   const ctx=new AudioContext()
+   const src=ctx.createMediaElementSource(v)
+   const dest=ctx.createMediaStreamDestination()
+   src.connect(dest)
+   const rec=new MediaRecorder(dest.stream,{mimeType:'audio/mp4'})
+   const chunks=[]
+   rec.ondataavailable=e=>chunks.push(e.data)
+   rec.onstop=()=>resolve(new File(chunks,file.name.replace(/\.mp4$/,'.m4a'),{type:'audio/mp4'}))
+   v.play();rec.start();v.onended=()=>rec.stop()
+  }
  })
 }
 
 async function loadTrack(i){
  const f=playlist[i];if(!f)return
  document.querySelectorAll('.track').forEach((t,n)=>t.classList.toggle('active',n===i))
- let file=f
- if(f.type==='video/mp4') file=await mp4ToAudio(f)
+ let file=await getCached(f.name)
+ if(!file){
+  file=f.type==='video/mp4'?await mp4ToAudio(f):f
+  setCached(f.name,file)
+ }
+ statusEl.textContent=''
  audio.src=URL.createObjectURL(file)
  audio.volume=volume.value
- setupCtx()
- audio.play()
- current=i
+ setupCtx();audio.play();current=i
 }
 
-filesInput.onchange=()=>{
+/* ================= UI ================= */
+filesInput.onchange=async()=>{
+ db=await openDB()
  playlist=[...filesInput.files]
  playlistEl.innerHTML=''
  playlist.forEach((f,i)=>{
@@ -109,10 +135,10 @@ filesInput.onchange=()=>{
  })
 }
 
-document.getElementById('play').onclick=()=>audio.play()
-document.getElementById('pause').onclick=()=>audio.pause()
-document.getElementById('next').onclick=()=>playlist.length&&loadTrack((current+1)%playlist.length)
-document.getElementById('prev').onclick=()=>playlist.length&&loadTrack((current-1+playlist.length)%playlist.length)
+play.onclick=()=>audio.play()
+pause.onclick=()=>audio.pause()
+next.onclick=()=>playlist.length&&loadTrack((current+1)%playlist.length)
+prev.onclick=()=>playlist.length&&loadTrack((current-1+playlist.length)%playlist.length)
 volume.oninput=()=>audio.volume=volume.value
 seek.oninput=()=>audio.currentTime=seek.value
 
@@ -123,8 +149,9 @@ audio.ontimeupdate=()=>{
  dur.textContent=fmt(audio.duration)
 }
 
-audio.onended=()=>document.getElementById('next').click()
+audio.onended=()=>next.click()
 
+/* ================= VISUAL ================= */
 function draw(){
  if(!analyser){requestAnimationFrame(draw);return}
  const w=canvas.width=canvas.offsetWidth
@@ -140,6 +167,16 @@ function draw(){
  requestAnimationFrame(draw)
 }
 draw()
+
+/* ================= LOCK SCREEN SUPPORT ================= */
+document.addEventListener('visibilitychange',()=>{
+ if(document.hidden && !audio.paused){ audio.play() }
+})
+</script>
+<script>
+if('serviceWorker' in navigator){
+ navigator.serviceWorker.register('sw.js')
+}
 </script>
 </body>
 </html>
