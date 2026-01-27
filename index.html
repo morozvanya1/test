@@ -14,9 +14,7 @@
     button{background:#2aabee;font-weight:600;cursor:pointer}
     .exercise{border-top:1px solid #22303c;padding-top:8px;margin-top:8px}
     .actions{display:none;gap:10px;margin-top:6px}
-.edit-on .actions{display:flex}
-    .actions button{padding:6px 10px;font-size:14px;background:#22303c;border-radius:10px;opacity:.4;pointer-events:none}
-    .actions button.enabled{opacity:1;pointer-events:auto}
+    .edit-on .actions{display:flex}
     .day{margin-top:14px}
     .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center}
     .modal .card{width:100%;max-width:360px}
@@ -57,7 +55,7 @@
 <div class="modal" id="exerciseModal">
   <div class="card">
     <h3>Упражнения</h3>
-    <div id="exerciseList"></div>
+    <div id="exerciseList" style="max-height:260px;overflow:auto"></div>
     <input id="newExercise" placeholder="Новое упражнение" />
     <button onclick="addExercise()">➕ Добавить</button>
     <button onclick="closeExerciseManager()">Закрыть</button>
@@ -72,12 +70,12 @@ let editId = null
 let currentSets = []
 let editMode = false
 
-function toggleEditMode() {
-  const body = document.getElementById('body')
+function toggleEditMode(){
   editMode = !editMode
+  const body = document.getElementById('body')
   const lock = document.getElementById('lockIcon')
 
-  if (editMode) {
+  if(editMode){
     lock.innerHTML = '<rect x="5" y="10" width="14" height="10" rx="2" stroke="#2aabee" stroke-width="2"/><path d="M8 10V7a4 4 0 0 1 8 0" stroke="#2aabee" stroke-width="2"/>'
   } else {
     lock.innerHTML = '<rect x="5" y="10" width="14" height="10" rx="2" stroke="#aaa" stroke-width="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="#aaa" stroke-width="2"/>'
@@ -87,219 +85,115 @@ function toggleEditMode() {
   }
 
   body.classList.toggle('edit-on', editMode)
-
-  // при переключении сразу перерисовываем историю,
-  // чтобы кнопки появились/исчезли
   render()
-} else {
-    lock.innerHTML = '<rect x="5" y="10" width="14" height="10" rx="2" stroke="#aaa" stroke-width="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="#aaa" stroke-width="2"/>'
-    editId = null
-    currentSets = []
-    renderSets()
-  }
-
-  body.classList.toggle('edit-on', editMode)
-
-  document.querySelectorAll('.actions button').forEach(b => {
-    b.classList.toggle('enabled', editMode)
-  })
 }
 
-function getData() {
-  const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
-  return raw.map(w => ({ ...w, sets: Array.isArray(w.sets) ? w.sets : [] }))
+function getData(){
+  const raw = JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]')
+  return raw.map(w=>({...w,sets:Array.isArray(w.sets)?w.sets:[]}))
 }
 
-function saveData(d) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(d))
-}
+function saveData(d){localStorage.setItem(STORAGE_KEY,JSON.stringify(d))}
 
-function getExercises() {
-  let l = JSON.parse(localStorage.getItem(EXERCISES_KEY) || '[]')
-  if (!l.length) {
-    l = ['Жим лёжа', 'Присед', 'Становая тяга', 'Жим плеч', 'Подтягивания']
+function getExercises(){
+  let l = JSON.parse(localStorage.getItem(EXERCISES_KEY)||'[]')
+  if(!l.length){
+    l=['Жим лёжа','Присед','Становая тяга','Жим плеч','Подтягивания']
     saveExercises(l)
   }
   return l
 }
 
-function saveExercises(l) {
-  localStorage.setItem(EXERCISES_KEY, JSON.stringify(l))
-}
+function saveExercises(l){localStorage.setItem(EXERCISES_KEY,JSON.stringify(l))}
 
-function renderExercises() {
-  const s = document.getElementById('exercise')
-  s.innerHTML = '<option value="">Выбери упражнение</option>'
-  getExercises().forEach(e => {
-    const o = document.createElement('option')
-    o.value = e
-    o.textContent = e
-    s.appendChild(o)
+function renderExercises(){
+  const s=document.getElementById('exercise')
+  s.innerHTML='<option value="">Выбери упражнение</option>'
+  getExercises().forEach(e=>{
+    const o=document.createElement('option')
+    o.value=e;o.textContent=e;s.appendChild(o)
   })
 }
 
-function openExerciseManager() {
-  document.getElementById('exerciseModal').style.display = 'flex'
-  renderExerciseManager()
-}
+function openExerciseManager(){document.getElementById('exerciseModal').style.display='flex';renderExerciseManager()}
+function closeExerciseManager(){document.getElementById('exerciseModal').style.display='none'}
 
-function closeExerciseManager() {
-  document.getElementById('exerciseModal').style.display = 'none'
-}
-
-function renderExerciseManager() {
-  const l = document.getElementById('exerciseList')
-  l.innerHTML = ''
-  getExercises().forEach((e, i) => {
-    const d = document.createElement('div')
-    d.className = 'exercise'
-    d.innerHTML = `${e} <button onclick="removeExercise(${i})">❌</button>`
+function renderExerciseManager(){
+  const l=document.getElementById('exerciseList');l.innerHTML=''
+  getExercises().forEach((e,i)=>{
+    const d=document.createElement('div');d.className='exercise'
+    d.innerHTML=`${e} <button onclick="removeExercise(${i})">❌</button>`
     l.appendChild(d)
   })
 }
 
-function addExercise() {
-  const i = document.getElementById('newExercise')
-  if (!i.value.trim()) return
-  const l = getExercises()
-  l.push(i.value.trim())
-  saveExercises(l)
-  i.value = ''
-  renderExerciseManager()
-  renderExercises()
-
-  // автоскролл к добавленному упражнению
-  const list = document.getElementById('exerciseList')
-  list.lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'end' })
-}
+function addExercise(){
+  const i=document.getElementById('newExercise')
+  if(!i.value.trim())return
+  const l=getExercises();l.push(i.value.trim());saveExercises(l)
+  i.value='';renderExerciseManager();renderExercises()
+  document.getElementById('exerciseList').lastElementChild?.scrollIntoView({behavior:'smooth'})
 }
 
-function removeExercise(i) {
-  const l = getExercises()
-  const n = l[i]
-  if (getData().some(w => w.name === n)) {
-    alert('Нельзя удалить упражнение с историей')
-    return
-  }
-  l.splice(i, 1)
-  saveExercises(l)
-  renderExerciseManager()
-  renderExercises()
+function removeExercise(i){
+  const l=getExercises();const n=l[i]
+  if(getData().some(w=>w.name===n))return alert('Нельзя удалить упражнение с историей')
+  l.splice(i,1);saveExercises(l);renderExerciseManager();renderExercises()
 }
 
-function saveWorkout() {
-  const ex = document.getElementById('exercise')
-  if (!ex.value) return alert('Выбери упражнение')
-  if (!currentSets.length) return alert('Добавь подход')
-
-  const d = getData()
-
-  if (editId) {
-    const w = d.find(x => x.id === editId)
-    if (w) {
-      w.name = ex.value
-      w.sets = currentSets
-      w.date = Date.now()
-    }
-    editId = null
-  } else {
-    d.push({ id: crypto.randomUUID(), name: ex.value, sets: currentSets, date: Date.now() })
-  }
-
-  saveData(d)
-  ex.value = ''
-  currentSets = []
-  renderSets()
-  render()
-
-  // автоскролл к последнему дню/упражнению
-  setTimeout(() => {
-    document.getElementById('history')?.lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'end' })
-  }, 0)
-}
+function saveWorkout(){
+  const ex=document.getElementById('exercise')
+  if(!ex.value)return alert('Выбери упражнение')
+  if(!currentSets.length)return alert('Добавь подход')
+  const d=getData()
+  if(editId){
+    const w=d.find(x=>x.id===editId)
+    if(w){w.name=ex.value;w.sets=currentSets;w.date=Date.now()}
+    editId=null
+  } else d.push({id:crypto.randomUUID(),name:ex.value,sets:currentSets,date:Date.now()})
+  saveData(d);ex.value='';currentSets=[];renderSets();render()
 }
 
-function editWorkout(id) {
-  if (!editMode) return
-  const w = getData().find(x => x.id === id)
-  if (!w) return
-  document.getElementById('exercise').value = w.name
-  currentSets = JSON.parse(JSON.stringify(w.sets))
-  editId = id
-  renderSets()
+function editWorkout(id){
+  if(!editMode)return
+  const w=getData().find(x=>x.id===id);if(!w)return
+  document.getElementById('exercise').value=w.name
+  currentSets=JSON.parse(JSON.stringify(w.sets));editId=id;renderSets()
 }
 
-function deleteWorkout(id) {
-  if (!editMode) return
-  saveData(getData().filter(x => x.id !== id))
-  render()
-}
+function deleteWorkout(id){if(!editMode)return;saveData(getData().filter(x=>x.id!==id));render()}
 
-function render() {
-  const h = document.getElementById('history')
-  h.innerHTML = ''
-
-  const f = document.getElementById('filterExercise')
-  const prev = f.value
-  const d = getData()
-
-  f.innerHTML = '<option value="">Все упражнения</option>'
-  ;[...new Set(d.map(w => w.name))].forEach(n => {
-    const o = document.createElement('option')
-    o.value = n
-    o.textContent = n
-    f.appendChild(o)
-  })
-  f.value = prev
-
-  const g = {}
-  d.forEach(w => {
-    if (f.value && w.name !== f.value) return
-    const day = new Date(w.date).toLocaleDateString()
-    ;(g[day] ??= []).push(w)
-  })
-
-  Object.keys(g).reverse().forEach(day => {
-    const dd = document.createElement('div')
-    dd.className = 'day'
-    dd.innerHTML = `<b>📅 ${day}</b>`
-
-    g[day].forEach(w => {
-      const div = document.createElement('div')
-      div.className = 'exercise'
-      const sh = w.sets.map((s, i) => `Подход ${i + 1}: ${s.reps} × ${s.weight} кг`).join('<br>')
-            const actionsHtml = editMode
-        ? `<div class="actions">
-             <button class="enabled" onclick="editWorkout('${w.id}')">✏️</button>
-             <button class="enabled" onclick="deleteWorkout('${w.id}')">❌</button>
-           </div>`
-        : ''
-
-      div.innerHTML = `<b>${w.name}</b><br>${sh}${actionsHtml}`
-      dd.appendChild(div)
-    })
-    h.appendChild(dd)
+function render(){
+  const h=document.getElementById('history');h.innerHTML=''
+  const f=document.getElementById('filterExercise');const prev=f.value;const d=getData()
+  f.innerHTML='<option value="">Все упражнения</option>'
+  ;[...new Set(d.map(w=>w.name))].forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;f.appendChild(o)})
+  f.value=prev
+  const g={}
+  d.forEach(w=>{if(f.value&&w.name!==f.value)return;const day=new Date(w.date).toLocaleDateString();(g[day]??=[]).push(w)})
+  Object.keys(g).reverse().forEach(day=>{
+    const dd=document.createElement('div');dd.className='day';dd.innerHTML=`<b>📅 ${day}</b>`
+    g[day].forEach(w=>{
+      const div=document.createElement('div');div.className='exercise'
+      const sh=w.sets.map((s,i)=>`Подход ${i+1}: ${s.reps} × ${s.weight} кг`).join('<br>')
+      const actions=editMode?`<div class="actions"><button onclick="editWorkout('${w.id}')">✏️</button><button onclick="deleteWorkout('${w.id}')">❌</button></div>`:''
+      div.innerHTML=`<b>${w.name}</b><br>${sh}${actions}`;dd.appendChild(div)
+    });h.appendChild(dd)
   })
 }
 
-function addSet() {
-  currentSets.push({ reps: '', weight: '' })
-  renderSets()
-}
+function addSet(){currentSets.push({reps:'',weight:''});renderSets()}
 
-function renderSets() {
-  const c = document.getElementById('setsContainer')
-  c.innerHTML = ''
-  currentSets.forEach((s, i) => {
-    const d = document.createElement('div')
-    d.className = 'exercise'
-    d.innerHTML = `<input type="number" placeholder="Повторы" value="${s.reps}" oninput="currentSets[${i}].reps=this.value"><input type="number" placeholder="Вес" value="${s.weight}" oninput="currentSets[${i}].weight=this.value"><button onclick="currentSets.splice(${i},1);renderSets()">❌</button>`
+function renderSets(){
+  const c=document.getElementById('setsContainer');c.innerHTML=''
+  currentSets.forEach((s,i)=>{
+    const d=document.createElement('div');d.className='exercise'
+    d.innerHTML=`<input type="number" placeholder="Повторы" value="${s.reps}" oninput="currentSets[${i}].reps=this.value"><input type="number" placeholder="Вес" value="${s.weight}" oninput="currentSets[${i}].weight=this.value"><button onclick="currentSets.splice(${i},1);renderSets()">❌</button>`
     c.appendChild(d)
   })
 }
 
-renderExercises()
-render()
+renderExercises();render()
 </script>
 </body>
 </html>
