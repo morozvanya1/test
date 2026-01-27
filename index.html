@@ -4,57 +4,41 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Fitness App</title>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    body {
-      margin: 0;
-      padding: 16px;
-      font-family: -apple-system, BlinkMacSystemFont, system-ui;
-      background: #0e1621;
-      color: #e7e8ea;
-      display: flex;
-      justify-content: center;
-    }
-    .container { width: 100%; max-width: 420px; }
-    h1, h3 { text-align: center; }
-    .card {
-      background: #17212b;
-      padding: 14px;
-      border-radius: 16px;
-      margin-bottom: 16px;
-    }
-    select, input, button {
-      width: 100%;
-      padding: 14px;
-      margin-top: 10px;
-      border-radius: 14px;
-      border: none;
-      background: #0e1621;
-      color: #fff;
-      font-size: 16px;
-    }
-    select { font-size: 18px; font-weight: 600; }
-    button { background: #2aabee; font-weight: 600; cursor: pointer; }
-    .exercise { border-top: 1px solid #22303c; padding-top: 8px; margin-top: 8px; }
-    .actions { display: flex; gap: 10px; margin-top: 6px; }
-    .actions button { padding: 6px 10px; font-size: 14px; background: #22303c; border-radius: 10px; }
-    .day { margin-top: 14px; }
-    .modal {
-      position: fixed; inset: 0; background: rgba(0,0,0,.6);
-      display: none; align-items: center; justify-content: center;
-    }
-    .modal .card { width: 100%; max-width: 360px; }
+    body{margin:0;padding:16px;font-family:-apple-system,BlinkMacSystemFont,system-ui;background:#0e1621;color:#e7e8ea;display:flex;justify-content:center}
+    .container{width:100%;max-width:420px}
+    h1,h3{text-align:center}
+    .card{background:#17212b;padding:14px;border-radius:16px;margin-bottom:16px}
+    select,input,button{width:100%;padding:14px;margin-top:10px;border-radius:14px;border:none;background:#0e1621;color:#fff;font-size:16px}
+    select{font-size:18px;font-weight:600}
+    button{background:#2aabee;font-weight:600;cursor:pointer}
+    .exercise{border-top:1px solid #22303c;padding-top:8px;margin-top:8px}
+    .actions{display:none;gap:10px;margin-top:6px}
+.edit-on .actions{display:flex}
+    .actions button{padding:6px 10px;font-size:14px;background:#22303c;border-radius:10px;opacity:.4;pointer-events:none}
+    .actions button.enabled{opacity:1;pointer-events:auto}
+    .day{margin-top:14px}
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center}
+    .modal .card{width:100%;max-width:360px}
   </style>
 </head>
-<body>
+<body id="body">
 <div class="container">
 
-<h1>🏋️ Fitness</h1>
+<h1 style="display:flex;justify-content:space-between;align-items:center">🏋️ Fitness
+  <div style="display:flex;gap:12px;align-items:center">
+    <span style="cursor:pointer" onclick="openExerciseManager()">⚙️</span>
+    <span style="cursor:pointer" onclick="toggleEditMode()">
+      <svg id="lockIcon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="5" y="10" width="14" height="10" rx="2" stroke="#aaa" stroke-width="2"/>
+        <path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="#aaa" stroke-width="2"/>
+      </svg>
+    </span>
+  </div>
+</h1>
 
 <div class="card">
   <select id="exercise"></select>
-  <button onclick="openExerciseManager()">⚙️ Управление упражнениями</button>
-
   <div id="setsContainer"></div>
   <button onclick="addSet()">➕ Добавить подход</button>
   <button onclick="saveWorkout()">💾 Сохранить упражнение</button>
@@ -83,37 +67,62 @@
 <script>
 const STORAGE_KEY = 'fitness_local'
 const EXERCISES_KEY = 'fitness_exercises'
+
 let editId = null
 let currentSets = []
+let editMode = false
+
+function toggleEditMode() {
+  const body = document.getElementById('body')
+  editMode = !editMode
+  const lock = document.getElementById('lockIcon')
+
+  if (editMode) {
+    lock.innerHTML = '<rect x="5" y="10" width="14" height="10" rx="2" stroke="#2aabee" stroke-width="2"/><path d="M8 10V7a4 4 0 0 1 8 0" stroke="#2aabee" stroke-width="2"/>'
+  } else {
+    lock.innerHTML = '<rect x="5" y="10" width="14" height="10" rx="2" stroke="#aaa" stroke-width="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="#aaa" stroke-width="2"/>'
+    editId = null
+    currentSets = []
+    renderSets()
+  }
+
+  body.classList.toggle('edit-on', editMode)
+
+  document.querySelectorAll('.actions button').forEach(b => {
+    b.classList.toggle('enabled', editMode)
+  })
+}
 
 function getData() {
   const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
   return raw.map(w => ({ ...w, sets: Array.isArray(w.sets) ? w.sets : [] }))
 }
-function saveData(data) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+
+function saveData(d) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(d))
 }
 
 function getExercises() {
-  let list = JSON.parse(localStorage.getItem(EXERCISES_KEY) || '[]')
-  if (!list.length) {
-    list = ['Жим лёжа','Присед','Становая тяга','Жим плеч','Подтягивания']
-    saveExercises(list)
+  let l = JSON.parse(localStorage.getItem(EXERCISES_KEY) || '[]')
+  if (!l.length) {
+    l = ['Жим лёжа', 'Присед', 'Становая тяга', 'Жим плеч', 'Подтягивания']
+    saveExercises(l)
   }
-  return list
+  return l
 }
-function saveExercises(list) {
-  localStorage.setItem(EXERCISES_KEY, JSON.stringify(list))
+
+function saveExercises(l) {
+  localStorage.setItem(EXERCISES_KEY, JSON.stringify(l))
 }
 
 function renderExercises() {
-  const select = document.getElementById('exercise')
-  select.innerHTML = '<option value="">Выбери упражнение</option>'
+  const s = document.getElementById('exercise')
+  s.innerHTML = '<option value="">Выбери упражнение</option>'
   getExercises().forEach(e => {
     const o = document.createElement('option')
     o.value = e
     o.textContent = e
-    select.appendChild(o)
+    s.appendChild(o)
   })
 }
 
@@ -121,146 +130,148 @@ function openExerciseManager() {
   document.getElementById('exerciseModal').style.display = 'flex'
   renderExerciseManager()
 }
+
 function closeExerciseManager() {
   document.getElementById('exerciseModal').style.display = 'none'
 }
 
 function renderExerciseManager() {
-  const list = document.getElementById('exerciseList')
-  list.innerHTML = ''
-  getExercises().forEach((e,i) => {
-    const div = document.createElement('div')
-    div.className = 'exercise'
-    div.innerHTML = `${e} <button onclick="removeExercise(${i})">❌</button>`
-    list.appendChild(div)
+  const l = document.getElementById('exerciseList')
+  l.innerHTML = ''
+  getExercises().forEach((e, i) => {
+    const d = document.createElement('div')
+    d.className = 'exercise'
+    d.innerHTML = `${e} <button onclick="removeExercise(${i})">❌</button>`
+    l.appendChild(d)
   })
 }
 
 function addExercise() {
-  const input = document.getElementById('newExercise')
-  if (!input.value.trim()) return
-  const list = getExercises()
-  list.push(input.value.trim())
-  saveExercises(list)
-  input.value = ''
+  const i = document.getElementById('newExercise')
+  if (!i.value.trim()) return
+  const l = getExercises()
+  l.push(i.value.trim())
+  saveExercises(l)
+  i.value = ''
   renderExerciseManager()
   renderExercises()
 }
 
 function removeExercise(i) {
-  const list = getExercises()
-  const name = list[i]
-  const hasHistory = getData().some(w => w.name === name)
-
-  if (hasHistory) {
-    alert('Нельзя удалить упражнение, по которому есть история тренировок')
+  const l = getExercises()
+  const n = l[i]
+  if (getData().some(w => w.name === n)) {
+    alert('Нельзя удалить упражнение с историей')
     return
   }
-
-  list.splice(i, 1)
-  saveExercises(list)
+  l.splice(i, 1)
+  saveExercises(l)
   renderExerciseManager()
   renderExercises()
 }
 
 function saveWorkout() {
-  const exercise = document.getElementById('exercise')
-  if (!exercise.value) return alert('Выбери упражнение')
-  if (!currentSets.length) return alert('Добавь хотя бы один подход')
+  const ex = document.getElementById('exercise')
+  if (!ex.value) return alert('Выбери упражнение')
+  if (!currentSets.length) return alert('Добавь подход')
 
-  const data = getData()
+  const d = getData()
+
   if (editId) {
-    const w = data.find(x => x.id === editId)
-    if (!w) return
-    w.name = exercise.value
-    w.sets = currentSets
-    w.date = Date.now()
+    const w = d.find(x => x.id === editId)
+    if (w) {
+      w.name = ex.value
+      w.sets = currentSets
+      w.date = Date.now()
+    }
     editId = null
   } else {
-    data.push({ id: crypto.randomUUID(), name: exercise.value, sets: currentSets, date: Date.now() })
+    d.push({ id: crypto.randomUUID(), name: ex.value, sets: currentSets, date: Date.now() })
   }
-  saveData(data)
-  exercise.value = ''
+
+  saveData(d)
+  ex.value = ''
   currentSets = []
   renderSets()
   render()
 }
 
 function editWorkout(id) {
+  if (!editMode) return
   const w = getData().find(x => x.id === id)
   if (!w) return
   document.getElementById('exercise').value = w.name
-  currentSets = w.sets
+  currentSets = JSON.parse(JSON.stringify(w.sets))
   editId = id
   renderSets()
 }
 
 function deleteWorkout(id) {
+  if (!editMode) return
   saveData(getData().filter(x => x.id !== id))
   render()
 }
 
 function render() {
-  const history = document.getElementById('history')
-  history.innerHTML = ''
+  const h = document.getElementById('history')
+  h.innerHTML = ''
 
-  const filterSelect = document.getElementById('filterExercise')
-  const prevFilter = filterSelect.value
-  const data = getData()
+  const f = document.getElementById('filterExercise')
+  const prev = f.value
+  const d = getData()
 
-  filterSelect.innerHTML = '<option value="">Все упражнения</option>'
-  const names = [...new Set(data.map(w => w.name))]
-  names.forEach(n => {
+  f.innerHTML = '<option value="">Все упражнения</option>'
+  ;[...new Set(d.map(w => w.name))].forEach(n => {
     const o = document.createElement('option')
     o.value = n
     o.textContent = n
-    filterSelect.appendChild(o)
+    f.appendChild(o)
   })
-  filterSelect.value = prevFilter
+  f.value = prev
 
-  const grouped = {}
-  data.forEach(w => {
-    if (filterSelect.value && w.name !== filterSelect.value) return
+  const g = {}
+  d.forEach(w => {
+    if (f.value && w.name !== f.value) return
     const day = new Date(w.date).toLocaleDateString()
-    grouped[day] ??= []
-    grouped[day].push(w)
+    ;(g[day] ??= []).push(w)
   })
 
-  Object.keys(grouped).reverse().forEach(day => {
-    const dayDiv = document.createElement('div')
-    dayDiv.className = 'day'
-    dayDiv.innerHTML = `<b>📅 ${day}</b>`
+  Object.keys(g).reverse().forEach(day => {
+    const dd = document.createElement('div')
+    dd.className = 'day'
+    dd.innerHTML = `<b>📅 ${day}</b>`
 
-    grouped[day].forEach(w => {
+    g[day].forEach(w => {
       const div = document.createElement('div')
       div.className = 'exercise'
-      const setsHtml = w.sets.map((s, i) => `Подход ${i + 1}: ${s.reps} × ${s.weight} кг`).join('<br>')
-      div.innerHTML = `<b>${w.name}</b><br>${setsHtml}
-        <div class="actions">
-          <button onclick="editWorkout('${w.id}')">✏️</button>
-          <button onclick="deleteWorkout('${w.id}')">❌</button>
-        </div>`
-      dayDiv.appendChild(div)
+      const sh = w.sets.map((s, i) => `Подход ${i + 1}: ${s.reps} × ${s.weight} кг`).join('<br>')
+            const actionsHtml = editMode
+        ? `<div class="actions">
+             <button class="enabled" onclick="editWorkout('${w.id}')">✏️</button>
+             <button class="enabled" onclick="deleteWorkout('${w.id}')">❌</button>
+           </div>`
+        : ''
+
+      div.innerHTML = `<b>${w.name}</b><br>${sh}${actionsHtml}`
+      dd.appendChild(div)
     })
-    history.appendChild(dayDiv)
+    h.appendChild(dd)
   })
 }
 
 function addSet() {
-  currentSets.push({ reps:'', weight:'' })
+  currentSets.push({ reps: '', weight: '' })
   renderSets()
 }
 
 function renderSets() {
   const c = document.getElementById('setsContainer')
   c.innerHTML = ''
-  currentSets.forEach((s,i)=>{
-    const div = document.createElement('div')
-    div.className = 'exercise'
-    div.innerHTML = `<input type="number" placeholder="Повторы" value="${s.reps}" oninput="currentSets[${i}].reps=this.value" />
-    <input type="number" placeholder="Вес" value="${s.weight}" oninput="currentSets[${i}].weight=this.value" />
-    <button onclick="currentSets.splice(${i},1);renderSets()">❌</button>`
-    c.appendChild(div)
+  currentSets.forEach((s, i) => {
+    const d = document.createElement('div')
+    d.className = 'exercise'
+    d.innerHTML = `<input type="number" placeholder="Повторы" value="${s.reps}" oninput="currentSets[${i}].reps=this.value"><input type="number" placeholder="Вес" value="${s.weight}" oninput="currentSets[${i}].weight=this.value"><button onclick="currentSets.splice(${i},1);renderSets()">❌</button>`
+    c.appendChild(d)
   })
 }
 
