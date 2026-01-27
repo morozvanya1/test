@@ -15,10 +15,7 @@
       display: flex;
       justify-content: center;
     }
-    .container {
-      width: 100%;
-      max-width: 420px;
-    }
+    .container { width: 100%; max-width: 420px; }
     h1, h3 { text-align: center; }
     .card {
       background: #17212b;
@@ -36,32 +33,17 @@
       color: #fff;
       font-size: 16px;
     }
-    select {
-      font-size: 18px;
-      font-weight: 600;
-    }
-    button {
-      background: #2aabee;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .exercise {
-      border-top: 1px solid #22303c;
-      padding-top: 8px;
-      margin-top: 8px;
-    }
-    .actions {
-      display: flex;
-      gap: 10px;
-      margin-top: 6px;
-    }
-    .actions button {
-      padding: 6px 10px;
-      font-size: 14px;
-      background: #22303c;
-      border-radius: 10px;
-    }
+    select { font-size: 18px; font-weight: 600; }
+    button { background: #2aabee; font-weight: 600; cursor: pointer; }
+    .exercise { border-top: 1px solid #22303c; padding-top: 8px; margin-top: 8px; }
+    .actions { display: flex; gap: 10px; margin-top: 6px; }
+    .actions button { padding: 6px 10px; font-size: 14px; background: #22303c; border-radius: 10px; }
     .day { margin-top: 14px; }
+    .modal {
+      position: fixed; inset: 0; background: rgba(0,0,0,.6);
+      display: none; align-items: center; justify-content: center;
+    }
+    .modal .card { width: 100%; max-width: 360px; }
   </style>
 </head>
 <body>
@@ -70,14 +52,8 @@
 <h1>🏋️ Fitness</h1>
 
 <div class="card">
-  <select id="exercise">
-    <option value="">Выбери упражнение</option>
-    <option>Жим лёжа</option>
-    <option>Присед</option>
-    <option>Становая тяга</option>
-    <option>Жим плеч</option>
-    <option>Подтягивания</option>
-  </select>
+  <select id="exercise"></select>
+  <button onclick="openExerciseManager()">⚙️ Управление упражнениями</button>
 
   <div id="setsContainer"></div>
   <button onclick="addSet()">➕ Добавить подход</button>
@@ -94,17 +70,97 @@
 
 </div>
 
+<div class="modal" id="exerciseModal">
+  <div class="card">
+    <h3>Упражнения</h3>
+    <div id="exerciseList"></div>
+    <input id="newExercise" placeholder="Новое упражнение" />
+    <button onclick="addExercise()">➕ Добавить</button>
+    <button onclick="closeExerciseManager()">Закрыть</button>
+  </div>
+</div>
+
 <script>
 const STORAGE_KEY = 'fitness_local'
+const EXERCISES_KEY = 'fitness_exercises'
 let editId = null
 let currentSets = []
 
 function getData() {
-  return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
+  const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
+  return raw.map(w => ({ ...w, sets: Array.isArray(w.sets) ? w.sets : [] }))
 }
-
 function saveData(data) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+}
+
+function getExercises() {
+  let list = JSON.parse(localStorage.getItem(EXERCISES_KEY) || '[]')
+  if (!list.length) {
+    list = ['Жим лёжа','Присед','Становая тяга','Жим плеч','Подтягивания']
+    saveExercises(list)
+  }
+  return list
+}
+function saveExercises(list) {
+  localStorage.setItem(EXERCISES_KEY, JSON.stringify(list))
+}
+
+function renderExercises() {
+  const select = document.getElementById('exercise')
+  select.innerHTML = '<option value="">Выбери упражнение</option>'
+  getExercises().forEach(e => {
+    const o = document.createElement('option')
+    o.value = e
+    o.textContent = e
+    select.appendChild(o)
+  })
+}
+
+function openExerciseManager() {
+  document.getElementById('exerciseModal').style.display = 'flex'
+  renderExerciseManager()
+}
+function closeExerciseManager() {
+  document.getElementById('exerciseModal').style.display = 'none'
+}
+
+function renderExerciseManager() {
+  const list = document.getElementById('exerciseList')
+  list.innerHTML = ''
+  getExercises().forEach((e,i) => {
+    const div = document.createElement('div')
+    div.className = 'exercise'
+    div.innerHTML = `${e} <button onclick="removeExercise(${i})">❌</button>`
+    list.appendChild(div)
+  })
+}
+
+function addExercise() {
+  const input = document.getElementById('newExercise')
+  if (!input.value.trim()) return
+  const list = getExercises()
+  list.push(input.value.trim())
+  saveExercises(list)
+  input.value = ''
+  renderExerciseManager()
+  renderExercises()
+}
+
+function removeExercise(i) {
+  const list = getExercises()
+  const name = list[i]
+  const hasHistory = getData().some(w => w.name === name)
+
+  if (hasHistory) {
+    alert('Нельзя удалить упражнение, по которому есть история тренировок')
+    return
+  }
+
+  list.splice(i, 1)
+  saveExercises(list)
+  renderExerciseManager()
+  renderExercises()
 }
 
 function saveWorkout() {
@@ -113,7 +169,6 @@ function saveWorkout() {
   if (!currentSets.length) return alert('Добавь хотя бы один подход')
 
   const data = getData()
-
   if (editId) {
     const w = data.find(x => x.id === editId)
     if (!w) return
@@ -122,14 +177,8 @@ function saveWorkout() {
     w.date = Date.now()
     editId = null
   } else {
-    data.push({
-      id: crypto.randomUUID(),
-      name: exercise.value,
-      sets: currentSets,
-      date: Date.now()
-    })
+    data.push({ id: crypto.randomUUID(), name: exercise.value, sets: currentSets, date: Date.now() })
   }
-
   saveData(data)
   exercise.value = ''
   currentSets = []
@@ -141,7 +190,7 @@ function editWorkout(id) {
   const w = getData().find(x => x.id === id)
   if (!w) return
   document.getElementById('exercise').value = w.name
-  currentSets = w.sets || []
+  currentSets = w.sets
   editId = id
   renderSets()
 }
@@ -156,26 +205,24 @@ function render() {
   history.innerHTML = ''
 
   const filterSelect = document.getElementById('filterExercise')
+  const prevFilter = filterSelect.value
   const data = getData()
 
-  // наполняем фильтр один раз
-  if (filterSelect.options.length === 1) {
-    const names = [...new Set(data.map(w => w.name))]
-    names.forEach(n => {
-      const o = document.createElement('option')
-      o.value = n
-      o.textContent = n
-      filterSelect.appendChild(o)
-    })
-  }
+  filterSelect.innerHTML = '<option value="">Все упражнения</option>'
+  const names = [...new Set(data.map(w => w.name))]
+  names.forEach(n => {
+    const o = document.createElement('option')
+    o.value = n
+    o.textContent = n
+    filterSelect.appendChild(o)
+  })
+  filterSelect.value = prevFilter
 
-  const filter = filterSelect.value
   const grouped = {}
-
   data.forEach(w => {
-    if (filter && w.name !== filter) return
+    if (filterSelect.value && w.name !== filterSelect.value) return
     const day = new Date(w.date).toLocaleDateString()
-    if (!grouped[day]) grouped[day] = []
+    grouped[day] ??= []
     grouped[day].push(w)
   })
 
@@ -187,47 +234,37 @@ function render() {
     grouped[day].forEach(w => {
       const div = document.createElement('div')
       div.className = 'exercise'
-
-      const setsHtml = w.sets.map((s, i) =>
-        `Подход ${i + 1}: ${s.reps} × ${s.weight} кг`
-      ).join('<br>')
-
-      div.innerHTML = `
-        <b>${w.name}</b><br>
-        ${setsHtml}
+      const setsHtml = w.sets.map((s, i) => `Подход ${i + 1}: ${s.reps} × ${s.weight} кг`).join('<br>')
+      div.innerHTML = `<b>${w.name}</b><br>${setsHtml}
         <div class="actions">
           <button onclick="editWorkout('${w.id}')">✏️</button>
           <button onclick="deleteWorkout('${w.id}')">❌</button>
         </div>`
-
       dayDiv.appendChild(div)
     })
-
     history.appendChild(dayDiv)
   })
 }
 
 function addSet() {
-  currentSets.push({ reps: '', weight: '' })
+  currentSets.push({ reps:'', weight:'' })
   renderSets()
 }
 
 function renderSets() {
   const c = document.getElementById('setsContainer')
   c.innerHTML = ''
-
-  currentSets.forEach((s, i) => {
+  currentSets.forEach((s,i)=>{
     const div = document.createElement('div')
     div.className = 'exercise'
-    div.innerHTML = `
-      <input type="number" placeholder="Повторы" value="${s.reps}" oninput="currentSets[${i}].reps=this.value" />
-      <input type="number" placeholder="Вес" value="${s.weight}" oninput="currentSets[${i}].weight=this.value" />
-      <button onclick="currentSets.splice(${i},1);renderSets()">❌</button>
-    `
+    div.innerHTML = `<input type="number" placeholder="Повторы" value="${s.reps}" oninput="currentSets[${i}].reps=this.value" />
+    <input type="number" placeholder="Вес" value="${s.weight}" oninput="currentSets[${i}].weight=this.value" />
+    <button onclick="currentSets.splice(${i},1);renderSets()">❌</button>`
     c.appendChild(div)
   })
 }
 
+renderExercises()
 render()
 </script>
 </body>
