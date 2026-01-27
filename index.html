@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Fitness App</title>
+
+  <!-- PWA -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Fitness">
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+    :root {
+      --bg: #020617;
+      --card: #020617;
+      --accent: #22c55e;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: env(safe-area-inset-top) 14px env(safe-area-inset-bottom);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui;
+      background: linear-gradient(180deg, #020617, #020617);
+      color: var(--text);
+    }
+
+    h1 { font-size: 1.4rem; margin: 10px 0 14px; }
+    h2 { font-size: 1.1rem; margin-bottom: 8px; }
+
+    .card {
+      background: rgba(2,6,23,.85);
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.45);
+      backdrop-filter: blur(6px);
+    }
+
+    input, button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 8px;
+      border-radius: 12px;
+      border: none;
+      font-size: 1rem;
+    }
+
+    input {
+      background: #020617;
+      border: 1px solid #1e293b;
+      color: var(--text);
+    }
+
+    button {
+      background: var(--accent);
+      color: #022c22;
+      font-weight: 700;
+    }
+
+    .secondary {
+      background: #1e293b;
+      color: var(--text);
+    }
+
+    .exercise {
+      border-top: 1px solid #1e293b;
+      padding-top: 10px;
+      margin-top: 10px;
+    }
+
+    .date { font-size: .75rem; color: var(--muted); }
+
+    .tabbar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 8px 10px env(safe-area-inset-bottom);
+      background: rgba(2,6,23,.95);
+      display: flex;
+      gap: 8px;
+      box-shadow: 0 -10px 30px rgba(0,0,0,.6);
+    }
+
+    .tabbar button { flex: 1; }
+
+  </style>
+</head>
+<body>
+
+<h1>🏋️ Fitness</h1>
+
+<div class="card">
+  <h2>Новая тренировка</h2>
+  <input id="name" placeholder="Упражнение" />
+  <input id="sets" type="number" placeholder="Подходы" />
+  <input id="reps" type="number" placeholder="Повторы" />
+  <input id="weight" type="number" placeholder="Вес (кг)" />
+  <button onclick="saveWorkout()">Сохранить</button>
+</div>
+
+<div class="card">
+  <h2>История</h2>
+  <div id="history"></div>
+</div>
+
+<div class="tabbar">
+  <button class="secondary" onclick="clearAll()">Очистить</button>
+  <button onclick="scrollTo({top:0,behavior:'smooth'})">Наверх</button>
+</div>
+
+<script>
+  const historyEl = document.getElementById('history')
+
+  function getData() {
+    return JSON.parse(localStorage.getItem('fitness') || '[]')
+  }
+
+  function saveWorkout() {
+    const data = getData()
+    data.push({
+      name: name.value,
+      sets: sets.value,
+      reps: reps.value,
+      weight: weight.value,
+      date: Date.now()
+    })
+    localStorage.setItem('fitness', JSON.stringify(data))
+    name.value = sets.value = reps.value = weight.value = ''
+    render()
+  }
+
+  function render() {
+    historyEl.innerHTML = ''
+    getData().reverse().forEach(w => {
+      const div = document.createElement('div')
+      div.className = 'exercise'
+      div.innerHTML = `
+        <b>${w.name}</b><br>
+        ${w.sets} × ${w.reps} • ${w.weight} кг<br>
+        <span class="date">${new Date(w.date).toLocaleString()}</span>
+      `
+      historyEl.appendChild(div)
+    })
+  }
+
+  function clearAll() {
+    if (confirm('Удалить все данные?')) {
+      localStorage.removeItem('fitness')
+      render()
+    }
+  }
+
+  render()
+</script>
+
+</body>
+</html>
