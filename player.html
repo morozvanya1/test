@@ -9,8 +9,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="Neon Player" />
-<link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%2300f6ff'/><polygon points='40,30 70,50 40,70' fill='%2305080f'/></svg>">
 <meta name="theme-color" content="#00f6ff" />
+<link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%2300f6ff'/><polygon points='38,28 72,50 38,72' fill='%2305080f'/></svg>">
 
 <style>
 :root{--bg:#05080f;--neon:#00f6ff;--soft:rgba(0,246,255,.25);--text:#e6faff}
@@ -22,10 +22,10 @@ body{margin:0;min-height:100vh;background:radial-gradient(circle at top,#0a1633,
 input[type=file]{display:none}
 canvas{width:100%;height:70px;border-radius:12px;background:rgba(0,0,0,.25)}
 .controls{display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:12px}
-.ctrl-btn{width:60px;height:60px;border-radius:50%;border:1px solid var(--neon);background:rgba(0,246,255,.05);display:flex;align-items:center;justify-content:center;transition:.15s}
+.ctrl-btn{width:60px;height:60px;border-radius:50%;border:1px solid var(--neon);background:rgba(0,246,255,.05);color:var(--neon);display:flex;align-items:center;justify-content:center;transition:.15s}
 .ctrl-btn.play{width:72px;height:72px}
-.ctrl-btn:active{transform:scale(.9);box-shadow:0 0 30px var(--neon)}
 .ctrl-btn .icon{width:28px;height:28px;fill:var(--neon)}
+.ctrl-btn:active{transform:scale(.9);box-shadow:0 0 30px var(--neon)}
 .ctrl-btn.play.playing{background:rgba(0,246,255,.2);animation:pulse 1.2s infinite}
 @keyframes pulse{0%{box-shadow:0 0 10px var(--soft)}50%{box-shadow:0 0 32px var(--neon)}100%{box-shadow:0 0 10px var(--soft)}}
 .time{display:flex;justify-content:space-between;font-size:12px;opacity:.85;margin-top:6px}
@@ -44,11 +44,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
   <div class="title">NEON PLAYER</div>
 
   <label class="file-btn">
-    Выбрать музыку (mp3 / mp4 из Файлов)
-    <input id="files" type="file" multiple accept="audio/*,video/mp4" />
+    Выбрать музыку (mp3 / m4a из Файлов)
+    <input id="files" type="file" multiple accept="audio/*,.mp3,.m4a,.aac" />
   </label>
 
-  <video id="audio" playsinline webkit-playsinline muted></video>
+  <audio id="audio" playsinline></audio>
   <canvas id="viz"></canvas>
 
   <div class="time"><span id="cur">0:00</span><span id="dur">0:00</span></div>
@@ -132,10 +132,7 @@ document.getElementById('next').onclick=()=>playlist.length&&loadTrack((current+
 document.getElementById('prev').onclick=()=>playlist.length&&loadTrack((current-1+playlist.length)%playlist.length)
 
 volume.oninput=()=>{audio.volume=volume.value;updateVolumeUI()}
-seek.oninput=()=>{
- audio.currentTime = seek.value
- updateSeekUI()
-}
+seek.oninput=()=>{audio.currentTime = seek.value;updateSeekUI()}
 
 audio.ontimeupdate=()=>{
  seek.max = audio.duration || 0
@@ -175,7 +172,6 @@ function draw(){
 }
 
 updateVolumeUI()
-updateSeekUI()
 draw()
 </script>
 </body>
