@@ -8,10 +8,11 @@
   <title>Fitness Pro</title>
   <style>
     :root {
-      --bg-color: #000000; /* Deep OLED Black */
-      --card-bg: #1c1c1e; /* iOS Dark Gray */
-      --primary: #0A84FF; /* iOS Blue Dark Mode */
-      --danger: #FF453A; /* iOS Red Dark Mode */
+      --bg-color: #000000;
+      --card-bg: #1c1c1e;
+      --input-bg: #2c2c2e; /* Новый цвет фона для инпутов/списков */
+      --primary: #0A84FF;
+      --danger: #FF453A;
       --text: #FFFFFF;
       --text-secondary: #8E8E93;
       --separator: #38383A;
@@ -23,211 +24,134 @@
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     
     body {
-      margin: 0; 
-      padding: 0;
+      margin: 0; padding: 0;
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
       background: var(--bg-color); 
       color: var(--text);
-      /* Учет безопасных зон iPhone */
       padding-top: var(--safe-top);
       padding-bottom: calc(80px + var(--safe-bottom)); 
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Стеклянный заголовок (Glassmorphism) */
+    /* Header */
     .header-sticky {
-      position: sticky;
-      top: 0;
-      z-index: 100;
+      position: sticky; top: 0; z-index: 100;
       background: rgba(28, 28, 30, 0.85);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
       padding: 10px 20px;
       border-bottom: 0.5px solid rgba(255,255,255,0.1);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      display: flex; justify-content: space-between; align-items: center;
     }
+    h1 { font-size: 22px; font-weight: 700; margin: 0; }
 
-    h1 { font-size: 22px; font-weight: 700; margin: 0; letter-spacing: -0.5px; }
-
-    .container { 
-      padding: 20px; 
-      max-width: 500px; 
-      margin: 0 auto; 
-    }
+    .container { padding: 20px; max-width: 500px; margin: 0 auto; }
 
     h3 { 
-      color: var(--text-secondary); 
-      font-size: 13px; 
-      text-transform: uppercase; 
-      margin: 24px 0 8px 16px; 
-      letter-spacing: 0.5px;
+      color: var(--text-secondary); font-size: 13px; text-transform: uppercase; 
+      margin: 24px 0 8px 16px; letter-spacing: 0.5px; 
+      display: flex; justify-content: space-between; align-items: center;
     }
 
-    /* iOS Grouped List Style */
-    .card { 
-      background: var(--card-bg); 
-      border-radius: var(--radius); 
-      overflow: hidden;
-      margin-bottom: 24px;
-    }
+    .card { background: var(--card-bg); border-radius: var(--radius); overflow: hidden; margin-bottom: 24px; }
 
-    /* Inputs & Selects styled like iOS List Items */
-    .input-group {
-      display: flex;
-      flex-direction: column;
-    }
-    
+    /* --- ИЗМЕНЕННЫЙ СТИЛЬ СПИСКОВ (SELECT) --- */
     .input-row {
-      display: flex;
-      align-items: center;
-      padding: 0 16px;
-      height: 50px; /* Стандартная высота строки iOS */
-      border-bottom: 0.5px solid var(--separator);
+      padding: 10px 16px;
       background: var(--card-bg);
+      border-bottom: 0.5px solid var(--separator);
     }
     .input-row:last-child { border-bottom: none; }
 
     select, input {
       width: 100%;
-      background: transparent;
-      border: none;
+      background: var(--input-bg); /* Явный цвет фона */
+      border: 1px solid var(--separator);
+      border-radius: 8px; /* Скругленные углы самого поля */
       color: var(--text);
-      font-size: 17px; /* 17px предотвращает зум на iOS */
-      font-family: inherit;
-      padding: 10px 0;
+      font-size: 17px;
+      padding: 12px;
+      -webkit-appearance: none; /* Убираем стандартные рамки браузера */
+      appearance: none;
     }
     
+    /* Добавляем стрелочку для select, так как убрали стандартный вид */
+    .select-wrapper { position: relative; }
+    .select-wrapper::after {
+      content: '▼';
+      font-size: 12px; color: var(--text-secondary);
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      pointer-events: none;
+    }
+
     input::placeholder { color: var(--text-secondary); }
-    
+
     /* Buttons */
     button {
-      background: var(--primary);
-      color: white;
-      border: none;
-      font-size: 17px;
-      font-weight: 600;
-      padding: 14px;
-      border-radius: var(--radius);
-      width: 100%;
-      cursor: pointer;
-      transition: transform 0.1s, opacity 0.2s;
+      background: var(--primary); color: white; border: none;
+      font-size: 17px; font-weight: 600; padding: 14px;
+      border-radius: var(--radius); width: 100%; cursor: pointer;
     }
-    button:active { transform: scale(0.97); opacity: 0.8; }
+    button:active { transform: scale(0.98); opacity: 0.9; }
+    button.secondary { background: rgba(118, 118, 128, 0.24); color: var(--primary); }
+    button.icon-only { background: transparent; width: auto; padding: 8px; }
     
-    button.secondary {
+    /* Export Button Style */
+    .btn-export {
       background: rgba(118, 118, 128, 0.24);
       color: var(--primary);
-    }
-    
-    button.icon-only {
-      background: transparent;
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 12px;
+      text-transform: none;
       width: auto;
-      padding: 8px;
+      letter-spacing: 0;
+      font-weight: 500;
     }
 
     /* Sets Layout */
     .set-row {
-      display: flex;
-      align-items: center;
-      padding: 12px 16px;
+      display: flex; align-items: center; padding: 12px 16px;
       border-bottom: 0.5px solid var(--separator);
-      animation: slideIn 0.3s ease;
     }
-    .set-index { 
-      width: 24px; 
-      color: var(--text-secondary); 
-      font-size: 15px; 
-      font-variant-numeric: tabular-nums;
-    }
+    .set-index { width: 24px; color: var(--text-secondary); font-size: 15px; }
     .set-inputs { display: flex; gap: 12px; flex: 1; }
     .set-inputs input {
-      background: rgba(118, 118, 128, 0.24);
-      border-radius: 8px;
-      padding: 8px;
+      background: var(--input-bg); /* Темно-серый фон инпута */
       text-align: center;
-      height: 36px;
     }
     .btn-delete {
-      width: 24px; height: 24px;
-      background: var(--danger);
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      margin-left: 10px;
-      padding: 0;
+      width: 24px; height: 24px; background: var(--danger); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; margin-left: 10px; padding: 0;
     }
     .btn-delete svg { width: 14px; height: 14px; fill: white; }
 
-    /* History List */
+    /* History */
     .history-group { margin-bottom: 20px; }
-    .history-date { 
-      font-size: 20px; font-weight: 700; 
-      margin: 0 0 10px 4px; 
-      color: var(--text);
-    }
-    .history-item {
-      background: var(--card-bg);
-      padding: 16px;
-      margin-bottom: 1px; /* Тонкий разделитель */
-    }
+    .history-date { font-size: 20px; font-weight: 700; margin: 0 0 10px 4px; }
+    .history-item { background: var(--card-bg); padding: 16px; margin-bottom: 1px; }
     .history-item:first-child { border-top-left-radius: var(--radius); border-top-right-radius: var(--radius); }
     .history-item:last-child { border-bottom-left-radius: var(--radius); border-bottom-right-radius: var(--radius); }
+    .tag { font-size: 13px; background: rgba(10, 132, 255, 0.15); color: var(--primary); padding: 4px 8px; border-radius: 6px; }
 
-    .history-header { display: flex; justify-content: space-between; margin-bottom: 6px; }
-    .tags-container { display: flex; flex-wrap: wrap; gap: 6px; }
-    .tag {
-      font-size: 13px;
-      background: rgba(10, 132, 255, 0.15);
-      color: var(--primary);
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-weight: 500;
-    }
-
-    /* Floating Action Button (Optional for large screens) */
+    /* FAB */
     .fab-container {
-      position: fixed;
-      bottom: calc(20px + var(--safe-bottom));
-      left: 20px; right: 20px;
-      max-width: 500px; margin: 0 auto;
-      z-index: 90;
-      display: flex; gap: 10px;
+      position: fixed; bottom: calc(20px + var(--safe-bottom));
+      left: 20px; right: 20px; max-width: 500px; margin: 0 auto; z-index: 90;
     }
 
-    /* Modal iOS Style */
+    /* Modal */
     .modal {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(5px);
-      z-index: 200;
-      display: none;
-      align-items: flex-end; /* Sheet style from bottom */
+      position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
+      z-index: 200; display: none; align-items: flex-end;
     }
     .modal.active { display: flex; }
     .modal-card {
-      background: #1c1c1e;
-      width: 100%;
-      border-radius: 20px 20px 0 0;
-      padding: 20px;
-      padding-bottom: calc(20px + var(--safe-bottom));
+      background: #1c1c1e; width: 100%; border-radius: 20px 20px 0 0;
+      padding: 20px; padding-bottom: calc(20px + var(--safe-bottom));
+      max-height: 80vh; display: flex; flex-direction: column;
       animation: slideUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-      max-height: 80vh;
-      display: flex; flex-direction: column;
     }
-    .modal-header {
-      display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 20px;
-    }
-    .modal-handle {
-      width: 40px; height: 5px; background: #38383A;
-      border-radius: 100px; margin: -10px auto 20px auto;
-    }
-
-    @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
     @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-    
-    .hidden { display: none !important; }
   </style>
 </head>
 <body>
@@ -235,18 +159,8 @@
 <div class="header-sticky">
   <h1>FitTrack Pro</h1>
   <div style="display:flex; gap: 10px;">
-    <button class="icon-only" onclick="openExerciseManager()">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0A84FF" stroke-width="2">
-        <circle cx="12" cy="12" r="3"></circle>
-        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"></path>
-      </svg>
-    </button>
-    <button class="icon-only" id="lockBtn" onclick="toggleEditMode()">
-      <svg id="lockIcon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0A84FF" stroke-width="2">
-        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-      </svg>
-    </button>
+    <button class="icon-only" onclick="openExerciseManager()">⚙️</button>
+    <button class="icon-only" id="lockBtn" onclick="toggleEditMode()" style="opacity:0.5">🔒</button>
   </div>
 </div>
 
@@ -255,30 +169,38 @@
   <h3>Тренировка</h3>
   <div class="card">
     <div class="input-row">
-      <select id="exerciseSelect" onchange="loadLastSessionHint()"></select>
+      <div class="select-wrapper">
+        <select id="exerciseSelect" onchange="loadLastSessionHint()"></select>
+      </div>
     </div>
-    <div class="input-row" id="lastSessionHint" style="display:none; height:30px; font-size:13px; color:var(--text-secondary);">
-      <span id="hintText"></span>
+    <div class="input-row" id="lastSessionHint" style="display:none; padding-top:0; border:none;">
+      <span id="hintText" style="font-size:13px; color:var(--primary);"></span>
     </div>
   </div>
 
   <h3>Подходы</h3>
-  <div class="card" id="setsContainer" style="min-height: 50px;">
-    </div>
+  <div class="card" id="setsContainer" style="min-height: 50px;"></div>
   
   <button class="secondary" onclick="addSet()" style="margin-bottom: 20px;">+ Добавить подход</button>
 
-  <h3>История</h3>
+  <h3>
+    История
+    <button class="btn-export" onclick="exportToExcel()">📤 Excel</button>
+  </h3>
+  
   <div class="card" style="padding:0; background: transparent;">
-     <div style="padding: 0 16px 10px;">
-        <select id="filterExercise" onchange="renderHistory()" style="background: var(--card-bg); padding: 8px 16px; border-radius: 10px;">
-           <option value="">Все упражнения</option>
-        </select>
+     <div style="margin-bottom: 10px;">
+        <div class="select-wrapper">
+           <select id="filterExercise" onchange="renderHistory()">
+             <option value="">Все упражнения</option>
+           </select>
+        </div>
      </div>
      <div id="historyList"></div>
   </div>
 
-  <br><br><br> </div>
+  <br><br><br>
+</div>
 
 <div class="fab-container">
   <button onclick="saveWorkout()" style="box-shadow: 0 4px 15px rgba(0,0,0,0.5);">Сохранить тренировку</button>
@@ -286,21 +208,20 @@
 
 <div class="modal" id="exerciseModal">
   <div class="modal-card">
-    <div class="modal-handle" onclick="closeExerciseManager()"></div>
-    <div class="modal-header">
+    <div style="width:40px; height:5px; background:#38383A; border-radius:100px; margin:-10px auto 20px auto;"></div>
+    <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
       <h2 style="margin:0; font-size:20px;">Упражнения</h2>
-      <button class="secondary" style="width:auto; padding: 6px 12px; font-size:15px;" onclick="closeExerciseManager()">Готово</button>
+      <button class="secondary" style="width:auto; padding:6px 12px;" onclick="closeExerciseManager()">Готово</button>
     </div>
     <div style="overflow-y:auto; flex:1; margin-bottom:15px;" id="exerciseManagerList"></div>
     <div style="display:flex; gap:10px;">
-      <input id="newExerciseInput" placeholder="Новое упражнение" style="background: rgba(118,118,128,0.24); border-radius:10px; padding-left:12px;">
+      <input id="newExerciseInput" placeholder="Новое упражнение">
       <button onclick="addExercise()" style="width:auto;">➕</button>
     </div>
   </div>
 </div>
 
 <script>
-// --- JS Logic (Same as before, simplified for this view) ---
 const STORAGE_KEY = 'fitness_data_v3';
 const EXERCISE_KEY = 'fitness_exercises_v3';
 let appData = [], exercises = [], currentSets = [], editMode = false, editingId = null;
@@ -337,7 +258,7 @@ function renderSets() {
         <input type="number" placeholder="кг" value="${s.weight}" oninput="updateSet(${i},'weight',this.value)">
         <input type="number" placeholder="повт" value="${s.reps}" oninput="updateSet(${i},'reps',this.value)">
       </div>
-      <button class="btn-delete" onclick="removeSet(${i})"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
+      <button class="btn-delete" onclick="removeSet(${i})">✕</button>
     `;
     c.appendChild(r);
   });
@@ -348,11 +269,9 @@ function saveWorkout() {
   const validSets = currentSets.filter(s => s.reps && s.weight);
   if (!validSets.length) return alert('Заполните подходы');
   
-  // Haptic feedback simulation
   if(navigator.vibrate) navigator.vibrate(50);
 
   const rec = { id: editingId || crypto.randomUUID(), name, sets: validSets, date: editingId ? appData.find(x=>x.id===editingId).date : Date.now() };
-  
   if (editingId) {
     appData[appData.findIndex(x=>x.id===editingId)] = rec;
     editingId = null;
@@ -382,7 +301,7 @@ function renderHistory() {
       const item = document.createElement('div'); item.className = 'history-item';
       const setsHtml = w.sets.map(s => `<span class="tag">${s.weight}×${s.reps}</span>`).join('');
       const actions = editMode ? `<div style="margin-top:10px; display:flex; gap:10px; justify-content:flex-end;"><button class="secondary" style="width:auto; padding:6px 12px; font-size:13px;" onclick="editRec('${w.id}')">Изм</button><button class="secondary" style="width:auto; padding:6px 12px; font-size:13px; color:var(--danger);" onclick="delRec('${w.id}')">Удл</button></div>` : '';
-      item.innerHTML = `<div class="history-header"><b>${w.name}</b></div><div class="tags-container">${setsHtml}</div>${actions}`;
+      item.innerHTML = `<div style="display:flex;justify-content:space-between;margin-bottom:6px;"><b>${w.name}</b></div><div style="display:flex;flex-wrap:wrap;gap:6px;">${setsHtml}</div>${actions}`;
       grp.appendChild(item);
     });
     c.appendChild(grp);
@@ -390,8 +309,7 @@ function renderHistory() {
 }
 
 function editRec(id) {
-  const r = appData.find(x => x.id === id);
-  if(!r) return;
+  const r = appData.find(x => x.id === id); if(!r) return;
   document.getElementById('exerciseSelect').value = r.name;
   currentSets = JSON.parse(JSON.stringify(r.sets));
   editingId = id;
@@ -400,12 +318,7 @@ function editRec(id) {
   window.scrollTo({top:0, behavior:'smooth'});
 }
 function delRec(id) { if(confirm('Удалить?')) { appData=appData.filter(x=>x.id!==id); saveData(); renderHistory(); } }
-
-function toggleEditMode() {
-  editMode = !editMode;
-  document.getElementById('lockBtn').style.opacity = editMode ? '1' : '0.5';
-  renderHistory();
-}
+function toggleEditMode() { editMode = !editMode; document.getElementById('lockBtn').style.opacity = editMode ? '1' : '0.5'; renderHistory(); }
 
 function loadLastSessionHint() {
   const name = document.getElementById('exerciseSelect').value;
@@ -414,20 +327,17 @@ function loadLastSessionHint() {
   if(last) {
     const best = last.sets.reduce((p,c) => (p.weight*1 > c.weight*1) ? p : c);
     document.getElementById('hintText').textContent = `Прошлый раз: ${best.weight}кг × ${best.reps}`;
-    hint.style.display = 'flex';
+    hint.style.display = 'block';
   } else hint.style.display = 'none';
 }
 
-// Exercise Manager UI
 function renderExercises() {
   const s = document.getElementById('exerciseSelect');
   const f = document.getElementById('filterExercise');
   const oldVal = s.value; const oldF = f.value;
   s.innerHTML = '<option disabled selected>Выбрать...</option>';
   f.innerHTML = '<option value="">Все упражнения</option>';
-  exercises.forEach(e => {
-    s.add(new Option(e,e)); f.add(new Option(e,e));
-  });
+  exercises.forEach(e => { s.add(new Option(e,e)); f.add(new Option(e,e)); });
   if(exercises.includes(oldVal)) s.value = oldVal;
   f.value = oldF;
 }
@@ -445,8 +355,28 @@ function addExercise() {
   const v = document.getElementById('newExerciseInput').value.trim();
   if(v && !exercises.includes(v)) { exercises.push(v); saveExercises(); renderExercises(); openExerciseManager(); document.getElementById('newExerciseInput').value=''; }
 }
-function removeExercise(i) {
-  if(confirm('Удалить?')) { exercises.splice(i,1); saveExercises(); renderExercises(); openExerciseManager(); }
+function removeExercise(i) { if(confirm('Удалить?')) { exercises.splice(i,1); saveExercises(); renderExercises(); openExerciseManager(); } }
+
+// --- EXCEL EXPORT FUNCTION ---
+function exportToExcel() {
+  if (!appData.length) return alert('История пуста');
+  let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; // BOM для кириллицы
+  csvContent += "Дата;Упражнение;Подход;Вес;Повторы\n";
+  
+  [...appData].sort((a,b) => a.date - b.date).forEach(w => {
+    const date = new Date(w.date).toLocaleDateString('ru-RU');
+    w.sets.forEach((s, i) => {
+      csvContent += `${date};"${w.name}";${i+1};"${s.weight}";"${s.reps}"\n`;
+    });
+  });
+  
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", "fitness_history.csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 </script>
 </body>
