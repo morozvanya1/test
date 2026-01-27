@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Neon Audio Player</title>
+  <style>
+    :root {
+      --bg: #05080f;
+      --neon: #00f6ff;
+      --neon-soft: rgba(0, 246, 255, 0.3);
+      --text: #e6faff;
+    }
+
+    * { box-sizing: border-box; font-family: "Segoe UI", system-ui, sans-serif; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #081020, var(--bg));
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .player {
+      width: 320px;
+      background: rgba(10, 20, 40, 0.6);
+      border: 1px solid var(--neon-soft);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 0 40px var(--neon-soft);
+      backdrop-filter: blur(10px);
+    }
+
+    .title {
+      text-align: center;
+      font-size: 18px;
+      letter-spacing: 2px;
+      margin-bottom: 16px;
+      color: var(--neon);
+      text-shadow: 0 0 10px var(--neon-soft);
+    }
+
+    .file-input {
+      display: block;
+      width: 100%;
+      margin-bottom: 16px;
+      color: var(--text);
+    }
+
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    button {
+      background: transparent;
+      border: 1px solid var(--neon);
+      color: var(--neon);
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: 0 0 15px var(--neon-soft);
+      transition: all 0.2s ease;
+    }
+
+    button:hover {
+      background: var(--neon);
+      color: #001014;
+      box-shadow: 0 0 25px var(--neon);
+    }
+
+    .progress {
+      width: 100%;
+      margin-top: 14px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+    }
+
+    .track-name {
+      margin-top: 10px;
+      font-size: 13px;
+      text-align: center;
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+  <div class="player">
+    <div class="title">NEON PLAYER</div>
+
+    <!-- В iOS откроется приложение «Файлы» -->
+    <input
+      class="file-input"
+      type="file"
+      accept="audio/*"
+      id="fileInput"
+    />
+
+    <audio id="audio"></audio>
+
+    <div class="controls">
+      <button id="play">▶</button>
+      <button id="pause">⏸</button>
+    </div>
+
+    <div class="progress">
+      <input type="range" id="seek" value="0" />
+    </div>
+
+    <div class="track-name" id="trackName">Файл не выбран</div>
+  </div>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const audio = document.getElementById('audio');
+    const playBtn = document.getElementById('play');
+    const pauseBtn = document.getElementById('pause');
+    const seek = document.getElementById('seek');
+    const trackName = document.getElementById('trackName');
+
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files[0];
+      if (!file) return;
+
+      const url = URL.createObjectURL(file);
+      audio.src = url;
+      trackName.textContent = file.name;
+      audio.play();
+    });
+
+    playBtn.onclick = () => audio.play();
+    pauseBtn.onclick = () => audio.pause();
+
+    audio.addEventListener('timeupdate', () => {
+      seek.max = audio.duration || 0;
+      seek.value = audio.currentTime;
+    });
+
+    seek.addEventListener('input', () => {
+      audio.currentTime = seek.value;
+    });
+  </script>
+</body>
+</html>
