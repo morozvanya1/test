@@ -13,14 +13,14 @@
     select{font-size:18px;font-weight:600}
     button{background:#2aabee;font-weight:600;cursor:pointer}
     .exercise{border-top:1px solid #22303c;padding-top:8px;margin-top:8px}
-    .actions{display:none;gap:10px;margin-top:6px}
-    .edit-on .actions{display:flex}
+    .actions{display:flex;gap:6px;margin-top:6px}
+    .actions.hidden{display:none}
     .day{margin-top:14px}
     .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center}
     .modal .card{width:100%;max-width:360px}
   </style>
 </head>
-<body id="body">
+<body>
 <div class="container">
 
 <h1 style="display:flex;justify-content:space-between;align-items:center">🏋️ Fitness
@@ -28,8 +28,8 @@
     <span style="cursor:pointer" onclick="openExerciseManager()">⚙️</span>
     <span style="cursor:pointer" onclick="toggleEditMode()">
       <svg id="lockIcon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="5" y="10" width="14" height="10" rx="2" stroke="#aaa" stroke-width="2"/>
-        <path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="#aaa" stroke-width="2"/>
+        <rect id="lockBody" x="5" y="10" width="14" height="10" rx="2" stroke="#aaa" stroke-width="2"/>
+        <path id="lockArc" d="M8 10V7a4 4 0 0 1 8 0v3" stroke="#aaa" stroke-width="2"/>
       </svg>
     </span>
   </div>
@@ -43,7 +43,9 @@
 </div>
 
 <div class="card">
-  <h3>История</h3>
+  <h3 style="display:flex;justify-content:space-between;align-items:center">История
+    <button id="exportBtn" style="width:auto;padding:8px 12px;font-size:14px">📤 Excel</button>
+  </h3>
   <select id="filterExercise" onchange="render()">
     <option value="">Все упражнения</option>
   </select>
@@ -72,19 +74,18 @@ let editMode = false
 
 function toggleEditMode(){
   editMode = !editMode
-  const body = document.getElementById('body')
-  const lock = document.getElementById('lockIcon')
+  const body = document.getElementById('lockBody')
+  const arc = document.getElementById('lockArc')
 
   if(editMode){
-    lock.innerHTML = '<rect x="5" y="10" width="14" height="10" rx="2" stroke="#2aabee" stroke-width="2"/><path d="M8 10V7a4 4 0 0 1 8 0" stroke="#2aabee" stroke-width="2"/>'
+    body.setAttribute('stroke','#2aabee')
+    arc.setAttribute('stroke','#2aabee')
+    arc.setAttribute('d','M8 10V7a4 4 0 0 1 8 0')
   } else {
-    lock.innerHTML = '<rect x="5" y="10" width="14" height="10" rx="2" stroke="#aaa" stroke-width="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="#aaa" stroke-width="2"/>'
-    editId = null
-    currentSets = []
-    renderSets()
+    body.setAttribute('stroke','#aaa')
+    arc.setAttribute('stroke','#aaa')
+    arc.setAttribute('d','M8 10V7a4 4 0 0 1 8 0v3')
   }
-
-  body.classList.toggle('edit-on', editMode)
   render()
 }
 
@@ -92,7 +93,6 @@ function getData(){
   const raw = JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]')
   return raw.map(w=>({...w,sets:Array.isArray(w.sets)?w.sets:[]}))
 }
-
 function saveData(d){localStorage.setItem(STORAGE_KEY,JSON.stringify(d))}
 
 function getExercises(){
@@ -103,7 +103,6 @@ function getExercises(){
   }
   return l
 }
-
 function saveExercises(l){localStorage.setItem(EXERCISES_KEY,JSON.stringify(l))}
 
 function renderExercises(){
@@ -176,8 +175,11 @@ function render(){
     g[day].forEach(w=>{
       const div=document.createElement('div');div.className='exercise'
       const sh=w.sets.map((s,i)=>`Подход ${i+1}: ${s.reps} × ${s.weight} кг`).join('<br>')
-      const actions=editMode?`<div class="actions"><button onclick="editWorkout('${w.id}')">✏️</button><button onclick="deleteWorkout('${w.id}')">❌</button></div>`:''
-      div.innerHTML=`<b>${w.name}</b><br>${sh}${actions}`;dd.appendChild(div)
+      const actions = editMode
+        ? `<div class="actions"><button onclick="editWorkout('${w.id}')">✏️</button><button onclick="deleteWorkout('${w.id}')">❌</button></div>`
+        : ''
+      div.innerHTML=`<b>${w.name}</b><br>${sh}${actions}`
+      dd.appendChild(div)
     });h.appendChild(dd)
   })
 }
@@ -192,6 +194,16 @@ function renderSets(){
     c.appendChild(d)
   })
 }
+
+function exportToExcel(){
+  const data=getData();if(!data.length)return alert('История пуста')
+  let csv='Дата,Упражнение,Подход,Повторы,Вес\n'
+  data.forEach(w=>{const date=new Date(w.date).toLocaleDateString();w.sets.forEach((s,i)=>{csv+=`${date},"${w.name}",${i+1},${s.reps},${s.weight}\n`})})
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});const url=URL.createObjectURL(blob)
+  const a=document.createElement('a');a.href=url;a.download='fitness_history.csv';a.click();URL.revokeObjectURL(url)
+}
+
+document.getElementById('exportBtn').addEventListener('click', exportToExcel)
 
 renderExercises();render()
 </script>
