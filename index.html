@@ -4,10 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Fitness App</title>
-
-  <!-- Telegram WebApp (необязательно, но готово) -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
   <style>
     body {
       margin: 0;
@@ -15,6 +12,15 @@
       font-family: -apple-system, BlinkMacSystemFont, system-ui;
       background: #0e1621;
       color: #e7e8ea;
+      display: flex;
+      justify-content: center;
+    }
+    .container {
+      width: 100%;
+      max-width: 420px;
+    }
+    h1, h3 {
+      text-align: center;
     }
     .card {
       background: #17212b;
@@ -31,18 +37,41 @@
       background: #0e1621;
       color: #fff;
     }
+    input[type=number] {
+      -moz-appearance: textfield;
+    }
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
     button {
       background: #2aabee;
       font-weight: 600;
+      cursor: pointer;
     }
     .exercise {
       border-top: 1px solid #22303c;
       padding-top: 8px;
       margin-top: 8px;
     }
+    .actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
+    }
+    .actions button {
+      padding: 6px;
+      font-size: 12px;
+      background: #22303c;
+    }
+    .day {
+      margin-top: 12px;
+    }
   </style>
 </head>
 <body>
+<div class="container">
 
 <h1>🏋️ Fitness</h1>
 
@@ -55,9 +84,9 @@
     <option>Жим плеч</option>
     <option>Подтягивания</option>
   </select>
-  <input id="sets" type="number" placeholder="Подходы" />
-  <input id="reps" type="number" placeholder="Повторы" />
-  <input id="weight" type="number" placeholder="Вес (кг)" />
+  <input id="sets" type="number" inputmode="numeric" placeholder="Подходы" />
+  <input id="reps" type="number" inputmode="numeric" placeholder="Повторы" />
+  <input id="weight" type="number" inputmode="numeric" placeholder="Вес (кг)" />
   <button onclick="saveWorkout()">Сохранить</button>
 </div>
 
@@ -66,62 +95,106 @@
   <div id="history"></div>
 </div>
 
+</div>
+
 <script>
-  const STORAGE_KEY = 'fitness_local'
+const STORAGE_KEY = 'fitness_local'
+let editId = null
 
-  function getData() {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
-  }
+function getData() {
+  return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
+}
 
-  function saveData(data) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
-  }
+function saveData(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+}
 
-  function saveWorkout() {
-    const exercise = document.getElementById('exercise')
-    const sets = document.getElementById('sets')
-    const reps = document.getElementById('reps')
-    const weight = document.getElementById('weight')
+function saveWorkout() {
+  const exercise = document.getElementById('exercise')
+  const sets = document.getElementById('sets')
+  const reps = document.getElementById('reps')
+  const weight = document.getElementById('weight')
 
-    if (!exercise.value) {
-      alert('Выбери упражнение')
-      return
-    }
+  if (!exercise.value) return alert('Выбери упражнение')
 
-    const data = getData()
+  const data = getData()
+
+  if (editId) {
+    const w = data.find(x => x.id === editId)
+    if (!w) return
+    w.name = exercise.value
+    w.sets = +sets.value
+    w.reps = +reps.value
+    w.weight = +weight.value
+    editId = null
+  } else {
     data.push({
       id: crypto.randomUUID(),
       name: exercise.value,
-      sets: Number(sets.value),
-      reps: Number(reps.value),
-      weight: Number(weight.value),
+      sets: +sets.value,
+      reps: +reps.value,
+      weight: +weight.value,
       date: Date.now()
     })
-
-    saveData(data)
-    exercise.value = sets.value = reps.value = weight.value = ''
-    render()
   }
 
-  function render() {
-    const history = document.getElementById('history')
-    history.innerHTML = ''
-
-    getData()
-      .sort((a,b) => b.date - a.date)
-      .forEach(w => {
-        const div = document.createElement('div')
-        div.className = 'exercise'
-        div.innerHTML = `
-          <b>${w.name}</b><br>
-          ${w.sets} × ${w.reps} • ${w.weight} кг
-        `
-        history.appendChild(div)
-      })
-  }
-
+  saveData(data)
+  exercise.value = ''
+  sets.value = ''
+  reps.value = ''
+  weight.value = ''
   render()
-</script>
+}
 
+function editWorkout(id) {
+  const w = getData().find(x => x.id === id)
+  if (!w) return
+  document.getElementById('exercise').value = w.name
+  document.getElementById('sets').value = w.sets
+  document.getElementById('reps').value = w.reps
+  document.getElementById('weight').value = w.weight
+  editId = id
+}
+
+function deleteWorkout(id) {
+  saveData(getData().filter(x => x.id !== id))
+  render()
+}
+
+function render() {
+  const history = document.getElementById('history')
+  history.innerHTML = ''
+
+  const grouped = {}
+  getData().forEach(w => {
+    const day = new Date(w.date).toLocaleDateString()
+    grouped[day] ??= []
+    grouped[day].push(w)
+  })
+
+  Object.keys(grouped).reverse().forEach(day => {
+    const dayDiv = document.createElement('div')
+    dayDiv.className = 'day'
+    dayDiv.innerHTML = `<b>${day}</b>`
+
+    grouped[day].forEach(w => {
+      const div = document.createElement('div')
+      div.className = 'exercise'
+      div.innerHTML = `
+        ${w.name}<br>
+        ${w.sets} × ${w.reps} • ${w.weight} кг
+        <div class="actions">
+          <button onclick="editWorkout('${w.id}')">✏️</button>
+          <button onclick="deleteWorkout('${w.id}')">✖</button>
+        </div>`
+      dayDiv.appendChild(div)
+    })
+
+    history.appendChild(dayDiv)
+  })
+}
+
+render()
+</script>
 </body>
 </html>
