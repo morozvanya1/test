@@ -156,11 +156,11 @@ function render() {
   history.innerHTML = ''
 
   const filterSelect = document.getElementById('filterExercise')
-  const filter = filterSelect.value
+  const data = getData()
 
-  // обновляем список фильтра ТОЛЬКО если он пуст
+  // наполняем фильтр один раз
   if (filterSelect.options.length === 1) {
-    const names = [...new Set(getData().map(w => w.name))]
+    const names = [...new Set(data.map(w => w.name))]
     names.forEach(n => {
       const o = document.createElement('option')
       o.value = n
@@ -169,11 +169,13 @@ function render() {
     })
   }
 
+  const filter = filterSelect.value
   const grouped = {}
-  getData().forEach(w => {
+
+  data.forEach(w => {
     if (filter && w.name !== filter) return
     const day = new Date(w.date).toLocaleDateString()
-    grouped[day] ??= []
+    if (!grouped[day]) grouped[day] = []
     grouped[day].push(w)
   })
 
