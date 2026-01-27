@@ -17,7 +17,9 @@ body{margin:0;min-height:100vh;background:radial-gradient(circle at top,#0a1633,
 input[type=file]{display:none}
 canvas{width:100%;height:70px;border-radius:12px;background:rgba(0,0,0,.25)}
 .controls{display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:12px}
-.ctrl-btn{width:60px;height:60px;border-radius:50%;border:1px solid var(--neon);background:rgba(0,246,255,.05);color:var(--neon);font-size:22px;display:flex;align-items:center;justify-content:center;transition:.15s}
+.ctrl-btn{width:60px;height:60px;border-radius:50%;border:1px solid var(--neon);background:rgba(0,246,255,.05);color:var(--neon);display:flex;align-items:center;justify-content:center;transition:.15s}
+.ctrl-btn.play{width:72px;height:72px}
+.ctrl-btn .icon{width:28px;height:28px;fill:var(--neon)}}
 .ctrl-btn:active{transform:scale(.9);box-shadow:0 0 30px var(--neon)}
 .ctrl-btn.play{width:72px;height:72px;font-size:28px}
 .ctrl-btn.play.playing{background:rgba(0,246,255,.2);animation:pulse 1.2s infinite}
@@ -49,9 +51,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
   <input id="seek" type="range" min="0" value="0" />
 
   <div class="controls">
-    <button id="prev" class="ctrl-btn">⏮</button>
-    <button id="toggle" class="ctrl-btn play">▶</button>
-    <button id="next" class="ctrl-btn">⏭</button>
+    <button id="prev" class="ctrl-btn"><svg class="icon" viewBox="0 0 24 24"><polygon points="11,6 5,12 11,18"/><polygon points="19,6 13,12 19,18"/></svg></button>
+    <button id="toggle" class="ctrl-btn play"><svg id="playIcon" class="icon" viewBox="0 0 24 24"><polygon points="8,5 19,12 8,19"/></svg></button>
+    <button id="next" class="ctrl-btn"><svg class="icon" viewBox="0 0 24 24"><polygon points="5,6 11,12 5,18"/><polygon points="13,6 19,12 13,18"/></svg></button>
   </div>
 
   <div class="slider">Громкость
@@ -129,8 +131,14 @@ audio.ontimeupdate=()=>{
  dur.textContent=fmt(audio.duration)
 }
 
-audio.onplay=()=>{toggleBtn.textContent='⏸';toggleBtn.classList.add('playing')}
-audio.onpause=()=>{toggleBtn.textContent='▶';toggleBtn.classList.remove('playing')}
+audio.onplay=()=>{
+ playIcon.innerHTML='<rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/>'
+ toggleBtn.classList.add('playing')
+}
+audio.onpause=()=>{
+ playIcon.innerHTML='<polygon points="8,5 19,12 8,19"/>'
+ toggleBtn.classList.remove('playing')
+}
 audio.onended=()=>document.getElementById('next').click()
 
 function draw(){
