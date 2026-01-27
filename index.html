@@ -19,31 +19,26 @@
       width: 100%;
       max-width: 420px;
     }
-    h1, h3 {
-      text-align: center;
-    }
+    h1, h3 { text-align: center; }
     .card {
       background: #17212b;
       padding: 14px;
-      border-radius: 14px;
+      border-radius: 16px;
       margin-bottom: 16px;
     }
-    input, select, button {
+    select, input, button {
       width: 100%;
-      padding: 12px;
-      margin-top: 8px;
-      border-radius: 12px;
+      padding: 14px;
+      margin-top: 10px;
+      border-radius: 14px;
       border: none;
       background: #0e1621;
       color: #fff;
+      font-size: 16px;
     }
-    input[type=number] {
-      -moz-appearance: textfield;
-    }
-    input::-webkit-outer-spin-button,
-    input::-webkit-inner-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
+    select {
+      font-size: 18px;
+      font-weight: 600;
     }
     button {
       background: #2aabee;
@@ -57,17 +52,16 @@
     }
     .actions {
       display: flex;
-      gap: 8px;
+      gap: 10px;
       margin-top: 6px;
     }
     .actions button {
-      padding: 6px;
-      font-size: 12px;
+      padding: 6px 10px;
+      font-size: 14px;
       background: #22303c;
+      border-radius: 10px;
     }
-    .day {
-      margin-top: 12px;
-    }
+    .day { margin-top: 14px; }
   </style>
 </head>
 <body>
@@ -87,7 +81,7 @@
 
   <div id="setsContainer"></div>
   <button onclick="addSet()">➕ Добавить подход</button>
-  <button onclick="saveWorkout()">Сохранить</button>
+  <button onclick="saveWorkout()">💾 Сохранить упражнение</button>
 </div>
 
 <div class="card">
@@ -115,7 +109,6 @@ function saveData(data) {
 
 function saveWorkout() {
   const exercise = document.getElementById('exercise')
-
   if (!exercise.value) return alert('Выбери упражнение')
   if (!currentSets.length) return alert('Добавь хотя бы один подход')
 
@@ -163,17 +156,15 @@ function render() {
   history.innerHTML = ''
 
   const filterSelect = document.getElementById('filterExercise')
-  const filter = filterSelect?.value || ''
+  const filter = filterSelect.value
 
-  if (filterSelect) {
+  // обновляем список фильтра ТОЛЬКО если он пуст
+  if (filterSelect.options.length === 1) {
     const names = [...new Set(getData().map(w => w.name))]
-    const current = filterSelect.value
-    filterSelect.innerHTML = '<option value="">Все упражнения</option>'
     names.forEach(n => {
       const o = document.createElement('option')
       o.value = n
       o.textContent = n
-      if (n === current) o.selected = true
       filterSelect.appendChild(o)
     })
   }
@@ -189,7 +180,7 @@ function render() {
   Object.keys(grouped).reverse().forEach(day => {
     const dayDiv = document.createElement('div')
     dayDiv.className = 'day'
-    dayDiv.innerHTML = `<b>${day}</b>`
+    dayDiv.innerHTML = `<b>📅 ${day}</b>`
 
     grouped[day].forEach(w => {
       const div = document.createElement('div')
@@ -204,7 +195,7 @@ function render() {
         ${setsHtml}
         <div class="actions">
           <button onclick="editWorkout('${w.id}')">✏️</button>
-          <button onclick="deleteWorkout('${w.id}')">✖</button>
+          <button onclick="deleteWorkout('${w.id}')">❌</button>
         </div>`
 
       dayDiv.appendChild(div)
@@ -229,7 +220,7 @@ function renderSets() {
     div.innerHTML = `
       <input type="number" placeholder="Повторы" value="${s.reps}" oninput="currentSets[${i}].reps=this.value" />
       <input type="number" placeholder="Вес" value="${s.weight}" oninput="currentSets[${i}].weight=this.value" />
-      <button onclick="currentSets.splice(${i},1);renderSets()">✖</button>
+      <button onclick="currentSets.splice(${i},1);renderSets()">❌</button>
     `
     c.appendChild(div)
   })
