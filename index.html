@@ -98,7 +98,7 @@
 
 <div class="card">
   <h2>Новая тренировка</h2>
-  <input id="name" placeholder="Упражнение" />
+  <input id="exercise" placeholder="Упражнение" />
   <input id="sets" type="number" placeholder="Подходы" />
   <input id="reps" type="number" placeholder="Повторы" />
   <input id="weight" type="number" placeholder="Вес (кг)" />
@@ -123,16 +123,26 @@
   }
 
   function saveWorkout() {
+    const exerciseInput = document.getElementById('exercise')
+    const setsInput = document.getElementById('sets')
+    const repsInput = document.getElementById('reps')
+    const weightInput = document.getElementById('weight')
+
     const data = getData()
     data.push({
-      name: name.value,
-      sets: sets.value,
-      reps: reps.value,
-      weight: weight.value,
+      name: exerciseInput.value,
+      sets: setsInput.value,
+      reps: repsInput.value,
+      weight: weightInput.value,
       date: Date.now()
     })
     localStorage.setItem('fitness', JSON.stringify(data))
-    name.value = sets.value = reps.value = weight.value = ''
+
+    exerciseInput.value = ''
+    setsInput.value = ''
+    repsInput.value = ''
+    weightInput.value = ''
+
     render()
   }
 
