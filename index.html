@@ -5,27 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Fitness App</title>
 
-  <!-- PWA -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Fitness">
-
   <style>
     :root {
-      --bg: #020617;
-      --card: #020617;
-      --accent: #22c55e;
-      --text: #e5e7eb;
-      --muted: #94a3b8;
+      /* Telegram color palette */
+      --bg: #0e1621;
+      --card: #17212b;
+      --accent: #2aabee;
+      --accent-soft: #1f3a52;
+      --text: #e7e8ea;
+      --muted: #8a98a9;
+      --danger: #ef4444;
     }
 
     * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      padding: env(safe-area-inset-top) 14px env(safe-area-inset-bottom);
+      padding: 14px 14px 90px;
       font-family: -apple-system, BlinkMacSystemFont, system-ui;
-      background: #020617;
+      background: linear-gradient(180deg, #0e1621, #0b141d);
       color: var(--text);
     }
 
@@ -33,46 +31,93 @@
     h2 { font-size: 1.1rem; margin-bottom: 8px; }
 
     .card {
-      background: rgba(2,6,23,.9);
+      background: rgba(23,33,43,.92);
       border-radius: 16px;
       padding: 14px;
       margin-bottom: 14px;
       box-shadow: 0 10px 30px rgba(0,0,0,.45);
+      backdrop-filter: blur(6px);
     }
 
-    input, button {
+    input, select, button {
       width: 100%;
       padding: 12px;
       margin-top: 8px;
       border-radius: 12px;
-      border: none;
+      border: 1px solid #22303c;
+      background: #0e1621;
+      color: var(--text);
       font-size: 1rem;
     }
 
-    input {
-      background: #020617;
-      border: 1px solid #1e293b;
-      color: var(--text);
-    }
-
-    button {
-      background: var(--accent);
-      color: #022c22;
+    button.primary {
+      background: linear-gradient(180deg, #2aabee, #229ed9);
+      border: none;
+      color: #ffffff;
       font-weight: 700;
     }
 
-    .secondary {
-      background: #1e293b;
-      color: var(--text);
+    button.danger {
+      background: var(--danger);
+      border: none;
+      color: white;
+    }
+
+    .day {
+      margin-bottom: 14px;
     }
 
     .exercise {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
       border-top: 1px solid #1e293b;
-      padding-top: 10px;
-      margin-top: 10px;
+      padding-top: 8px;
+      margin-top: 8px;
+    }
+
+    .exercise-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .icon-btn {
+      padding: 6px 8px;
+      font-size: 0.8rem;
+      border-radius: 999px;
+      width: auto;
+      min-width: 32px;
+      background: #020617;
+      border: 1px solid #1e293b;
+    }
+
+    .icon-btn:hover {
+      background: #020617;
+    }
+
+    .icon-btn.danger {
+      border-color: #7f1d1d;
+    }
+      border-top: 1px solid #1e293b;
+      padding-top: 8px;
+      margin-top: 8px;
     }
 
     .date { font-size: .75rem; color: var(--muted); }
+
+    .row {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .row button {
+      flex: 0;
+      padding: 6px 10px;
+      font-size: 0.85rem;
+      border-radius: 10px;
+    }
+    .row button { flex: 1; }
 
     .tabbar {
       position: fixed;
@@ -80,7 +125,7 @@
       left: 0;
       right: 0;
       padding: 8px 10px env(safe-area-inset-bottom);
-      background: rgba(2,6,23,.95);
+      background: rgba(14,22,33,.95);
       display: flex;
       gap: 8px;
       box-shadow: 0 -10px 30px rgba(0,0,0,.6);
@@ -95,11 +140,20 @@
 
 <div class="card">
   <h2>Новая тренировка</h2>
-  <input id="exercise" placeholder="Упражнение" />
+
+  <select id="exercise">
+    <option value="">Выбери упражнение</option>
+    <option>Жим лёжа</option>
+    <option>Присед</option>
+    <option>Становая тяга</option>
+    <option>Жим плеч</option>
+    <option>Подтягивания</option>
+  </select>
+
   <input id="sets" type="number" placeholder="Подходы" />
   <input id="reps" type="number" placeholder="Повторы" />
   <input id="weight" type="number" placeholder="Вес (кг)" />
-  <button id="saveBtn">Сохранить</button>
+  <button class="primary" onclick="saveWorkout()">Сохранить</button>
 </div>
 
 <div class="card">
@@ -108,74 +162,119 @@
 </div>
 
 <div class="tabbar">
-  <button class="secondary" id="clearBtn">Очистить</button>
-  <button onclick="scrollTo({ top: 0, behavior: 'smooth' })">Наверх</button>
+  <button class="danger" onclick="clearAll()">Очистить всё</button>
+  <button onclick="scrollTo({top:0,behavior:'smooth'})">Наверх</button>
 </div>
 
 <script>
-  const historyEl = document.getElementById('history');
-  const saveBtn = document.getElementById('saveBtn');
-  const clearBtn = document.getElementById('clearBtn');
+  const historyEl = document.getElementById('history')
+  let editId = null
 
   function getData() {
     try {
-      return JSON.parse(localStorage.getItem('fitness')) || [];
+      return JSON.parse(localStorage.getItem('fitness') || '[]')
     } catch {
-      return [];
+      return []
     }
   }
 
   function saveWorkout() {
-    const exercise = document.getElementById('exercise').value.trim();
-    if (!exercise) return;
+    const exercise = document.getElementById('exercise')
+    const sets = document.getElementById('sets')
+    const reps = document.getElementById('reps')
+    const weight = document.getElementById('weight')
 
-    const sets = Number(document.getElementById('sets').value) || 0;
-    const reps = Number(document.getElementById('reps').value) || 0;
-    const weight = Number(document.getElementById('weight').value) || 0;
+    if (!exercise.value) return alert('Выбери упражнение')
 
-    const data = getData();
-    data.push({ exercise, sets, reps, weight, date: Date.now() });
-    localStorage.setItem('fitness', JSON.stringify(data));
+    const data = getData()
 
-    document.getElementById('exercise').value = '';
-    document.getElementById('sets').value = '';
-    document.getElementById('reps').value = '';
-    document.getElementById('weight').value = '';
+    if (editId) {
+      const w = data.find(x => x.id === editId)
+      Object.assign(w, {
+        name: exercise.value,
+        sets: Number(sets.value),
+        reps: Number(reps.value),
+        weight: Number(weight.value)
+      })
+      editId = null
+    } else {
+      data.push({
+        id: crypto.randomUUID(),
+        name: exercise.value,
+        sets: Number(sets.value),
+        reps: Number(reps.value),
+        weight: Number(weight.value),
+        date: Date.now()
+      })
+    }
 
-    render();
+    localStorage.setItem('fitness', JSON.stringify(data))
+    exercise.value = sets.value = reps.value = weight.value = ''
+    render()
   }
 
   function render() {
-    historyEl.innerHTML = '';
-    const data = getData().slice().reverse();
+    historyEl.innerHTML = ''
+    const data = getData().sort((a,b)=>b.date-a.date)
 
+    const grouped = {}
     data.forEach(w => {
-      const div = document.createElement('div');
-      div.className = 'exercise';
-      div.innerHTML = `
-        <b>${w.exercise}</b><br>
-        ${w.sets} × ${w.reps} • ${w.weight} кг<br>
-        <span class="date">${new Date(w.date).toLocaleString()}</span>
-      `;
-      historyEl.appendChild(div);
-    });
+      const day = new Date(w.date).toLocaleDateString()
+      grouped[day] ??= []
+      grouped[day].push(w)
+    })
+
+    Object.entries(grouped).forEach(([day, workouts]) => {
+      const dayDiv = document.createElement('div')
+      dayDiv.className = 'day'
+      dayDiv.innerHTML = `<b>${day}</b>`
+
+      workouts.forEach(w => {
+        const div = document.createElement('div')
+        div.className = 'exercise'
+        div.innerHTML = `
+          <b>${w.name}</b><br>
+          ${w.sets} × ${w.reps} • ${w.weight} кг<br>
+          <div class="exercise-actions">
+            <button class="icon-btn" onclick="editWorkout('${w.id}')">✏️</button>
+            <button class="icon-btn danger" onclick="deleteWorkout('${w.id}')">🗑</button>
+          </div>
+        `
+        dayDiv.appendChild(div)
+      })
+
+      historyEl.appendChild(dayDiv)
+    })
+  }
+
+  function editWorkout(id) {
+    const w = getData().find(x => x.id === id)
+    if (!w) return
+
+    document.getElementById('exercise').value = w.name
+    document.getElementById('sets').value = w.sets
+    document.getElementById('reps').value = w.reps
+    document.getElementById('weight').value = w.weight
+
+    editId = id
+    scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  function deleteWorkout(id) {
+    if (!confirm('Удалить тренировку?')) return
+    const data = getData().filter(w => w.id !== id)
+    localStorage.setItem('fitness', JSON.stringify(data))
+    render()
   }
 
   function clearAll() {
-    if (confirm('Удалить все данные?')) {
-      localStorage.removeItem('fitness');
-      render();
+    if (confirm('Удалить ВСЕ данные?')) {
+      localStorage.removeItem('fitness')
+      render()
     }
   }
 
-  saveBtn.addEventListener('click', saveWorkout);
-  clearBtn.addEventListener('click', clearAll);
-
-  // sanity checks
-  console.assert(typeof saveWorkout === 'function', 'saveWorkout must exist');
-  console.assert(Array.isArray(getData()), 'getData must return array');
-
-  render();
+  render()
 </script>
 
 </body>
