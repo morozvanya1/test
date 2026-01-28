@@ -38,40 +38,122 @@
       background: var(--bg-color); 
       color: var(--text);
       padding-top: var(--safe-top);
-      padding-bottom: calc(80px + var(--safe-bottom));
+      padding-bottom: calc(90px + var(--safe-bottom));
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       line-height: 1.4;
+      min-height: -webkit-fill-available;
     }
 
-    /* Header */
+    /* Updated Header Design */
     .header-sticky {
       position: sticky; 
       top: 0; 
       z-index: 100;
-      background: rgba(28, 28, 30, 0.95);
-      backdrop-filter: blur(20px); 
-      -webkit-backdrop-filter: blur(20px);
-      padding: 10px 20px;
-      border-bottom: 0.5px solid var(--separator);
+      background: rgba(28, 28, 30, 0.98);
+      backdrop-filter: blur(30px); 
+      -webkit-backdrop-filter: blur(30px);
+      padding: 12px 16px;
+      border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
       display: flex; 
       justify-content: space-between; 
       align-items: center;
       transition: var(--transition);
+      padding-top: max(12px, var(--safe-top));
     }
     
-    h1 { 
-      font-size: 22px; 
-      font-weight: 700; 
-      margin: 0; 
+    .header-left, .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .app-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .app-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--primary), #5AC8FA);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 16px;
+      color: white;
+    }
+    
+    .app-title {
+      font-size: 20px;
+      font-weight: 700;
       background: linear-gradient(90deg, var(--primary), #5AC8FA);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
+    
+    .user-selector {
+      position: relative;
+    }
+    
+    .user-selector select {
+      background: rgba(118, 118, 128, 0.24);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      color: var(--text);
+      font-size: 14px;
+      padding: 6px 12px 6px 36px;
+      -webkit-appearance: none;
+      appearance: none;
+      min-width: 140px;
+    }
+    
+    .user-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--primary);
+      font-size: 14px;
+      pointer-events: none;
+    }
+    
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .header-btn {
+      width: 40px;
+      height: 40px;
+      background: rgba(118, 118, 128, 0.24);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      color: var(--text);
+      font-size: 18px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    
+    .header-btn:hover {
+      background: rgba(118, 118, 128, 0.32);
+      transform: scale(1.05);
+    }
+    
+    .header-btn.active {
+      background: var(--primary);
+      color: white;
+    }
 
     .container { 
-      padding: 20px; 
+      padding: 16px; 
       max-width: 500px; 
       margin: 0 auto; 
       animation: fadeIn 0.3s ease-out;
@@ -86,26 +168,23 @@
       color: var(--text-secondary); 
       font-size: 13px; 
       text-transform: uppercase; 
-      margin: 24px 0 8px 16px; 
+      margin: 20px 0 8px 0; 
       letter-spacing: 0.5px; 
       display: flex; 
       justify-content: space-between; 
       align-items: center;
       font-weight: 600;
+      padding: 0 4px;
     }
 
     .card { 
       background: var(--card-bg); 
       border-radius: var(--radius); 
       overflow: hidden; 
-      margin-bottom: 24px;
+      margin-bottom: 16px;
       box-shadow: var(--shadow);
       transition: var(--transition);
-    }
-
-    .card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     .input-row {
@@ -124,10 +203,10 @@
     select, input {
       width: 100%;
       background: var(--input-bg);
-      border: 1px solid var(--separator);
-      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
       color: var(--text);
-      font-size: 17px;
+      font-size: 16px;
       padding: 12px;
       -webkit-appearance: none;
       appearance: none;
@@ -177,7 +256,7 @@
       background: var(--primary); 
       color: white; 
       border: none;
-      font-size: 17px; 
+      font-size: 16px; 
       font-weight: 600; 
       padding: 14px 20px;
       border-radius: var(--radius); 
@@ -186,6 +265,10 @@
       position: relative;
       overflow: hidden;
       font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
     
     button::after {
@@ -235,27 +318,19 @@
       background: rgba(118, 118, 128, 0.32);
     }
     
-    button.icon-only { 
-      background: transparent; 
-      width: auto; 
-      padding: 8px; 
-      border-radius: 50%;
-    }
-    
-    button.icon-only:hover {
-      background: rgba(118, 118, 128, 0.12);
-    }
-    
     .btn-export {
       background: rgba(118, 118, 128, 0.24);
       color: var(--primary);
       font-size: 12px;
-      padding: 4px 12px;
+      padding: 6px 12px;
       border-radius: 12px;
       text-transform: none;
       width: auto;
       letter-spacing: 0;
       font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
     }
     
     .btn-export:hover {
@@ -266,7 +341,7 @@
     .set-row {
       display: flex; 
       align-items: center; 
-      padding: 14px 16px;
+      padding: 12px 16px;
       border-bottom: 0.5px solid var(--separator);
       transition: var(--transition);
       animation: slideIn 0.3s ease-out;
@@ -288,10 +363,11 @@
     }
     
     .set-index { 
-      width: 24px; 
+      width: 30px; 
       color: var(--text-secondary); 
       font-size: 15px; 
       font-weight: 500;
+      text-align: center;
     }
     
     .set-inputs { 
@@ -304,6 +380,9 @@
       background: var(--input-bg);
       text-align: center;
       font-weight: 600;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
     
     .btn-delete {
@@ -343,6 +422,7 @@
       border-radius: var(--radius);
       margin: 10px 0 20px 0;
       animation: fadeIn 0.5s ease-out;
+      border: 1px solid rgba(10, 132, 255, 0.2);
     }
     
     .stat-item {
@@ -369,13 +449,13 @@
 
     /* History */
     .history-group { 
-      margin-bottom: 24px; 
+      margin-bottom: 20px; 
     }
     
     .history-date { 
-      font-size: 20px; 
+      font-size: 18px; 
       font-weight: 700; 
-      margin: 0 0 12px 4px; 
+      margin: 0 0 10px 0; 
       display: flex;
       align-items: center;
       gap: 8px;
@@ -433,12 +513,13 @@
     .fab-container {
       position: fixed; 
       bottom: calc(20px + var(--safe-bottom));
-      left: 20px; 
-      right: 20px; 
+      left: 16px; 
+      right: 16px; 
       max-width: 500px; 
       margin: 0 auto; 
       z-index: 90;
       animation: fadeInUp 0.3s ease-out;
+      bottom: max(20px, calc(20px + var(--safe-bottom)));
     }
     
     @keyframes fadeInUp {
@@ -481,6 +562,7 @@
       flex-direction: column;
       animation: slideUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
       box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
     
     @keyframes slideUp { 
@@ -532,6 +614,9 @@
       align-items: center;
       gap: 10px;
       border-left: 4px solid var(--primary);
+      max-width: 90%;
+      word-break: break-word;
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
     
     .toast.show {
@@ -557,13 +642,83 @@
       to { transform: rotate(360deg); }
     }
 
+    /* Quick weight buttons */
+    .quick-weight-container {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      overflow-x: auto;
+      padding: 8px 0;
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    .quick-weight-container::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .quick-weight-btn {
+      background: rgba(118, 118, 128, 0.24);
+      color: var(--primary);
+      padding: 8px 12px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
+      border: none;
+      cursor: pointer;
+      transition: var(--transition);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .quick-weight-btn:hover {
+      background: rgba(118, 118, 128, 0.32);
+    }
+    
+    .quick-weight-btn.reset {
+      color: var(--danger);
+    }
+
+    /* Import/Export buttons */
+    .import-export-buttons {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    /* File input styling */
+    .file-input-wrapper {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+    }
+    
+    .file-input-wrapper input[type="file"] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
     /* Responsive */
     @media (max-width: 480px) {
-      .container { padding: 16px; }
-      .header-sticky { padding: 10px 16px; }
+      .container { padding: 12px; }
+      .header-sticky { padding: 10px 12px; }
       .set-inputs { flex-direction: column; gap: 8px; }
       .stats-row { flex-wrap: wrap; }
       .stat-item { min-width: calc(50% - 5px); }
+      .app-title { font-size: 18px; }
+      button { padding: 12px 16px; font-size: 15px; }
+      .header-btn { width: 36px; height: 36px; }
+    }
+
+    /* iPhone 13 Pro Max specific */
+    @media only screen and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) {
+      .container { padding: 16px 20px; }
+      .header-sticky { padding: 15px 20px; }
+      .fab-container { left: 20px; right: 20px; }
     }
 
     /* Dark mode preference */
@@ -582,11 +737,21 @@
 <body>
 
 <div class="header-sticky">
-  <h1>FitTrack Pro</h1>
-  <div style="display:flex; gap: 10px;">
-    <button class="icon-only" onclick="openExerciseManager()" title="Управление упражнениями">⚙️</button>
-    <button class="icon-only" id="lockBtn" onclick="toggleEditMode()" title="Режим редактирования">🔒</button>
-    <button class="icon-only" onclick="showStats()" title="Статистика">📊</button>
+  <div class="header-left">
+    <div class="app-logo">
+      <div class="app-icon">F</div>
+      <div class="app-title">FitTrack</div>
+    </div>
+  </div>
+  
+  <div class="user-selector">
+    <span class="user-icon">👤</span>
+    <select id="userSelect" onchange="switchUser()"></select>
+  </div>
+  
+  <div class="header-right">
+    <button class="header-btn" onclick="openExerciseManager()" title="Управление упражнениями">🏋️</button>
+    <button class="header-btn" id="lockBtn" onclick="toggleEditMode()" title="Режим редактирования">✏️</button>
   </div>
 </div>
 
@@ -634,31 +799,40 @@
   
   <button class="secondary" onclick="addSet()" style="margin-bottom: 20px;">+ Добавить подход</button>
 
-  <!-- Быстрые кнопки веса -->
-  <div style="display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding: 8px 0;">
-    <button class="secondary" style="padding: 8px 12px; white-space: nowrap;" onclick="quickWeight(20)">20 кг</button>
-    <button class="secondary" style="padding: 8px 12px; white-space: nowrap;" onclick="quickWeight(40)">40 кг</button>
-    <button class="secondary" style="padding: 8px 12px; white-space: nowrap;" onclick="quickWeight(60)">60 кг</button>
-    <button class="secondary" style="padding: 8px 12px; white-space: nowrap;" onclick="quickWeight(80)">80 кг</button>
-    <button class="secondary" style="padding: 8px 12px; white-space: nowrap;" onclick="quickWeight(100)">100 кг</button>
-    <button class="secondary" style="padding: 8px 12px; white-space: nowrap;" onclick="quickWeight(0)">Сброс</button>
+  <!-- Быстрые кнопки веса (только для последнего подхода) -->
+  <div class="quick-weight-container">
+    <button class="quick-weight-btn" onclick="quickWeight(20)">20 кг</button>
+    <button class="quick-weight-btn" onclick="quickWeight(40)">40 кг</button>
+    <button class="quick-weight-btn" onclick="quickWeight(60)">60 кг</button>
+    <button class="quick-weight-btn" onclick="quickWeight(80)">80 кг</button>
+    <button class="quick-weight-btn" onclick="quickWeight(100)">100 кг</button>
+    <button class="quick-weight-btn reset" onclick="resetLastSet()">Сброс</button>
   </div>
 
   <h3>
     История
     <div style="display: flex; gap: 8px;">
-      <button class="btn-export" onclick="exportToExcel()">📊 Excel</button>
-      <button class="btn-export" onclick="clearHistory()" style="color: var(--danger);">🗑️ Очистить</button>
+      <button class="btn-export" onclick="exportToCSV()">📤 CSV</button>
+      <button class="btn-export" onclick="clearHistory()" style="color: var(--danger);">🗑️</button>
     </div>
   </h3>
   
-  <div class="card" style="padding:16px; background: transparent;">
+  <div class="card" style="padding:16px; background: transparent; border: none;">
      <div style="margin-bottom: 12px;">
         <div class="select-wrapper">
            <select id="filterExercise" onchange="renderHistory()">
              <option value="">Все упражнения</option>
            </select>
         </div>
+     </div>
+     <div class="import-export-buttons">
+       <div class="file-input-wrapper">
+         <button class="btn-export" style="background: rgba(50, 215, 75, 0.1); color: var(--success);">
+           📥 Импорт CSV
+         </button>
+         <input type="file" id="csvImport" accept=".csv" style="display: none;" onchange="importFromCSV(event)">
+       </div>
+       <button class="btn-export" onclick="showStats()">📊 Статистика</button>
      </div>
      <div id="historyList">
        <div class="empty-state" id="emptyHistory">
@@ -675,8 +849,8 @@
 </div>
 
 <div class="fab-container">
-  <button onclick="saveWorkout()" id="saveBtn" style="box-shadow: var(--shadow);">
-    <span id="saveBtnText">Сохранить тренировку</span>
+  <button onclick="saveWorkout()" id="saveBtn" style="box-shadow: var(--shadow); background: linear-gradient(135deg, var(--primary), #5AC8FA);">
+    <span id="saveBtnText">💾 Сохранить тренировку</span>
     <span id="saveBtnLoader" class="loader" style="display: none; margin-left: 8px;"></span>
   </button>
 </div>
@@ -689,7 +863,7 @@
   <div class="modal-card">
     <div class="modal-handle"></div>
     <div style="display:flex; justify-content:space-between; margin-bottom:20px; align-items: center;">
-      <h2 style="margin:0; font-size:20px;">Управление упражнениями</h2>
+      <h2 style="margin:0; font-size:20px;">🏋️ Управление упражнениями</h2>
       <button class="secondary" style="width:auto; padding:6px 12px;" onclick="closeExerciseManager()">Готово</button>
     </div>
     <input 
@@ -707,12 +881,28 @@
   </div>
 </div>
 
+<!-- Модальное окно управления пользователями -->
+<div class="modal" id="usersModal">
+  <div class="modal-card">
+    <div class="modal-handle"></div>
+    <div style="display:flex; justify-content:space-between; margin-bottom:20px; align-items: center;">
+      <h2 style="margin:0; font-size:20px;">👥 Управление пользователями</h2>
+      <button class="secondary" style="width:auto; padding:6px 12px;" onclick="closeUsersManager()">Готово</button>
+    </div>
+    <div style="overflow-y:auto; flex:1; margin-bottom:15px; min-height: 200px;" id="usersManagerList"></div>
+    <div style="display:flex; gap:10px;">
+      <input id="newUserName" placeholder="Имя нового пользователя" onkeypress="if(event.key === 'Enter') addUser()">
+      <button onclick="addUser()" style="width:auto; min-width: 60px;">➕</button>
+    </div>
+  </div>
+</div>
+
 <!-- Модальное окно статистики -->
 <div class="modal" id="statsModal">
   <div class="modal-card">
     <div class="modal-handle"></div>
     <div style="display:flex; justify-content:space-between; margin-bottom:20px; align-items: center;">
-      <h2 style="margin:0; font-size:20px;">Статистика</h2>
+      <h2 style="margin:0; font-size:20px;">📊 Статистика</h2>
       <button class="secondary" style="width:auto; padding:6px 12px;" onclick="closeStats()">Закрыть</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding: 10px;" id="statsContent">
@@ -723,17 +913,19 @@
 
 <script>
 // Константы и глобальные переменные
-const STORAGE_KEY = 'fitness_data_v4';
-const EXERCISE_KEY = 'fitness_exercises_v4';
-const SETTINGS_KEY = 'fitness_settings_v1';
+const STORAGE_KEY_PREFIX = 'fitness_data_v6';
+const EXERCISE_KEY_PREFIX = 'fitness_exercises_v6';
+const USERS_KEY = 'fitness_users_v3';
+const CURRENT_USER_KEY = 'fitness_current_user_v3';
 
 // Инициализируем как пустые массивы/объекты
 let appData = [];
 let exercises = [];
 let currentSets = [];
+let users = [];
+let currentUser = null;
 let editMode = false;
 let editingId = null;
-let settings = {};
 
 // Инициализация при загрузке
 window.onload = () => {
@@ -741,18 +933,19 @@ window.onload = () => {
   appData = [];
   exercises = [];
   currentSets = [];
-  settings = {};
+  users = [];
   
   // Затем загружаем данные
+  loadUsers();
+  loadCurrentUser();
   loadData();
   renderExercises();
   renderHistory();
   addSet();
   updateStats();
-  loadSettings();
   
   // Восстанавливаем состояние из sessionStorage
-  const savedSets = sessionStorage.getItem('currentSets');
+  const savedSets = sessionStorage.getItem(`currentSets_${currentUser?.id}`);
   if (savedSets) {
     try {
       currentSets = JSON.parse(savedSets);
@@ -779,13 +972,365 @@ window.onload = () => {
       showToast('Ошибка загрузки интерфейса', 'error');
     }
   }, 100);
+  
+  // Добавляем обработчик для кнопки импорта
+  document.getElementById('csvImport').addEventListener('change', importFromCSV);
 };
 
-// Загрузка данных с улучшенной обработкой ошибок
+// Загрузка пользователей
+function loadUsers() {
+  try {
+    const storedUsers = localStorage.getItem(USERS_KEY);
+    if (storedUsers) {
+      const parsed = JSON.parse(storedUsers);
+      users = Array.isArray(parsed) ? parsed : [];
+    } else {
+      users = [];
+    }
+    
+    // Если пользователей нет, создаем первого
+    if (users.length === 0) {
+      users = [{ id: 'default', name: 'Основной', createdAt: Date.now() }];
+      saveUsers();
+    }
+  } catch (e) {
+    console.error('Ошибка загрузки пользователей:', e);
+    users = [{ id: 'default', name: 'Основной', createdAt: Date.now() }];
+  }
+}
+
+function loadCurrentUser() {
+  try {
+    const storedCurrentUser = localStorage.getItem(CURRENT_USER_KEY);
+    if (storedCurrentUser) {
+      currentUser = JSON.parse(storedCurrentUser);
+      // Проверяем, что пользователь существует в списке
+      const userExists = users.some(u => u.id === currentUser.id);
+      if (!userExists) {
+        currentUser = users[0];
+        saveCurrentUser();
+      }
+    } else {
+      currentUser = users[0];
+      saveCurrentUser();
+    }
+  } catch (e) {
+    console.error('Ошибка загрузки текущего пользователя:', e);
+    currentUser = users[0];
+  }
+  
+  // Обновляем селектор пользователей
+  renderUserSelector();
+}
+
+function saveUsers() {
+  try {
+    localStorage.setItem(USERS_KEY, JSON.stringify(users));
+  } catch (e) {
+    console.error('Ошибка сохранения пользователей:', e);
+  }
+}
+
+function saveCurrentUser() {
+  try {
+    localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(currentUser));
+  } catch (e) {
+    console.error('Ошибка сохранения текущего пользователя:', e);
+  }
+}
+
+function renderUserSelector() {
+  const select = document.getElementById('userSelect');
+  if (!select) return;
+  
+  const oldValue = select.value;
+  
+  select.innerHTML = '';
+  
+  users.forEach(user => {
+    const option = document.createElement('option');
+    option.value = user.id;
+    option.textContent = user.name;
+    option.selected = user.id === currentUser.id;
+    select.appendChild(option);
+  });
+  
+  // Добавляем опцию для управления пользователями
+  const manageOption = document.createElement('option');
+  manageOption.value = 'manage';
+  manageOption.textContent = 'Управление...';
+  select.appendChild(manageOption);
+  
+  if (oldValue && users.some(u => u.id === oldValue)) {
+    select.value = oldValue;
+  }
+}
+
+function switchUser() {
+  const select = document.getElementById('userSelect');
+  if (!select) return;
+  
+  const selectedValue = select.value;
+  
+  if (selectedValue === 'manage') {
+    openUsersManager();
+    // Восстанавливаем текущего пользователя в селекторе
+    setTimeout(() => {
+      select.value = currentUser.id;
+    }, 100);
+    return;
+  }
+  
+  const newUser = users.find(u => u.id === selectedValue);
+  if (newUser && newUser.id !== currentUser.id) {
+    // Сохраняем текущие подходы перед переключением
+    autoSaveCurrentSets();
+    
+    // Переключаем пользователя
+    currentUser = newUser;
+    saveCurrentUser();
+    
+    // Загружаем данные нового пользователя
+    loadData();
+    renderExercises();
+    renderHistory();
+    updateStats();
+    
+    // Загружаем сохраненные подходы нового пользователя
+    const savedSets = sessionStorage.getItem(`currentSets_${currentUser.id}`);
+    if (savedSets) {
+      try {
+        currentSets = JSON.parse(savedSets);
+        if (!Array.isArray(currentSets)) currentSets = [];
+      } catch (e) {
+        console.error('Ошибка парсинга savedSets:', e);
+        currentSets = [];
+      }
+    } else {
+      currentSets = [];
+      addSet();
+    }
+    
+    renderSets();
+    
+    showToast(`Пользователь: ${currentUser.name}`, 'success');
+  }
+}
+
+function openUsersManager() {
+  renderUsersManagerList();
+  document.getElementById('usersModal').classList.add('active');
+  document.getElementById('newUserName').focus();
+}
+
+function closeUsersManager() {
+  document.getElementById('usersModal').classList.remove('active');
+  renderUserSelector();
+}
+
+function renderUsersManagerList() {
+  const container = document.getElementById('usersManagerList');
+  if (!container) return;
+  
+  container.innerHTML = '';
+  
+  if (users.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state" style="padding: 40px 20px;">
+        <p>Нет пользователей</p>
+      </div>
+    `;
+    return;
+  }
+  
+  users.forEach((user, index) => {
+    const userElement = document.createElement('div');
+    userElement.className = 'input-row';
+    userElement.style.cssText = `
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      border-radius: 8px;
+      margin-bottom: 4px;
+    `;
+    
+    const isCurrent = user.id === currentUser.id;
+    
+    userElement.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
+        <span style="color: var(--text-secondary); font-size: 12px; width: 24px;">${index + 1}.</span>
+        <span style="flex: 1; font-weight: ${isCurrent ? '600' : '400'}; color: ${isCurrent ? 'var(--primary)' : 'var(--text)'};">${user.name}</span>
+        ${isCurrent ? '<span style="font-size: 10px; color: var(--success); background: rgba(50, 215, 75, 0.1); padding: 2px 6px; border-radius: 10px;">текущий</span>' : ''}
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button class="header-btn" onclick="renameUser('${user.id}')" title="Переименовать" style="width: 32px; height: 32px; font-size: 12px;">✏️</button>
+        ${user.id !== 'default' ? `<button class="header-btn" onclick="removeUser('${user.id}')" title="Удалить" style="width: 32px; height: 32px; color: var(--danger);">🗑️</button>` : ''}
+      </div>
+    `;
+    
+    // Двойной клик для переключения
+    userElement.ondblclick = () => {
+      if (user.id !== currentUser.id) {
+        switchToUser(user.id);
+      }
+      closeUsersManager();
+    };
+    
+    container.appendChild(userElement);
+  });
+}
+
+function addUser() {
+  const input = document.getElementById('newUserName');
+  if (!input) return;
+  
+  const value = input.value.trim();
+  
+  if (!value) {
+    showToast('Введите имя пользователя', 'error');
+    input.focus();
+    return;
+  }
+  
+  if (users.some(u => u.name.toLowerCase() === value.toLowerCase())) {
+    showToast('Пользователь с таким именем уже существует', 'warning');
+    input.focus();
+    return;
+  }
+  
+  const newUser = {
+    id: 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+    name: value,
+    createdAt: Date.now()
+  };
+  
+  users.push(newUser);
+  saveUsers();
+  renderUsersManagerList();
+  input.value = '';
+  input.focus();
+  
+  showToast(`Пользователь "${value}" добавлен`, 'success');
+}
+
+function renameUser(userId) {
+  const user = users.find(u => u.id === userId);
+  if (!user) return;
+  
+  const newName = prompt('Введите новое имя пользователя:', user.name);
+  
+  if (newName && newName.trim() && newName.trim() !== user.name) {
+    if (users.some(u => u.id !== userId && u.name.toLowerCase() === newName.trim().toLowerCase())) {
+      showToast('Пользователь с таким именем уже существует', 'error');
+      return;
+    }
+    
+    const oldName = user.name;
+    user.name = newName.trim();
+    
+    saveUsers();
+    renderUsersManagerList();
+    renderUserSelector();
+    
+    if (userId === currentUser.id) {
+      currentUser = user;
+      saveCurrentUser();
+    }
+    
+    showToast(`Пользователь переименован: "${oldName}" → "${newName.trim()}"`, 'success');
+  }
+}
+
+function removeUser(userId) {
+  if (userId === 'default') {
+    showToast('Основного пользователя нельзя удалить', 'warning');
+    return;
+  }
+  
+  const user = users.find(u => u.id === userId);
+  if (!user) return;
+  
+  if (!confirm(`Удалить пользователя "${user.name}"?\nВсе данные этого пользователя будут удалены.`)) {
+    return;
+  }
+  
+  // Если удаляем текущего пользователя, переключаемся на основного
+  if (userId === currentUser.id) {
+    currentUser = users.find(u => u.id === 'default');
+    saveCurrentUser();
+    
+    // Загружаем данные основного пользователя
+    loadData();
+    renderExercises();
+    renderHistory();
+    updateStats();
+    
+    currentSets = [];
+    addSet();
+    renderSets();
+    
+    // Удаляем сохраненные подходы
+    sessionStorage.removeItem(`currentSets_${userId}`);
+  }
+  
+  // Удаляем данные пользователя из localStorage
+  localStorage.removeItem(`${STORAGE_KEY_PREFIX}_${userId}`);
+  localStorage.removeItem(`${EXERCISE_KEY_PREFIX}_${userId}`);
+  
+  // Удаляем пользователя из списка
+  users = users.filter(u => u.id !== userId);
+  saveUsers();
+  renderUsersManagerList();
+  renderUserSelector();
+  
+  showToast(`Пользователь "${user.name}" удален`, 'warning');
+}
+
+function switchToUser(userId) {
+  const user = users.find(u => u.id === userId);
+  if (user && user.id !== currentUser.id) {
+    // Сохраняем текущие подходы
+    autoSaveCurrentSets();
+    
+    // Переключаем
+    currentUser = user;
+    saveCurrentUser();
+    
+    // Загружаем данные нового пользователя
+    loadData();
+    renderExercises();
+    renderHistory();
+    updateStats();
+    
+    // Загружаем сохраненные подходы
+    const savedSets = sessionStorage.getItem(`currentSets_${currentUser.id}`);
+    if (savedSets) {
+      try {
+        currentSets = JSON.parse(savedSets);
+        if (!Array.isArray(currentSets)) currentSets = [];
+      } catch (e) {
+        console.error('Ошибка парсинга savedSets:', e);
+        currentSets = [];
+      }
+    } else {
+      currentSets = [];
+      addSet();
+    }
+    
+    renderSets();
+    renderUserSelector();
+    
+    showToast(`Переключено на: ${currentUser.name}`, 'success');
+  }
+}
+
+// Загрузка данных с учетом текущего пользователя
 function loadData() {
   try {
     // Загружаем appData
-    const storedAppData = localStorage.getItem(STORAGE_KEY);
+    const storageKey = `${STORAGE_KEY_PREFIX}_${currentUser.id}`;
+    const storedAppData = localStorage.getItem(storageKey);
     if (storedAppData) {
       const parsed = JSON.parse(storedAppData);
       appData = Array.isArray(parsed) ? parsed : [];
@@ -794,28 +1339,13 @@ function loadData() {
     }
     
     // Загружаем exercises
-    const storedExercises = localStorage.getItem(EXERCISE_KEY);
+    const exerciseKey = `${EXERCISE_KEY_PREFIX}_${currentUser.id}`;
+    const storedExercises = localStorage.getItem(exerciseKey);
     if (storedExercises) {
       const parsed = JSON.parse(storedExercises);
       exercises = Array.isArray(parsed) ? parsed : [];
     } else {
       exercises = [];
-    }
-    
-    // Загружаем settings
-    const storedSettings = localStorage.getItem(SETTINGS_KEY);
-    if (storedSettings) {
-      try {
-        settings = JSON.parse(storedSettings);
-        if (typeof settings !== 'object' || settings === null) {
-          settings = {};
-        }
-      } catch (e) {
-        console.error('Ошибка парсинга настроек:', e);
-        settings = {};
-      }
-    } else {
-      settings = {};
     }
     
     // Если упражнений нет, устанавливаем стандартные
@@ -828,22 +1358,10 @@ function loadData() {
     // Сбрасываем на значения по умолчанию
     appData = [];
     exercises = ['Жим лежа', 'Приседания', 'Становая тяга', 'Жим стоя', 'Тяга блока'];
-    settings = {};
-    
-    // Пытаемся сохранить упражнения по умолчанию
-    try {
-      localStorage.setItem(EXERCISE_KEY, JSON.stringify(exercises));
-    } catch (e2) {
-      console.error('Не удалось сохранить упражнения по умолчанию:', e2);
-    }
   }
 }
 
-function loadSettings() {
-  if (!settings.defaultWeight) settings.defaultWeight = 20;
-}
-
-// Сохранение данных с обработкой ошибок
+// Сохранение данных с учетом текущего пользователя
 function saveData() {
   try {
     // Убедимся, что appData - это массив
@@ -852,7 +1370,8 @@ function saveData() {
       appData = [];
     }
     
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+    const storageKey = `${STORAGE_KEY_PREFIX}_${currentUser.id}`;
+    localStorage.setItem(storageKey, JSON.stringify(appData));
   } catch (e) {
     console.error('Ошибка сохранения данных:', e);
     showToast('Ошибка сохранения данных', 'error');
@@ -861,24 +1380,17 @@ function saveData() {
 
 function saveExercises() {
   try {
-    localStorage.setItem(EXERCISE_KEY, JSON.stringify(exercises));
+    const exerciseKey = `${EXERCISE_KEY_PREFIX}_${currentUser.id}`;
+    localStorage.setItem(exerciseKey, JSON.stringify(exercises));
   } catch (e) {
     console.error('Ошибка сохранения упражнений:', e);
   }
 }
 
-function saveSettings() {
-  try {
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-  } catch (e) {
-    console.error('Ошибка сохранения настроек:', e);
-  }
-}
-
-// Автосохранение текущих подходов
+// Автосохранение текущих подходов с учетом пользователя
 function autoSaveCurrentSets() {
   if (currentSets.some(set => set.weight || set.reps)) {
-    sessionStorage.setItem('currentSets', JSON.stringify(currentSets));
+    sessionStorage.setItem(`currentSets_${currentUser.id}`, JSON.stringify(currentSets));
   }
 }
 
@@ -886,7 +1398,7 @@ function autoSaveCurrentSets() {
 function addSet() {
   const lastSet = currentSets.length > 0 
     ? currentSets[currentSets.length - 1] 
-    : { reps: '', weight: settings.defaultWeight || '' };
+    : { reps: '', weight: '' };
     
   currentSets.push({ 
     id: Date.now() + Math.random(), 
@@ -896,13 +1408,11 @@ function addSet() {
   
   renderSets();
   updateStats();
-  showToast('Добавлен новый подход', 'success');
 }
 
 function removeSet(idx) {
   if (currentSets.length > 1) {
     currentSets.splice(idx, 1);
-    showToast('Подход удален', 'warning');
   } else {
     currentSets[0] = { reps: '', weight: '' };
   }
@@ -914,8 +1424,8 @@ function removeSet(idx) {
 function updateSet(idx, field, value) {
   // Валидация ввода
   if (field === 'weight' || field === 'reps') {
-    // Удаляем все нецифровые символы, кроме точки
-    value = value.replace(/[^\d.]/g, '');
+    // Удаляем все нецифровые символы, кроме точки и запятой
+    value = value.replace(/[^\d.,]/g, '').replace(',', '.');
     
     // Ограничиваем максимальное значение
     const numValue = parseFloat(value);
@@ -929,11 +1439,7 @@ function updateSet(idx, field, value) {
   
   updateStats();
   
-  // Автофокус на следующее поле
-  if (field === 'weight' && value && currentSets[idx]?.reps === '') {
-    const nextInput = document.querySelector(`.set-row:nth-child(${idx + 1}) input[placeholder="повт"]`);
-    if (nextInput) nextInput.focus();
-  }
+  // УБРАНО автоматическое переключение на поле повторов
 }
 
 function renderSets() {
@@ -990,8 +1496,11 @@ function renderSets() {
   
   // Обновляем счетчики подходов
   const completedSets = currentSets.filter(s => s.reps && s.weight).length;
-  document.getElementById('completedSets').textContent = completedSets;
-  document.getElementById('totalSetsCount').textContent = currentSets.length;
+  const completedSetsEl = document.getElementById('completedSets');
+  const totalSetsCountEl = document.getElementById('totalSetsCount');
+  
+  if (completedSetsEl) completedSetsEl.textContent = completedSets;
+  if (totalSetsCountEl) totalSetsCountEl.textContent = currentSets.length;
 }
 
 // Статистика текущей тренировки
@@ -1027,12 +1536,17 @@ function updateStats() {
   }, { set: null, value: 0 });
   
   // Обновляем UI
-  document.getElementById('totalVolume').textContent = Math.round(totalVolume);
-  document.getElementById('totalSets').textContent = validSets.length;
-  document.getElementById('bestSet').textContent = bestSet.set 
+  const totalVolumeEl = document.getElementById('totalVolume');
+  const totalSetsEl = document.getElementById('totalSets');
+  const bestSetEl = document.getElementById('bestSet');
+  const avgWeightEl = document.getElementById('avgWeight');
+  
+  if (totalVolumeEl) totalVolumeEl.textContent = Math.round(totalVolume);
+  if (totalSetsEl) totalSetsEl.textContent = validSets.length;
+  if (bestSetEl) bestSetEl.textContent = bestSet.set 
     ? `${bestSet.set.weight}×${bestSet.set.reps}`
     : '-';
-  document.getElementById('avgWeight').textContent = 
+  if (avgWeightEl) avgWeightEl.textContent = 
     validSets.length > 0 ? Math.round(totalWeight / validSets.length) : 0;
 }
 
@@ -1086,7 +1600,8 @@ async function saveWorkout() {
       const weight = parseFloat(set.weight) || 0;
       const reps = parseInt(set.reps) || 0;
       return sum + (weight * reps);
-    }, 0)
+    }, 0),
+    userId: currentUser.id
   };
   
   if (editingId) {
@@ -1098,25 +1613,25 @@ async function saveWorkout() {
       appData.push(record);
     }
     editingId = null;
-    saveBtnText.textContent = 'Сохранить тренировку';
+    saveBtnText.textContent = '💾 Сохранить тренировку';
   } else {
     appData.push(record);
   }
   
   saveData();
   currentSets = [];
-  sessionStorage.removeItem('currentSets');
+  sessionStorage.removeItem(`currentSets_${currentUser.id}`);
   renderSets();
   renderHistory();
   updateStats();
   
   // Сбрасываем индикатор загрузки
   saveBtn.disabled = false;
-  saveBtnText.textContent = 'Сохранить тренировку';
+  saveBtnText.textContent = '💾 Сохранить тренировку';
   saveBtnLoader.style.display = 'none';
   
   // Показываем уведомление
-  showToast(editingId ? 'Тренеровка обновлена!' : 'Тренировка сохранена!', 'success');
+  showToast('Тренировка сохранена!', 'success');
   
   // Прокрутка к истории
   const historyList = document.querySelector('#historyList');
@@ -1299,7 +1814,7 @@ function editRec(id) {
   
   const saveBtn = document.querySelector('.fab-container button');
   if (saveBtn) {
-    saveBtn.innerHTML = '<span id="saveBtnText">Обновить тренировку</span><span id="saveBtnLoader" class="loader" style="display: none; margin-left: 8px;"></span>';
+    saveBtn.innerHTML = '<span id="saveBtnText">✏️ Обновить тренировку</span><span id="saveBtnLoader" class="loader" style="display: none; margin-left: 8px;"></span>';
   }
   
   renderSets();
@@ -1352,13 +1867,11 @@ function toggleEditMode() {
   if (!lockBtn) return;
   
   if (editMode) {
-    lockBtn.style.opacity = '1';
-    lockBtn.style.color = 'var(--primary)';
+    lockBtn.classList.add('active');
     lockBtn.title = 'Режим редактирования включен';
     showToast('Режим редактирования включен', 'warning');
   } else {
-    lockBtn.style.opacity = '0.5';
-    lockBtn.style.color = '';
+    lockBtn.classList.remove('active');
     lockBtn.title = 'Режим редактирования выключен';
     showToast('Режим редактирования выключен', 'success');
   }
@@ -1415,14 +1928,17 @@ function loadLastSessionHint() {
                       daysAgo === 1 ? 'вчера' : 
                       `${daysAgo} дней назад`;
       
-      document.getElementById('hintText').innerHTML = `
-        <span>
-          <strong>${daysText}:</strong> ${bestSet.set.weight}кг × ${bestSet.set.reps} (лучший)
-        </span>
-        <span style="color: var(--text-secondary); font-size: 12px;">
-          ${last.sets.length} подхода • ${Math.round(totalVolume)}кг
-        </span>
-      `;
+      const hintText = document.getElementById('hintText');
+      if (hintText) {
+        hintText.innerHTML = `
+          <span>
+            <strong>${daysText}:</strong> ${bestSet.set.weight}кг × ${bestSet.set.reps} (лучший)
+          </span>
+          <span style="color: var(--text-secondary); font-size: 12px;">
+            ${last.sets.length} подхода • ${Math.round(totalVolume)}кг
+          </span>
+        `;
+      }
       
       hint.style.display = 'block';
     } else {
@@ -1508,16 +2024,19 @@ function renderExerciseManagerList() {
         <span style="flex: 1;">${exercise}</span>
       </div>
       <div style="display: flex; gap: 8px;">
-        <button class="icon-only" onclick="renameExercise(${index})" title="Переименовать" style="font-size: 12px;">✏️</button>
-        <button class="icon-only" onclick="removeExercise(${index})" title="Удалить" style="color: var(--danger);">🗑️</button>
+        <button class="header-btn" onclick="renameExercise(${index})" title="Переименовать" style="width: 32px; height: 32px; font-size: 12px;">✏️</button>
+        <button class="header-btn" onclick="removeExercise(${index})" title="Удалить" style="width: 32px; height: 32px; color: var(--danger);">🗑️</button>
       </div>
     `;
     
     // Двойной клик для быстрого выбора
     exerciseElement.ondblclick = () => {
-      document.getElementById('exerciseSelect').value = exercise;
-      closeExerciseManager();
-      loadLastSessionHint();
+      const select = document.getElementById('exerciseSelect');
+      if (select) {
+        select.value = exercise;
+        closeExerciseManager();
+        loadLastSessionHint();
+      }
     };
     
     container.appendChild(exerciseElement);
@@ -1606,26 +2125,39 @@ function renameExercise(index) {
   }
 }
 
-// Быстрые кнопки веса
+// Быстрые кнопки веса - ТОЛЬКО для последнего подхода
 function quickWeight(weight) {
-  if (weight === 0) {
-    currentSets.forEach(set => {
-      set.weight = '';
-      set.reps = '';
-    });
-  } else {
-    currentSets.forEach(set => {
-      if (!set.weight) set.weight = weight;
-    });
+  if (currentSets.length === 0) {
+    showToast('Сначала добавьте подход', 'warning');
+    return;
   }
+  
+  const lastIndex = currentSets.length - 1;
+  currentSets[lastIndex].weight = weight;
   
   renderSets();
   updateStats();
-  showToast(weight === 0 ? 'Веса сброшены' : `Установлен вес ${weight}кг`, 'success');
+  showToast(`Вес ${weight}кг установлен для последнего подхода`, 'success');
 }
 
-// Экспорт в Excel
-function exportToExcel() {
+// Сброс только последнего подхода
+function resetLastSet() {
+  if (currentSets.length === 0) {
+    showToast('Нет подходов для сброса', 'warning');
+    return;
+  }
+  
+  const lastIndex = currentSets.length - 1;
+  currentSets[lastIndex].weight = '';
+  currentSets[lastIndex].reps = '';
+  
+  renderSets();
+  updateStats();
+  showToast('Последний подход сброшен', 'warning');
+}
+
+// Экспорт в CSV
+function exportToCSV() {
   if (!appData.length) {
     showToast('История пуста', 'warning');
     return;
@@ -1640,7 +2172,7 @@ function exportToExcel() {
     sortedData.forEach(workout => {
       const date = new Date(workout.date);
       const dateStr = date.toLocaleDateString('ru-RU');
-      const timeStr = date.toLocaleTimeString('ru-RU');
+      const timeStr = date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
       
       workout.sets.forEach((set, index) => {
         const weight = parseFloat(set.weight) || 0;
@@ -1653,16 +2185,164 @@ function exportToExcel() {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `fitness_history_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute("download", `fitness_${currentUser.name}_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     
-    showToast('Экспорт завершен', 'success');
+    showToast('Экспорт CSV завершен', 'success');
   } catch (error) {
     console.error('Ошибка экспорта:', error);
     showToast('Ошибка при экспорте', 'error');
   }
+}
+
+// Импорт из CSV - ИСПРАВЛЕННАЯ ФУНКЦИЯ
+function importFromCSV(event) {
+  const file = event.target.files[0];
+  if (!file) {
+    showToast('Файл не выбран', 'warning');
+    return;
+  }
+  
+  // Проверяем расширение файла
+  if (!file.name.toLowerCase().endsWith('.csv')) {
+    showToast('Пожалуйста, выберите CSV файл', 'error');
+    event.target.value = '';
+    return;
+  }
+  
+  const reader = new FileReader();
+  
+  reader.onload = function(e) {
+    try {
+      const content = e.target.result;
+      const lines = content.split('\n');
+      
+      // Пропускаем заголовок
+      let importedCount = 0;
+      let skippedCount = 0;
+      let errors = [];
+      
+      // Создаем временный массив для новых тренировок
+      const newWorkouts = [];
+      
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        
+        try {
+          // Разделяем строку CSV
+          const parts = line.split(';').map(part => part.replace(/^"|"$/g, '').trim());
+          
+          if (parts.length >= 6) {
+            const [dateStr, timeStr, exerciseName, setIndexStr, weightStr, repsStr] = parts;
+            
+            // Парсим дату
+            let date;
+            try {
+              // Пробуем разные форматы дат
+              if (dateStr.includes('.')) {
+                // Формат DD.MM.YYYY
+                const [day, month, year] = dateStr.split('.');
+                date = new Date(year, month - 1, day);
+                if (timeStr) {
+                  const [hours, minutes] = timeStr.split(':');
+                  date.setHours(parseInt(hours) || 0, parseInt(minutes) || 0);
+                }
+              } else if (dateStr.includes('-')) {
+                // Формат YYYY-MM-DD
+                date = new Date(dateStr + 'T' + (timeStr || '00:00'));
+              } else {
+                // Пробуем стандартный парсинг
+                date = new Date(dateStr + ' ' + timeStr);
+              }
+            } catch (e) {
+              date = new Date();
+            }
+            
+            if (isNaN(date.getTime())) {
+              date = new Date();
+            }
+            
+            const weight = parseFloat(weightStr.replace(',', '.')) || 0;
+            const reps = parseInt(repsStr) || 0;
+            const setIndex = parseInt(setIndexStr) || 1;
+            
+            if (weight > 0 && reps > 0 && exerciseName) {
+              // Ищем существующую тренировку на эту дату с этим упражнением
+              const existingIndex = newWorkouts.findIndex(w => 
+                w.name === exerciseName && 
+                Math.abs(new Date(w.date).getTime() - date.getTime()) < 24 * 60 * 60 * 1000
+              );
+              
+              if (existingIndex >= 0) {
+                // Добавляем подход к существующей тренировке
+                newWorkouts[existingIndex].sets.push({ weight, reps });
+                newWorkouts[existingIndex].volume += weight * reps;
+              } else {
+                // Создаем новую тренировку
+                const newWorkout = {
+                  id: Date.now() + '-' + Math.random().toString(36).substr(2, 9) + '-' + i,
+                  name: exerciseName,
+                  sets: [{ weight, reps }],
+                  date: date.getTime(),
+                  volume: weight * reps,
+                  userId: currentUser.id
+                };
+                newWorkouts.push(newWorkout);
+              }
+              
+              // Добавляем упражнение в список, если его нет
+              if (!exercises.includes(exerciseName)) {
+                exercises.push(exerciseName);
+              }
+              
+              importedCount++;
+            } else {
+              skippedCount++;
+            }
+          }
+        } catch (parseError) {
+          console.error(`Ошибка парсинга строки ${i}:`, line, parseError);
+          errors.push(`Строка ${i}`);
+          skippedCount++;
+        }
+      }
+      
+      // Добавляем новые тренировки к существующим
+      if (newWorkouts.length > 0) {
+        appData.push(...newWorkouts);
+        
+        // Сохраняем упражнения
+        saveExercises();
+        // Сохраняем данные
+        saveData();
+        
+        // Обновляем интерфейс
+        renderExercises();
+        renderHistory();
+        
+        showToast(`Импорт завершен: ${importedCount} подходов добавлено`, 'success');
+      } else {
+        showToast('Не удалось импортировать данные из файла', 'warning');
+      }
+      
+    } catch (error) {
+      console.error('Ошибка импорта CSV:', error);
+      showToast('Ошибка при импорте CSV файла', 'error');
+    } finally {
+      // Сбрасываем input файла
+      event.target.value = '';
+    }
+  };
+  
+  reader.onerror = function() {
+    showToast('Ошибка чтения файла', 'error');
+    event.target.value = '';
+  };
+  
+  reader.readAsText(file, 'UTF-8');
 }
 
 // Статистика
@@ -1700,6 +2380,45 @@ function showStats() {
   const firstWorkout = new Date(Math.min(...appData.map(w => w.date)));
   const daysSinceStart = Math.floor((Date.now() - firstWorkout) / (1000 * 60 * 60 * 24));
   
+  // Лучшие результаты по упражнениям
+  const bestResults = {};
+  appData.forEach(workout => {
+    if (!bestResults[workout.name]) {
+      bestResults[workout.name] = {
+        maxWeight: 0,
+        maxVolume: 0,
+        totalSets: 0,
+        totalWorkouts: 0
+      };
+    }
+    
+    const workoutBest = workout.sets.reduce((best, set) => {
+      const weight = parseFloat(set.weight) || 0;
+      const reps = parseInt(set.reps) || 0;
+      const volume = weight * reps;
+      
+      return {
+        maxWeight: Math.max(best.maxWeight, weight),
+        maxVolume: Math.max(best.maxVolume, volume)
+      };
+    }, { maxWeight: 0, maxVolume: 0 });
+    
+    bestResults[workout.name].maxWeight = Math.max(
+      bestResults[workout.name].maxWeight,
+      workoutBest.maxWeight
+    );
+    bestResults[workout.name].maxVolume = Math.max(
+      bestResults[workout.name].maxVolume,
+      workoutBest.maxVolume
+    );
+    bestResults[workout.name].totalSets += workout.sets.length;
+    bestResults[workout.name].totalWorkouts += 1;
+  });
+  
+  const bestResultsList = Object.entries(bestResults)
+    .sort((a, b) => b[1].maxWeight - a[1].maxWeight)
+    .slice(0, 5);
+  
   container.innerHTML = `
     <div class="stats-row" style="margin: 0 0 20px 0;">
       <div class="stat-item">
@@ -1720,8 +2439,8 @@ function showStats() {
       </div>
     </div>
     
-    <h3 style="margin: 20px 0 10px 0;">Самые популярные упражнения</h3>
-    <div style="background: var(--card-bg); border-radius: var(--radius); padding: 16px; margin-bottom: 20px;">
+    <h3 style="margin: 20px 0 10px 0;">🏆 Самые популярные упражнения</h3>
+    <div style="background: var(--card-bg); border-radius: var(--radius); padding: 16px; margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.05);">
       ${popularExercises.map(([name, count], index) => `
         <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: ${index < popularExercises.length - 1 ? '1px solid var(--separator)' : 'none'};">
           <span>${index + 1}. ${name}</span>
@@ -1730,8 +2449,25 @@ function showStats() {
       `).join('')}
     </div>
     
-    <h3 style="margin: 20px 0 10px 0;">Общая информация</h3>
-    <div style="background: var(--card-bg); border-radius: var(--radius); padding: 16px;">
+    <h3 style="margin: 20px 0 10px 0;">📈 Лучшие результаты</h3>
+    <div style="background: var(--card-bg); border-radius: var(--radius); padding: 16px; margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.05);">
+      ${bestResultsList.map(([name, stats], index) => `
+        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: ${index < bestResultsList.length - 1 ? '1px solid var(--separator)' : 'none'};">
+          <span>${index + 1}. ${name}</span>
+          <div style="text-align: right;">
+            <div style="font-weight: 600; color: var(--primary);">${Math.round(stats.maxWeight)} кг</div>
+            <div style="font-size: 11px; color: var(--text-secondary);">макс. вес</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+    
+    <h3 style="margin: 20px 0 10px 0;">ℹ️ Общая информация</h3>
+    <div style="background: var(--card-bg); border-radius: var(--radius); padding: 16px; border: 1px solid rgba(255, 255, 255, 0.05);">
+      <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+        <span>Пользователь:</span>
+        <span style="font-weight: 600; color: var(--primary);">${currentUser.name}</span>
+      </div>
       <div style="display: flex; justify-content: space-between; padding: 8px 0;">
         <span>Начало отслеживания:</span>
         <span>${firstWorkout.toLocaleDateString('ru-RU')}</span>
@@ -1780,12 +2516,14 @@ function showToast(message, type = 'info') {
 // Проверяем, что все DOM-элементы существуют перед использованием
 function initDOMCheck() {
   const requiredElements = [
+    'userSelect',
     'exerciseSelect',
     'filterExercise',
     'setsContainer',
     'historyList',
     'saveBtn',
     'exerciseModal',
+    'usersModal',
     'statsModal',
     'toast'
   ];
@@ -1868,6 +2606,45 @@ document.addEventListener('touchend', (e) => {
     }
   }
 });
+
+// Адаптация для iPhone 13 Pro Max
+function isIPhone13ProMax() {
+  return /iPhone.*13.*Pro.*Max/.test(navigator.userAgent) || 
+         (window.screen.width === 428 && window.screen.height === 926);
+}
+
+if (isIPhone13ProMax()) {
+  console.log('iPhone 13 Pro Max detected - applying optimizations');
+  
+  // Увеличиваем размеры некоторых элементов для лучшей читаемости
+  document.addEventListener('DOMContentLoaded', function() {
+    const style = document.createElement('style');
+    style.textContent = `
+      @media only screen and (max-width: 430px) {
+        .container {
+          padding: 18px;
+        }
+        .header-sticky {
+          padding: 14px 18px;
+        }
+        .fab-container {
+          left: 18px;
+          right: 18px;
+        }
+        .set-inputs input {
+          font-size: 18px;
+          padding: 12px;
+        }
+        .header-btn {
+          width: 42px;
+          height: 42px;
+          font-size: 20px;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  });
+}
 </script>
 </body>
 </html>
