@@ -13,6 +13,13 @@
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <!-- Библиотека для генерации QR-кода -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <!-- Библиотека для работы с ZIP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    
     <style>
         * {
             margin: 0;
@@ -469,6 +476,44 @@
             cursor: pointer;
         }
         
+        .sync-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .sync-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .sync-btn.export {
+            background: rgba(0, 123, 255, 0.2);
+            color: #4da3ff;
+            border: 1px solid rgba(0, 123, 255, 0.3);
+        }
+        
+        .sync-btn.import {
+            background: rgba(40, 167, 69, 0.2);
+            color: #34ce57;
+            border: 1px solid rgba(40, 167, 69, 0.3);
+        }
+        
+        .sync-btn:active {
+            transform: scale(0.98);
+            opacity: 0.8;
+        }
+        
         .supported-formats {
             text-align: center;
             margin-top: 15px;
@@ -485,7 +530,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background-color: rgba(0, 0, 0, 0.9);
+            background-color: rgba(0, 0, 0, 0.95);
             padding: 20px 30px;
             border-radius: 16px;
             text-align: center;
@@ -546,6 +591,117 @@
         ::-webkit-scrollbar-thumb {
             background: rgba(255, 51, 102, 0.5);
             border-radius: 10px;
+        }
+        
+        /* QR-код */
+        .qrcode-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+        
+        .qrcode-container.hidden {
+            display: none;
+        }
+        
+        .qrcode-box {
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 300px;
+        }
+        
+        #qrcode {
+            margin: 20px auto;
+        }
+        
+        .close-qrcode {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #FF3366;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        /* Модальное окно прогресса */
+        .progress-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+        
+        .progress-modal.hidden {
+            display: none;
+        }
+        
+        .progress-modal-content {
+            background: #1a1a2e;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 300px;
+            width: 100%;
+            border: 1px solid rgba(255, 51, 102, 0.3);
+        }
+        
+        .progress-modal h3 {
+            margin-bottom: 20px;
+            color: #fff;
+        }
+        
+        .progress-bar-modal {
+            width: 100%;
+            height: 8px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+        
+        .progress-modal-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #FF3366 0%, #FF6B6B 100%);
+            width: 0%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-modal-text {
+            color: #aaa;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        
+        .progress-modal-cancel {
+            padding: 10px 20px;
+            background: transparent;
+            color: #FF6B6B;
+            border: 1px solid #FF3366;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -618,6 +774,18 @@
                         <input type="file" id="fileInput" class="file-input" accept="audio/*" multiple>
                     </div>
                     
+                    <div class="sync-controls">
+                        <button class="sync-btn export" id="exportBtn">
+                            <i class="fas fa-download"></i> Экспорт ZIP
+                        </button>
+                        <button class="sync-btn import" id="importBtn">
+                            <i class="fas fa-upload"></i> Импорт ZIP
+                        </button>
+                        <button class="sync-btn export" id="shareBtn">
+                            <i class="fas fa-share-alt"></i> QR-код
+                        </button>
+                    </div>
+                    
                     <div class="supported-formats">
                         <i class="fas fa-info-circle"></i> Поддерживаются MP3, MP4, M4A, WAV и другие аудиоформаты
                     </div>
@@ -664,6 +832,28 @@
         </div>
     </div>
     
+    <!-- Контейнер для QR-кода -->
+    <div class="qrcode-container hidden" id="qrcodeContainer">
+        <div class="qrcode-box">
+            <h3 style="color: #000; margin-bottom: 10px;">Сканируйте QR-код</h3>
+            <p style="color: #666; font-size: 14px; margin-bottom: 20px;">Отсканируйте этот QR-код другим устройством для передачи плейлиста</p>
+            <div id="qrcode"></div>
+            <button class="close-qrcode" id="closeQrcode">Закрыть</button>
+        </div>
+    </div>
+    
+    <!-- Модальное окно прогресса -->
+    <div class="progress-modal hidden" id="progressModal">
+        <div class="progress-modal-content">
+            <h3 id="progressModalTitle">Обработка</h3>
+            <div class="progress-bar-modal">
+                <div class="progress-modal-fill" id="progressModalFill"></div>
+            </div>
+            <div class="progress-modal-text" id="progressModalText">0%</div>
+            <button class="progress-modal-cancel" id="progressModalCancel">Отмена</button>
+        </div>
+    </div>
+    
     <div class="message" id="message">
         <div id="messageText">Сообщение</div>
     </div>
@@ -676,6 +866,7 @@
         let isShuffled = false;
         let isRepeated = false;
         let playlist = [];
+        let deviceId = '';
         
         // Элементы DOM
         const trackTitle = document.getElementById('trackTitle');
@@ -696,6 +887,11 @@
         const message = document.getElementById('message');
         const messageText = document.getElementById('messageText');
         const currentTimeDisplay = document.getElementById('currentTimeDisplay');
+        const exportBtn = document.getElementById('exportBtn');
+        const importBtn = document.getElementById('importBtn');
+        const shareBtn = document.getElementById('shareBtn');
+        const qrcodeContainer = document.getElementById('qrcodeContainer');
+        const closeQrcode = document.getElementById('closeQrcode');
         
         // Элементы нижней панели
         const nowPlayingBar = document.getElementById('nowPlayingBar');
@@ -706,11 +902,27 @@
         const nowPlayingNextBtn = document.getElementById('nowPlayingNextBtn');
         const nowPlayingArt = document.getElementById('nowPlayingArt');
         
+        // Элементы модального окна прогресса
+        const progressModal = document.getElementById('progressModal');
+        const progressModalTitle = document.getElementById('progressModalTitle');
+        const progressModalFill = document.getElementById('progressModalFill');
+        const progressModalText = document.getElementById('progressModalText');
+        const progressModalCancel = document.getElementById('progressModalCancel');
+        
+        // Флаги и переменные для управления процессами
+        let isExportInProgress = false;
+        let isImportInProgress = false;
+        let cancelExport = false;
+        let cancelImport = false;
+        
         // Инициализация
-        function init() {
+        async function init() {
             playlist = [];
             updateTrackCount();
             hideNowPlayingBar();
+            
+            // Генерируем или получаем уникальный ID устройства
+            deviceId = await getDeviceId();
             
             // Настройка аудио
             audio.volume = 0.7;
@@ -745,16 +957,71 @@
             // Обработчик загрузки файлов
             fileInput.addEventListener('change', handleFileUpload);
             
+            // Обработчики кнопок синхронизации
+            exportBtn.addEventListener('click', exportPlaylistToZip);
+            importBtn.addEventListener('click', importPlaylistFromZip);
+            shareBtn.addEventListener('click', sharePlaylistViaQR);
+            closeQrcode.addEventListener('click', () => {
+                qrcodeContainer.classList.add('hidden');
+            });
+            
+            // Обработчик отмены операций
+            progressModalCancel.addEventListener('click', () => {
+                if (isExportInProgress) {
+                    cancelExport = true;
+                    hideProgressModal();
+                    showMessage('Экспорт отменен');
+                }
+                if (isImportInProgress) {
+                    cancelImport = true;
+                    hideProgressModal();
+                    showMessage('Импорт отменен');
+                }
+            });
+            
             // Обновляем время на статус-баре
             updateTime();
             setInterval(updateTime, 60000);
             
-            // Для отладки
-            console.log("Музыкальный плеер инициализирован");
+            // Загружаем сохранённые треки
+            loadSavedTracks();
+            
+            // Добавляем обработчик для очистки памяти при закрытии
+            window.addEventListener('beforeunload', cleanupMemory);
+            
+            console.log("Музыкальный плеер инициализирован. ID устройства:", deviceId);
+        }
+        
+        // Показать/скрыть модальное окно прогресса
+        function showProgressModal(title) {
+            progressModalTitle.textContent = title;
+            progressModalFill.style.width = '0%';
+            progressModalText.textContent = '0%';
+            progressModal.classList.remove('hidden');
+        }
+        
+        function hideProgressModal() {
+            progressModal.classList.add('hidden');
+        }
+        
+        function updateProgressModal(percent, text) {
+            progressModalFill.style.width = percent + '%';
+            progressModalText.textContent = text || percent + '%';
+        }
+        
+        // Получение уникального ID устройства
+        async function getDeviceId() {
+            let id = localStorage.getItem('deviceId');
+            if (!id) {
+                // Генерируем новый уникальный ID
+                id = 'device_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('deviceId', id);
+            }
+            return id;
         }
         
         // Функция для загрузки файлов
-        function handleFileUpload(e) {
+        async function handleFileUpload(e) {
             const files = e.target.files;
             
             if (!files || files.length === 0) {
@@ -768,83 +1035,554 @@
             // Преобразуем FileList в массив
             const fileArray = Array.from(files);
             
+            // Ограничиваем количество одновременно загружаемых файлов
+            const maxFiles = 50;
+            const filesToProcess = fileArray.slice(0, maxFiles);
+            
+            if (filesToProcess.length < fileArray.length) {
+                showMessage(`Будет загружено только ${maxFiles} файлов из ${fileArray.length}`);
+            }
+            
             // Обрабатываем каждый файл
-            fileArray.forEach((file, index) => {
-                // Проверяем тип файла
-                if (!file.type.startsWith('audio/')) {
-                    console.warn(`Файл не является аудио: ${file.name}`);
-                    return;
-                }
-                
-                console.log(`Обработка файла: ${file.name}`);
-                
-                // Создаем URL для файла
-                const fileURL = URL.createObjectURL(file);
-                
-                // Получаем название и артиста из имени файла
-                const fileName = file.name.replace(/\.[^/.]+$/, ""); // Убираем расширение
-                let title = fileName;
-                let artist = "Неизвестный исполнитель";
-                
-                // Пытаемся разобрать название в формате "Артист - Название"
-                const separators = [' - ', ' – ', ' — ', '-', '–', '—'];
-                for (const separator of separators) {
-                    const parts = fileName.split(separator);
-                    if (parts.length >= 2) {
-                        artist = parts[0].trim();
-                        title = parts.slice(1).join(separator).trim();
-                        break;
+            for (const [index, file] of filesToProcess.entries()) {
+                try {
+                    // Проверяем тип файла
+                    if (!file.type.startsWith('audio/')) {
+                        console.warn(`Файл не является аудио: ${file.name}`);
+                        continue;
                     }
+                    
+                    console.log(`Обработка файла: ${file.name}`);
+                    
+                    // Создаем URL для файла
+                    const fileURL = URL.createObjectURL(file);
+                    
+                    // Получаем название и артиста из имени файла
+                    const fileName = file.name.replace(/\.[^/.]+$/, ""); // Убираем расширение
+                    let title = fileName;
+                    let artist = "Неизвестный исполнитель";
+                    
+                    // Пытаемся разобрать название в формате "Артист - Название"
+                    const separators = [' - ', ' – ', ' — ', '-', '–', '—'];
+                    for (const separator of separators) {
+                        const parts = fileName.split(separator);
+                        if (parts.length >= 2) {
+                            artist = parts[0].trim();
+                            title = parts.slice(1).join(separator).trim();
+                            break;
+                        }
+                    }
+                    
+                    // Получаем длительность трека
+                    const duration = await getAudioDuration(file);
+                    
+                    // Создаем объект трека
+                    const track = {
+                        id: `track_${Date.now()}_${index}_${deviceId}`,
+                        title: title,
+                        artist: artist,
+                        url: fileURL, // Временный URL для воспроизведения
+                        file: file, // Сохраняем оригинальный файл для экспорта
+                        fileName: file.name,
+                        fileType: file.type,
+                        fileSize: file.size,
+                        duration: duration,
+                        addedDate: new Date().toISOString(),
+                        deviceId: deviceId,
+                        hasAudio: true // Флаг, что аудио загружено
+                    };
+                    
+                    // Добавляем трек в плейлист
+                    playlist.push(track);
+                    
+                    console.log(`Трек добавлен: ${track.title} - ${track.artist}`);
+                    
+                } catch (error) {
+                    console.error('Ошибка обработки файла:', error, file.name);
                 }
-                
-                // Создаем объект трека
-                const track = {
-                    id: `track_${Date.now()}_${index}`,
-                    title: title,
-                    artist: artist,
-                    url: fileURL,
-                    fileName: file.name,
-                    fileType: file.type,
-                    fileSize: file.size,
-                    duration: 0, // Будет обновлено позже
-                    cover: null
-                };
-                
-                // Добавляем трек в плейлист
-                playlist.push(track);
-                
-                console.log(`Трек добавлен: ${track.title} - ${track.artist}`);
-                
-                // Определяем длительность трека
-                const tempAudio = new Audio();
-                tempAudio.src = fileURL;
-                tempAudio.addEventListener('loadedmetadata', () => {
-                    track.duration = tempAudio.duration;
-                    renderPlaylist();
-                });
-                
-                tempAudio.addEventListener('error', () => {
-                    console.warn(`Не удалось загрузить метаданные для: ${file.name}`);
-                    renderPlaylist();
-                });
-            });
+            }
             
             // Сбрасываем значение input
             fileInput.value = '';
             
-            // Обновляем интерфейс
-            setTimeout(() => {
+            // Сохраняем треки и обновляем интерфейс
+            await saveTracks();
+            renderPlaylist();
+            updateTrackCount();
+            cleanupOldTracks(); // Очищаем старые треки
+            
+            const addedCount = Math.min(files.length, playlist.length);
+            showMessage(`Добавлено ${addedCount} треков`);
+            
+            // Если это первый трек, автоматически выбираем его
+            if (currentTrackIndex === -1 && playlist.length > 0) {
+                setTimeout(() => playTrack(0), 1000);
+            }
+        }
+        
+        // Получение длительности аудиофайла
+        function getAudioDuration(file) {
+            return new Promise((resolve) => {
+                const audio = new Audio();
+                const fileURL = URL.createObjectURL(file);
+                audio.src = fileURL;
+                audio.preload = "metadata";
+                
+                audio.addEventListener('loadedmetadata', () => {
+                    URL.revokeObjectURL(fileURL);
+                    resolve(audio.duration || 0);
+                });
+                
+                audio.addEventListener('error', () => {
+                    URL.revokeObjectURL(fileURL);
+                    resolve(0);
+                });
+                
+                // Таймаут на случай, если метаданные не загрузятся
+                setTimeout(() => {
+                    URL.revokeObjectURL(fileURL);
+                    resolve(0);
+                }, 5000);
+            });
+        }
+        
+        // Экспорт плейлиста в ZIP архив
+        async function exportPlaylistToZip() {
+            if (playlist.length === 0) {
+                showMessage('Нет треков для экспорта');
+                return;
+            }
+            
+            try {
+                isExportInProgress = true;
+                cancelExport = false;
+                showProgressModal('Создание ZIP архива...');
+                
+                const zip = new JSZip();
+                const metadata = {
+                    version: '2.0',
+                    exportDate: new Date().toISOString(),
+                    deviceId: deviceId,
+                    totalTracks: playlist.length,
+                    tracks: []
+                };
+                
+                let processedTracks = 0;
+                const tracksWithAudio = playlist.filter(track => track.hasAudio && track.file);
+                
+                if (tracksWithAudio.length === 0) {
+                    showMessage('Нет треков с аудиофайлами для экспорта');
+                    hideProgressModal();
+                    isExportInProgress = false;
+                    return;
+                }
+                
+                // Создаем папку для треков
+                const tracksFolder = zip.folder("tracks");
+                
+                // Добавляем треки в архив
+                for (let i = 0; i < tracksWithAudio.length; i++) {
+                    if (cancelExport) {
+                        hideProgressModal();
+                        isExportInProgress = false;
+                        return;
+                    }
+                    
+                    const track = tracksWithAudio[i];
+                    
+                    try {
+                        // Добавляем метаданные трека
+                        const trackMetadata = {
+                            id: track.id,
+                            title: track.title,
+                            artist: track.artist,
+                            fileName: track.fileName,
+                            fileType: track.fileType,
+                            fileSize: track.fileSize,
+                            duration: track.duration,
+                            addedDate: track.addedDate,
+                            deviceId: track.deviceId
+                        };
+                        metadata.tracks.push(trackMetadata);
+                        
+                        // Добавляем аудиофайл в архив
+                        tracksFolder.file(track.fileName, track.file);
+                        
+                        processedTracks++;
+                        const percent = Math.round((processedTracks / tracksWithAudio.length) * 100);
+                        updateProgressModal(percent, `Обработано ${processedTracks} из ${tracksWithAudio.length} треков`);
+                        
+                    } catch (error) {
+                        console.error(`Ошибка обработки трека ${track.fileName}:`, error);
+                    }
+                }
+                
+                // Добавляем файл метаданных
+                zip.file("playlist_metadata.json", JSON.stringify(metadata, null, 2));
+                
+                // Генерируем ZIP архив
+                updateProgressModal(95, 'Формирование архива...');
+                
+                const content = await zip.generateAsync({ type: "blob" }, (metadata) => {
+                    updateProgressModal(95 + Math.round(metadata.percent / 20), 'Формирование архива...');
+                });
+                
+                // Сохраняем файл
+                const fileName = `music_playlist_${new Date().toISOString().split('T')[0]}.zip`;
+                saveAs(content, fileName);
+                
+                hideProgressModal();
+                isExportInProgress = false;
+                
+                showMessage(`Экспортировано ${tracksWithAudio.length} треков в ZIP архив`);
+                
+            } catch (error) {
+                console.error('Ошибка экспорта в ZIP:', error);
+                hideProgressModal();
+                isExportInProgress = false;
+                showMessage('Ошибка экспорта плейлиста');
+            }
+        }
+        
+        // Импорт плейлиста из ZIP архива
+        async function importPlaylistFromZip() {
+            // Создаем временный input для выбора файла
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.zip,application/zip';
+            
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                try {
+                    isImportInProgress = true;
+                    cancelImport = false;
+                    showProgressModal('Чтение ZIP архива...');
+                    
+                    // Читаем ZIP архив
+                    const zip = await JSZip.loadAsync(file);
+                    
+                    // Проверяем наличие файла метаданных
+                    if (!zip.file("playlist_metadata.json")) {
+                        throw new Error('Файл метаданных не найден в архиве');
+                    }
+                    
+                    // Читаем метаданные
+                    const metadataJson = await zip.file("playlist_metadata.json").async("text");
+                    const metadata = JSON.parse(metadataJson);
+                    
+                    if (!metadata.tracks || !Array.isArray(metadata.tracks)) {
+                        throw new Error('Неверный формат метаданных');
+                    }
+                    
+                    updateProgressModal(10, 'Загрузка треков...');
+                    
+                    let importedCount = 0;
+                    const tracksFolder = zip.folder("tracks");
+                    
+                    // Импортируем треки
+                    for (let i = 0; i < metadata.tracks.length; i++) {
+                        if (cancelImport) {
+                            hideProgressModal();
+                            isImportInProgress = false;
+                            return;
+                        }
+                        
+                        const trackMetadata = metadata.tracks[i];
+                        
+                        try {
+                            // Проверяем, есть ли уже такой трек (по ID)
+                            const existingIndex = playlist.findIndex(t => t.id === trackMetadata.id);
+                            
+                            if (existingIndex === -1) {
+                                // Ищем аудиофайл в архиве
+                                const audioFile = tracksFolder.file(trackMetadata.fileName);
+                                
+                                if (audioFile) {
+                                    // Читаем аудиофайл как Blob
+                                    const audioBlob = await audioFile.async("blob");
+                                    
+                                    // Создаем URL для файла
+                                    const fileURL = URL.createObjectURL(audioBlob);
+                                    
+                                    // Создаем объект File из Blob
+                                    const audioFileObj = new File([audioBlob], trackMetadata.fileName, {
+                                        type: trackMetadata.fileType,
+                                        lastModified: Date.now()
+                                    });
+                                    
+                                    const track = {
+                                        ...trackMetadata,
+                                        url: fileURL,
+                                        file: audioFileObj,
+                                        hasAudio: true
+                                    };
+                                    
+                                    playlist.push(track);
+                                    importedCount++;
+                                } else {
+                                    // Если аудиофайл не найден, создаем трек без аудио
+                                    const track = {
+                                        ...trackMetadata,
+                                        url: null,
+                                        file: null,
+                                        hasAudio: false
+                                    };
+                                    
+                                    playlist.push(track);
+                                }
+                            }
+                            
+                            const percent = 10 + Math.round((i / metadata.tracks.length) * 80);
+                            updateProgressModal(percent, `Загружено ${i + 1} из ${metadata.tracks.length} треков`);
+                            
+                        } catch (error) {
+                            console.error('Ошибка импорта трека:', error, trackMetadata.fileName);
+                        }
+                    }
+                    
+                    // Сохраняем и обновляем интерфейс
+                    await saveTracks();
+                    renderPlaylist();
+                    updateTrackCount();
+                    cleanupOldTracks();
+                    
+                    hideProgressModal();
+                    isImportInProgress = false;
+                    
+                    showMessage(`Импортировано ${importedCount} новых треков из ZIP архива`);
+                    
+                } catch (error) {
+                    console.error('Ошибка импорта из ZIP:', error);
+                    hideProgressModal();
+                    isImportInProgress = false;
+                    showMessage('Ошибка импорта плейлиста');
+                }
+            };
+            
+            input.click();
+        }
+        
+        // Поделиться плейлистом через QR-код (только метаданные)
+        function sharePlaylistViaQR() {
+            if (playlist.length === 0) {
+                showMessage('Нет треков для передачи');
+                return;
+            }
+            
+            try {
+                // Подготавливаем данные для передачи (только метаданные, без аудио)
+                const shareData = {
+                    version: '2.0',
+                    shareDate: new Date().toISOString(),
+                    deviceId: deviceId,
+                    totalTracks: playlist.length,
+                    tracks: playlist.map(track => {
+                        const { url, file, hasAudio, ...trackWithoutAudio } = track;
+                        return trackWithoutAudio;
+                    })
+                };
+                
+                // Создаем JSON строку
+                const jsonData = JSON.stringify(shareData);
+                
+                // Проверяем размер данных
+                if (jsonData.length > 2000) {
+                    // Если данных слишком много, берем только первые 10 треков
+                    const limitedShareData = {
+                        ...shareData,
+                        tracks: shareData.tracks.slice(0, 10),
+                        note: 'Показаны только первые 10 треков из ' + shareData.totalTracks
+                    };
+                    
+                    const limitedJson = JSON.stringify(limitedShareData);
+                    
+                    if (limitedJson.length > 2000) {
+                        // Если все еще слишком много, берем только 5 треков
+                        limitedShareData.tracks = shareData.tracks.slice(0, 5);
+                        limitedShareData.note = 'Показаны только первые 5 треков из ' + shareData.totalTracks;
+                    }
+                    
+                    generateQRCode(JSON.stringify(limitedShareData));
+                } else {
+                    generateQRCode(jsonData);
+                }
+                
+            } catch (error) {
+                console.error('Ошибка создания QR-кода:', error);
+                showMessage('Ошибка создания QR-кода');
+            }
+        }
+        
+        // Генерация QR-кода
+        function generateQRCode(data) {
+            const qrcodeDiv = document.getElementById('qrcode');
+            qrcodeDiv.innerHTML = '';
+            
+            // Используем qrcode-generator библиотеку
+            const typeNumber = 0; // Автоматический выбор
+            const errorCorrectionLevel = 'L';
+            const qr = qrcode(typeNumber, errorCorrectionLevel);
+            qr.addData(data);
+            qr.make();
+            
+            // Создаем canvas для QR-кода
+            const canvas = document.createElement('canvas');
+            const size = 200;
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            
+            // Очищаем canvas
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, size, size);
+            
+            // Получаем данные модулей QR-кода
+            const moduleCount = qr.getModuleCount();
+            const tileSize = size / moduleCount;
+            
+            // Рисуем QR-код
+            ctx.fillStyle = '#000000';
+            for (let row = 0; row < moduleCount; row++) {
+                for (let col = 0; col < moduleCount; col++) {
+                    if (qr.isDark(row, col)) {
+                        ctx.fillRect(
+                            col * tileSize,
+                            row * tileSize,
+                            tileSize,
+                            tileSize
+                        );
+                    }
+                }
+            }
+            
+            qrcodeDiv.appendChild(canvas);
+            
+            // Показываем QR-код
+            qrcodeContainer.classList.remove('hidden');
+            showMessage('QR-код создан. Отсканируйте другим устройством для передачи метаданных плейлиста');
+        }
+        
+        // Сохранение треков в localStorage
+        async function saveTracks() {
+            try {
+                // Ограничиваем количество сохраняемых треков
+                const maxTracksToSave = 50;
+                let tracksToSave = playlist.slice(-maxTracksToSave); // Берем только последние N треков
+                
+                // Удаляем большие данные для экономии места
+                const minimalTracks = tracksToSave.map(track => {
+                    const { url, file, hasAudio, ...trackWithoutAudio } = track;
+                    return trackWithoutAudio;
+                });
+                
+                // Пробуем сохранить в localStorage
+                localStorage.setItem('musicPlayerPlaylist', JSON.stringify(minimalTracks));
+                console.log(`Сохранено ${minimalTracks.length} треков в localStorage`);
+                return true;
+            } catch (error) {
+                console.error('Ошибка сохранения треков:', error);
+                
+                if (error.name === 'QuotaExceededError') {
+                    // Если не хватает места, очищаем и пробуем сохранить только последние 10 треков
+                    console.warn('Недостаточно места в localStorage, очищаем...');
+                    localStorage.removeItem('musicPlayerPlaylist');
+                    
+                    const minimalTracks = playlist.slice(-10).map(track => {
+                        const { url, file, hasAudio, ...trackWithoutAudio } = track;
+                        return {
+                            id: track.id,
+                            title: track.title,
+                            artist: track.artist,
+                            fileName: track.fileName,
+                            fileType: track.fileType,
+                            duration: track.duration,
+                            addedDate: track.addedDate,
+                            deviceId: track.deviceId
+                        };
+                    });
+                    
+                    try {
+                        localStorage.setItem('musicPlayerPlaylist', JSON.stringify(minimalTracks));
+                        showMessage('Сохранены только последние 10 треков (без аудио)');
+                        return false;
+                    } catch (e) {
+                        console.error('Не удалось сохранить даже минимум треков:', e);
+                        showMessage('Не удалось сохранить треки. Очистите память браузера.');
+                        return false;
+                    }
+                }
+                
+                showMessage('Ошибка сохранения треков');
+                return false;
+            }
+        }
+        
+        // Загрузка сохранённых треков
+        async function loadSavedTracks() {
+            try {
+                const savedData = localStorage.getItem('musicPlayerPlaylist');
+                if (!savedData) {
+                    console.log('Сохранённые треки не найдены');
+                    return;
+                }
+                
+                const savedTracks = JSON.parse(savedData);
+                console.log(`Загружено ${savedTracks.length} сохранённых треков`);
+                
+                // Восстанавливаем только метаданные
+                savedTracks.forEach(savedTrack => {
+                    const track = {
+                        ...savedTrack,
+                        url: null, // URL будет создан при перезагрузке файла
+                        file: null,
+                        hasAudio: false // Флаг, что аудио нужно будет загрузить заново
+                    };
+                    
+                    playlist.push(track);
+                });
+                
+                // Обновляем интерфейс
                 renderPlaylist();
                 updateTrackCount();
                 
-                const addedCount = Math.min(files.length, playlist.length);
-                showMessage(`Добавлено ${addedCount} треков`);
-                
-                // Если это первый трек, автоматически выбираем его
-                if (currentTrackIndex === -1 && playlist.length > 0) {
-                    setTimeout(() => playTrack(0), 1000);
+                if (playlist.length > 0) {
+                    showMessage(`Загружено ${playlist.length} сохранённых треков. Аудиофайлы нужно загрузить заново.`);
                 }
-            }, 500);
+                
+            } catch (error) {
+                console.error('Ошибка загрузки сохранённых треков:', error);
+                // В случае ошибки очищаем localStorage
+                localStorage.removeItem('musicPlayerPlaylist');
+            }
+        }
+        
+        // Очистка старых треков для экономии памяти
+        function cleanupOldTracks() {
+            const maxTracks = 100;
+            if (playlist.length > maxTracks) {
+                const tracksToRemove = playlist.slice(0, playlist.length - maxTracks);
+                tracksToRemove.forEach(track => {
+                    if (track.url && track.url.startsWith('blob:')) {
+                        URL.revokeObjectURL(track.url);
+                    }
+                });
+                playlist = playlist.slice(-maxTracks);
+                renderPlaylist();
+                updateTrackCount();
+                saveTracks();
+                showMessage(`Очищено ${tracksToRemove.length} старых треков`);
+            }
+        }
+        
+        // Очистка памяти
+        function cleanupMemory() {
+            playlist.forEach(track => {
+                if (track.url && track.url.startsWith('blob:')) {
+                    URL.revokeObjectURL(track.url);
+                }
+            });
         }
         
         // Рендер плейлиста
@@ -866,15 +1604,26 @@
                 trackItem.dataset.index = index;
                 
                 // Определяем иконку для типа файла
-                const fileExt = track.fileName.split('.').pop().toLowerCase();
+                const fileExt = track.fileName ? track.fileName.split('.').pop().toLowerCase() : 'mp3';
                 let fileIcon = 'fa-file-audio';
                 if (fileExt === 'mp4' || fileExt === 'm4a' || fileExt === 'm4b') {
                     fileIcon = 'fa-file-video';
                 }
                 
+                // Добавляем иконку источника
+                const sourceIcon = track.deviceId === deviceId ? 'fa-mobile-alt' : 'fa-cloud-download-alt';
+                const sourceTitle = track.deviceId === deviceId ? 'Добавлено на этом устройстве' : 'Импортировано с другого устройства';
+                
+                // Проверяем, есть ли аудио
+                const audioIcon = track.hasAudio ? 'fa-volume-up' : 'fa-exclamation-triangle';
+                const audioTitle = track.hasAudio ? 'Аудио загружено' : 'Аудио не загружено';
+                const audioColor = track.hasAudio ? '#34ce57' : '#ffc107';
+                
                 trackItem.innerHTML = `
-                    <div class="track-number">
+                    <div class="track-number" title="${sourceTitle}">
                         <i class="fas ${fileIcon}"></i>
+                        <i class="fas ${sourceIcon}" style="font-size: 10px; margin-left: 2px;"></i>
+                        <i class="fas ${audioIcon}" style="font-size: 10px; margin-left: 2px; color: ${audioColor};"></i>
                     </div>
                     <div class="track-item-info">
                         <div class="track-item-title">${escapeHtml(track.title)}</div>
@@ -907,8 +1656,15 @@
         function playTrack(index) {
             if (index < 0 || index >= playlist.length) return;
             
+            const track = playlist[index];
+            
+            // Проверяем, есть ли аудио
+            if (!track.url) {
+                showMessage('Аудиофайл не загружен. Загрузите файл заново.');
+                return;
+            }
+            
             currentTrackIndex = index;
-            const track = playlist[currentTrackIndex];
             
             console.log(`Воспроизведение: ${track.title} - ${track.artist}`);
             
@@ -1101,7 +1857,9 @@
         }
         
         // Инициализация при загрузке
-        document.addEventListener('DOMContentLoaded', init);
+        document.addEventListener('DOMContentLoaded', () => {
+            init();
+        });
         
         // Для PWA
         window.addEventListener('beforeinstallprompt', (e) => {
