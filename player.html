@@ -70,7 +70,7 @@
             height: calc(100% - 44px);
             overflow-y: auto;
             background: linear-gradient(180deg, #121212 0%, #1a1a2e 100%);
-            padding-bottom: 70px; /* Для нижней панели */
+            padding-bottom: 70px;
         }
         
         /* Верхняя панель плеера */
@@ -342,7 +342,7 @@
             color: #FF3366;
         }
         
-        /* Новая нижняя панель управления */
+        /* Нижняя панель управления */
         .now-playing-bar {
             position: fixed;
             bottom: 0;
@@ -444,9 +444,10 @@
             box-shadow: 0 3px 10px rgba(255, 51, 102, 0.3);
         }
         
-        /* Элементы для демонстрации работы с файлами */
+        /* Кнопка загрузки файлов */
         .file-input-container {
             padding: 0 20px 20px;
+            width: 100%;
         }
         
         .file-input-label {
@@ -472,84 +473,16 @@
             display: none;
         }
         
-        /* Табы для переключения между источниками */
-        .source-tabs {
-            display: flex;
-            margin: 0 20px 20px;
-            background-color: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            overflow: hidden;
-        }
-        
-        .tab {
-            flex: 1;
-            padding: 12px;
+        /* Информация о поддерживаемых форматах */
+        .supported-formats {
             text-align: center;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            border-bottom: 3px solid transparent;
-        }
-        
-        .tab.active {
-            background-color: rgba(255, 51, 102, 0.1);
-            color: #FF6B6B;
-            border-bottom: 3px solid #FF3366;
-        }
-        
-        .tab:active {
-            background-color: rgba(255, 51, 102, 0.2);
-        }
-        
-        /* Форма для загрузки с сайта */
-        .online-form {
-            padding: 15px;
-            background-color: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            margin: 0 20px 20px;
-        }
-        
-        .form-group {
-            margin-bottom: 15px;
-        }
-        
-        .form-label {
-            display: block;
-            margin-bottom: 5px;
+            margin-top: 15px;
             font-size: 14px;
             color: #aaa;
         }
         
-        .form-input {
-            width: 100%;
-            padding: 12px;
-            background-color: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            color: white;
-            font-size: 14px;
-            -webkit-appearance: none;
-        }
-        
-        .form-input::placeholder {
-            color: #888;
-        }
-        
-        .form-button {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #FF3366 0%, #FF6B6B 100%);
-            border: none;
-            border-radius: 8px;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .form-button:active {
-            transform: scale(0.98);
-            opacity: 0.9;
+        .supported-formats i {
+            margin-right: 5px;
         }
         
         /* Индикатор загрузки */
@@ -612,39 +545,24 @@
             margin-bottom: 10px;
         }
         
-        /* Кнопки действий для треков */
-        .track-actions {
-            display: flex;
-            gap: 5px;
-            margin-left: 10px;
-        }
-        
-        .track-action-btn {
-            background: none;
-            border: none;
-            color: #aaa;
-            font-size: 14px;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        /* Кнопка для тестового трека */
+        .demo-button {
+            width: 100%;
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
             cursor: pointer;
             transition: all 0.2s;
+            margin-top: 10px;
+            text-align: center;
         }
         
-        .track-action-btn.save-btn {
-            color: #4da3ff;
-        }
-        
-        .track-action-btn.delete-btn {
-            color: #FF6B6B;
-        }
-        
-        .track-action-btn:active {
-            transform: scale(0.9);
-            background-color: rgba(255, 255, 255, 0.1);
+        .demo-button:active {
+            transform: scale(0.98);
+            background: rgba(255, 255, 255, 0.15);
         }
         
         /* Адаптация под экран iPhone */
@@ -712,12 +630,6 @@
                 <div class="avatar">U</div>
             </div>
             
-            <!-- Табы для переключения источников -->
-            <div class="source-tabs" id="sourceTabs">
-                <div class="tab active" data-source="local">Локальные файлы</div>
-                <div class="tab" data-source="online">Онлайн треки</div>
-            </div>
-            
             <div class="player-main">
                 <div class="album-art no-cover" id="albumArt">
                     <img src="" alt="Album Art" id="albumArtImage" style="display: none;">
@@ -766,55 +678,20 @@
                 </div>
                 
                 <!-- Контейнер для локальных файлов -->
-                <div class="file-input-container" id="localFilesContainer">
+                <div class="file-input-container">
                     <label for="fileInput" class="file-input-label">
                         <i class="fas fa-folder-open"></i> Выбрать музыку с устройства
                     </label>
-                    <input type="file" id="fileInput" class="file-input" accept="audio/*" multiple>
+                    <input type="file" id="fileInput" class="file-input" accept=".mp3,.mp4,.m4a,.wav,.aac,.ogg,.flac" multiple>
                     
-                    <div style="text-align: center; margin-top: 15px; font-size: 14px; color: #aaa;">
-                        <i class="fas fa-info-circle"></i> Нажмите и выберите MP3, M4A, WAV файлы
-                    </div>
-                    
-                    <!-- Кнопка для примера файла -->
-                    <div style="text-align: center; margin-top: 15px;">
-                        <button id="addSampleTrack" style="padding: 10px 15px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; color: white; font-size: 14px; cursor: pointer;">
-                            <i class="fas fa-plus"></i> Добавить пример трека
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Контейнер для онлайн треков -->
-                <div class="file-input-container" id="onlineTracksContainer" style="display: none;">
-                    <div class="online-form">
-                        <div class="form-group">
-                            <label class="form-label">URL аудиофайла</label>
-                            <input type="text" class="form-input" id="audioUrl" placeholder="https://example.com/music.mp3">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label">Название трека</label>
-                            <input type="text" class="form-input" id="trackName" placeholder="Введите название">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label">Исполнитель</label>
-                            <input type="text" class="form-input" id="trackArtistInput" placeholder="Введите исполнителя">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label">URL обложки (необязательно)</label>
-                            <input type="text" class="form-input" id="trackCover" placeholder="https://example.com/cover.jpg">
-                        </div>
-                        
-                        <button class="form-button" id="addOnlineTrack">
-                            <span id="addButtonText">Добавить трек</span>
-                        </button>
+                    <div class="supported-formats">
+                        <i class="fas fa-info-circle"></i> Поддерживаются MP3, MP4, M4A, WAV, AAC
                     </div>
                     
-                    <div style="text-align: center; margin-top: 15px; font-size: 14px; color: #aaa;">
-                        <i class="fas fa-info-circle"></i> Треки сохраняются на устройстве для повторного использования
-                    </div>
+                    <!-- Кнопка для добавления демо-трека -->
+                    <button class="demo-button" id="addDemoTrack">
+                        <i class="fas fa-plus"></i> Добавить демо-трек
+                    </button>
                 </div>
             </div>
             
@@ -828,7 +705,7 @@
                     <div class="empty-playlist" id="emptyPlaylist">
                         <i class="fas fa-music"></i>
                         <p>Ваш плейлист пуст</p>
-                        <p>Добавьте музыку с устройства или онлайн треки</p>
+                        <p>Добавьте музыку с вашего устройства</p>
                     </div>
                     <ul class="track-list" id="trackList" style="display: none;">
                         <!-- Треки будут загружены здесь -->
@@ -875,7 +752,6 @@
         let isShuffled = false;
         let isRepeated = false;
         let playlist = [];
-        let currentSource = 'local';
         
         // Элементы DOM
         const trackTitle = document.getElementById('trackTitle');
@@ -908,21 +784,8 @@
         const nowPlayingArt = document.getElementById('nowPlayingArt');
         const nowPlayingImage = document.getElementById('nowPlayingImage');
         
-        // Элементы табов
-        const sourceTabs = document.querySelectorAll('.tab');
-        const localFilesContainer = document.getElementById('localFilesContainer');
-        const onlineTracksContainer = document.getElementById('onlineTracksContainer');
-        
-        // Элементы для онлайн треков
-        const audioUrl = document.getElementById('audioUrl');
-        const trackName = document.getElementById('trackName');
-        const trackArtistInput = document.getElementById('trackArtistInput');
-        const trackCover = document.getElementById('trackCover');
-        const addOnlineTrack = document.getElementById('addOnlineTrack');
-        const addButtonText = document.getElementById('addButtonText');
-        
-        // Кнопка добавления примера трека
-        const addSampleTrack = document.getElementById('addSampleTrack');
+        // Кнопка добавления демо-трека
+        const addDemoTrack = document.getElementById('addDemoTrack');
         
         // Инициализация
         function init() {
@@ -964,35 +827,18 @@
             // Обработчик загрузки файлов
             fileInput.addEventListener('change', handleFileUpload);
             
-            // Обработчики табов
-            sourceTabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    const source = tab.getAttribute('data-source');
-                    switchSource(source);
-                });
-            });
-            
-            // Обработчик добавления онлайн трека
-            addOnlineTrack.addEventListener('click', addTrackFromUrl);
-            
-            // Обработчик добавления примера трека
-            addSampleTrack.addEventListener('click', addSampleTrackToPlaylist);
+            // Обработчик добавления демо-трека
+            addDemoTrack.addEventListener('click', addDemoTrackToPlaylist);
             
             // Обновляем время на статус-баре
             updateTime();
             setInterval(updateTime, 60000);
             
-            // Загружаем сохранённые треки
-            loadSavedTracks();
-            
-            // Устанавливаем пример URL для тестирования
-            audioUrl.value = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
-            trackName.value = 'SoundHelix Song 1';
-            trackArtistInput.value = 'SoundHelix';
-            trackCover.value = 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80';
-            
-            // Для iOS: специальная обработка выбора файлов
+            // Настройка обработки файлов для iOS
             setupIOSFileHandling();
+            
+            // Загружаем сохранённые треки из localStorage
+            loadSavedTracks();
         }
         
         // Настройка обработки файлов для iOS
@@ -1014,27 +860,6 @@
             });
         }
         
-        // Переключение между источниками
-        function switchSource(source) {
-            currentSource = source;
-            
-            sourceTabs.forEach(tab => {
-                if (tab.getAttribute('data-source') === source) {
-                    tab.classList.add('active');
-                } else {
-                    tab.classList.remove('active');
-                }
-            });
-            
-            if (source === 'local') {
-                localFilesContainer.style.display = 'block';
-                onlineTracksContainer.style.display = 'none';
-            } else {
-                localFilesContainer.style.display = 'none';
-                onlineTracksContainer.style.display = 'block';
-            }
-        }
-        
         // Рендер плейлиста
         function renderPlaylist() {
             trackList.innerHTML = '';
@@ -1053,13 +878,13 @@
                 trackItem.className = `track-item ${index === currentTrackIndex ? 'active' : ''}`;
                 trackItem.dataset.index = index;
                 
-                // Определяем иконку источника
-                const sourceIcon = track.source === 'local' ? 'fa-file-audio' : 'fa-cloud';
-                const sourceTitle = track.source === 'local' ? 'Локальный файл' : 'Онлайн трек';
+                // Определяем иконку формата файла
+                const fileExt = getFileExtension(track.fileName);
+                const formatIcon = getFormatIcon(fileExt);
                 
                 trackItem.innerHTML = `
-                    <div class="track-number" title="${sourceTitle}">
-                        <i class="fas ${sourceIcon}"></i>
+                    <div class="track-number" title="${fileExt.toUpperCase()} файл">
+                        <i class="fas ${formatIcon}"></i>
                     </div>
                     <div class="track-item-info">
                         <div class="track-item-title">${escapeHtml(track.title)}</div>
@@ -1078,6 +903,25 @@
                 
                 trackList.appendChild(trackItem);
             });
+        }
+        
+        // Получить расширение файла
+        function getFileExtension(filename) {
+            return filename.slice((filename.lastIndexOf(".") - 1 >>> 0) + 2).toLowerCase();
+        }
+        
+        // Получить иконку для формата файла
+        function getFormatIcon(extension) {
+            const iconMap = {
+                'mp3': 'fa-file-audio',
+                'mp4': 'fa-file-video',
+                'm4a': 'fa-file-audio',
+                'wav': 'fa-file-audio',
+                'aac': 'fa-file-audio',
+                'ogg': 'fa-file-audio',
+                'flac': 'fa-file-audio'
+            };
+            return iconMap[extension] || 'fa-file-audio';
         }
         
         // Экранирование HTML для безопасности
@@ -1327,8 +1171,12 @@
             
             // Обрабатываем каждый файл
             files.forEach((file, index) => {
-                // Проверяем, что это аудиофайл
-                if (!file.type.startsWith('audio/')) {
+                // Проверяем, что это аудиофайл или MP4 с аудио
+                const fileExt = getFileExtension(file.name);
+                const isAudioFile = file.type.startsWith('audio/') || 
+                                   ['mp3', 'mp4', 'm4a', 'wav', 'aac', 'ogg', 'flac'].includes(fileExt);
+                
+                if (!isAudioFile) {
                     showMessage(`Файл ${file.name} не является аудиофайлом`);
                     loadedCount++;
                     checkAllFilesLoaded(files.length, loadedCount);
@@ -1352,6 +1200,7 @@
                         fileName: file.name,
                         fileSize: file.size,
                         fileType: file.type,
+                        fileExtension: fileExt,
                         metadata: metadata
                     };
                     
@@ -1375,7 +1224,8 @@
                         source: 'local',
                         fileName: file.name,
                         fileSize: file.size,
-                        fileType: file.type
+                        fileType: file.type,
+                        fileExtension: fileExt
                     };
                     
                     playlist.push(track);
@@ -1416,7 +1266,7 @@
                 
                 let timeoutId = setTimeout(() => {
                     reject(new Error('Таймаут загрузки метаданных'));
-                }, 5000);
+                }, 10000);
                 
                 audio.addEventListener('loadedmetadata', () => {
                     clearTimeout(timeoutId);
@@ -1456,23 +1306,28 @@
             });
         }
         
-        // Добавление примера трека
-        function addSampleTrackToPlaylist() {
-            const sampleTrack = {
-                id: `sample_${Date.now()}`,
-                title: 'Патрики',
-                artist: 'Nasty Babe',
-                duration: 109, // 1:49 в секундах
-                url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', // Заменяем на реальный пример
+        // Добавление демо-трека
+        function addDemoTrackToPlaylist() {
+            // Используем публичный аудиофайл для демонстрации
+            const demoUrl = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
+            
+            const demoTrack = {
+                id: `demo_${Date.now()}`,
+                title: 'Демо трек',
+                artist: 'SoundHelix',
+                duration: 183,
+                url: demoUrl,
                 cover: 'none',
-                source: 'online',
-                genre: 'Rap/Hip Hop/Singer & Songwriter',
-                album: 'Патрики'
+                source: 'demo',
+                fileName: 'demo-track.mp3',
+                fileSize: 0,
+                fileType: 'audio/mp3',
+                fileExtension: 'mp3'
             };
             
-            playlist.push(sampleTrack);
+            playlist.push(demoTrack);
             
-            showMessage('Пример трека "Патрики" добавлен');
+            showMessage('Демо-трек добавлен');
             
             // Если это первый трек, автоматически выбираем его
             if (currentTrackIndex === -1 && playlist.length > 0) {
@@ -1485,123 +1340,20 @@
             saveTracksToStorage();
         }
         
-        // Добавление трека с URL
-        function addTrackFromUrl() {
-            const url = audioUrl.value.trim();
-            const title = trackName.value.trim();
-            const artist = trackArtistInput.value.trim();
-            const cover = trackCover.value.trim();
-            
-            // Проверяем обязательные поля
-            if (!url) {
-                showMessage('Введите URL аудиофайла');
-                return;
-            }
-            
-            if (!title) {
-                showMessage('Введите название трека');
-                return;
-            }
-            
-            if (!artist) {
-                showMessage('Введите исполнителя');
-                return;
-            }
-            
-            // Проверяем, что URL валидный
-            try {
-                new URL(url);
-            } catch (e) {
-                showMessage('Введите корректный URL');
-                return;
-            }
-            
-            // Показываем индикатор загрузки
-            addButtonText.innerHTML = '<div class="loading"></div>';
-            addOnlineTrack.disabled = true;
-            
-            // Создаем временный аудиоэлемент для проверки файла
-            const tempAudio = new Audio();
-            tempAudio.src = url;
-            tempAudio.preload = "metadata";
-            
-            tempAudio.addEventListener('loadedmetadata', () => {
-                // Файл доступен и загрузился
-                const track = {
-                    id: `online_${Date.now()}`,
-                    title: title,
-                    artist: artist,
-                    duration: tempAudio.duration,
-                    url: url,
-                    cover: cover || 'none',
-                    source: 'online',
-                    originalUrl: url
-                };
-                
-                // Добавляем трек в плейлист
-                playlist.push(track);
-                
-                // Обновляем интерфейс
-                renderPlaylist();
-                updateTrackCount();
-                saveTracksToStorage();
-                
-                // Сбрасываем форму
-                audioUrl.value = '';
-                trackName.value = '';
-                trackArtistInput.value = '';
-                trackCover.value = '';
-                
-                // Показываем сообщение об успехе
-                showMessage('Трек успешно добавлен и сохранён');
-                
-                // Восстанавливаем кнопку
-                addButtonText.textContent = 'Добавить трек';
-                addOnlineTrack.disabled = false;
-                
-                // Если это первый трек, автоматически выбираем его
-                if (currentTrackIndex === -1 && playlist.length > 0) {
-                    setTimeout(() => playTrack(playlist.length - 1), 500);
-                }
-            });
-            
-            tempAudio.addEventListener('error', () => {
-                showMessage('Не удалось загрузить аудиофайл. Проверьте URL и доступность файла.');
-                addButtonText.textContent = 'Добавить трек';
-                addOnlineTrack.disabled = false;
-            });
-            
-            // Таймаут на случай, если файл не загрузится
-            setTimeout(() => {
-                if (addOnlineTrack.disabled) {
-                    showMessage('Таймаут загрузки. Проверьте подключение к интернету.');
-                    addButtonText.textContent = 'Добавить трек';
-                    addOnlineTrack.disabled = false;
-                }
-            }, 10000);
-        }
-        
         // Сохранение треков в localStorage
         function saveTracksToStorage() {
             try {
                 // Создаем упрощенную версию треков для хранения
                 const tracksToSave = playlist.map(track => {
-                    const savedTrack = {
+                    return {
                         id: track.id,
                         title: track.title,
                         artist: track.artist,
                         duration: track.duration,
-                        cover: track.cover,
-                        source: track.source
+                        source: track.source,
+                        fileName: track.fileName,
+                        fileExtension: track.fileExtension
                     };
-                    
-                    // Для онлайн треков сохраняем URL
-                    if (track.source === 'online') {
-                        savedTrack.url = track.url;
-                    }
-                    // Для локальных треков не сохраняем URL (Object URL не работает после перезагрузки)
-                    
-                    return savedTrack;
                 });
                 
                 localStorage.setItem('musicPlayerPlaylist', JSON.stringify(tracksToSave));
@@ -1622,23 +1374,8 @@
                 if (savedPlaylist) {
                     const parsedPlaylist = JSON.parse(savedPlaylist);
                     
-                    // Восстанавливаем треки
-                    parsedPlaylist.forEach(savedTrack => {
-                        // Проверяем, не добавлен ли уже этот трек
-                        const exists = playlist.some(track => track.id === savedTrack.id);
-                        if (!exists) {
-                            // Для онлайн треков добавляем полностью
-                            if (savedTrack.source === 'online' && savedTrack.url) {
-                                playlist.push(savedTrack);
-                            }
-                            // Для локальных треков не восстанавливаем (Object URL не работает)
-                        }
-                    });
-                    
-                    if (playlist.length > 0) {
-                        renderPlaylist();
-                        updateTrackCount();
-                        showMessage(`Загружено ${playlist.length} сохранённых треков`);
+                    if (parsedPlaylist.length > 0) {
+                        showMessage(`Найдено ${parsedPlaylist.length} сохранённых треков`);
                     }
                 }
             } catch (e) {
