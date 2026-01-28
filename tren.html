@@ -7,7 +7,6 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>FitTrack Pro</title>
   <style>
-    /* Стили остаются без изменений */
     :root {
       --bg-color: #000000;
       --card-bg: #1c1c1e;
@@ -25,6 +24,10 @@
       --safe-bottom: env(safe-area-inset-bottom);
       --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
       --transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+      --gradient-primary: linear-gradient(135deg, var(--primary), #5AC8FA);
+      --gradient-success: linear-gradient(135deg, var(--success), #30D158);
+      --gradient-danger: linear-gradient(135deg, var(--danger), #FF375F);
+      --gradient-warning: linear-gradient(135deg, var(--warning), #FF9F0A);
     }
 
     * { 
@@ -35,7 +38,7 @@
     }
     
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
       background: var(--bg-color); 
       color: var(--text);
       padding-top: var(--safe-top);
@@ -46,14 +49,14 @@
       min-height: -webkit-fill-available;
     }
 
-    /* Updated Header Design */
+    /* Enhanced Header Design */
     .header-sticky {
       position: sticky; 
       top: 0; 
       z-index: 100;
       background: rgba(28, 28, 30, 0.98);
-      backdrop-filter: blur(30px); 
-      -webkit-backdrop-filter: blur(30px);
+      backdrop-filter: saturate(180%) blur(30px); 
+      -webkit-backdrop-filter: saturate(180%) blur(30px);
       padding: 12px 16px;
       border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
       display: flex; 
@@ -61,56 +64,80 @@
       align-items: center;
       transition: var(--transition);
       padding-top: max(12px, var(--safe-top));
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.2);
     }
     
     .header-left, .header-right {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 16px;
     }
     
     .app-logo {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
     
     .app-icon {
-      width: 32px;
-      height: 32px;
-      background: linear-gradient(135deg, var(--primary), #5AC8FA);
-      border-radius: 8px;
+      width: 36px;
+      height: 36px;
+      background: var(--gradient-primary);
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 700;
-      font-size: 16px;
+      font-weight: 800;
+      font-size: 18px;
       color: white;
+      box-shadow: 0 4px 12px rgba(10, 132, 255, 0.3);
+      transition: var(--transition);
+    }
+    
+    .app-icon:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 16px rgba(10, 132, 255, 0.4);
     }
     
     .app-title {
-      font-size: 20px;
-      font-weight: 700;
-      background: linear-gradient(90deg, var(--primary), #5AC8FA);
+      font-size: 22px;
+      font-weight: 800;
+      background: var(--gradient-primary);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+      letter-spacing: -0.5px;
     }
     
     .user-selector {
       position: relative;
+      margin-left: 8px;
     }
     
     .user-selector select {
       background: rgba(118, 118, 128, 0.24);
       border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 20px;
+      border-radius: 12px;
       color: var(--text);
       font-size: 14px;
-      padding: 6px 12px 6px 36px;
+      font-weight: 500;
+      padding: 8px 16px 8px 40px;
       -webkit-appearance: none;
       appearance: none;
       min-width: 140px;
+      transition: var(--transition);
+      backdrop-filter: blur(10px);
+      height: 36px;
+    }
+    
+    .user-selector select:hover {
+      background: rgba(118, 118, 128, 0.32);
+    }
+    
+    .user-selector select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.2);
     }
     
     .user-icon {
@@ -119,42 +146,74 @@
       top: 50%;
       transform: translateY(-50%);
       color: var(--primary);
-      font-size: 14px;
+      font-size: 16px;
       pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
     }
     
     .header-actions {
       display: flex;
-      gap: 8px;
+      gap: 12px;
     }
     
     .header-btn {
-      width: 40px;
-      height: 40px;
+      width: 44px;
+      height: 44px;
       background: rgba(118, 118, 128, 0.24);
-      border-radius: 50%;
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
       border: none;
       color: var(--text);
-      font-size: 18px;
+      font-size: 20px;
       cursor: pointer;
       transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
     }
     
     .header-btn:hover {
       background: rgba(118, 118, 128, 0.32);
-      transform: scale(1.05);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    
+    .header-btn:active {
+      transform: scale(0.95);
     }
     
     .header-btn.active {
-      background: var(--primary);
+      background: var(--gradient-primary);
       color: white;
+      box-shadow: 0 4px 12px rgba(10, 132, 255, 0.3);
+    }
+    
+    /* Badge for notifications/count */
+    .header-badge {
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      background: var(--danger);
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      width: 18px;
+      height: 18px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid var(--card-bg);
     }
 
     .container { 
-      padding: 16px; 
+      padding: 20px; 
       max-width: 500px; 
       margin: 0 auto; 
       animation: fadeIn 0.3s ease-out;
@@ -169,13 +228,24 @@
       color: var(--text-secondary); 
       font-size: 13px; 
       text-transform: uppercase; 
-      margin: 20px 0 8px 0; 
+      margin: 20px 0 10px 0; 
       letter-spacing: 0.5px; 
       display: flex; 
       justify-content: space-between; 
       align-items: center;
       font-weight: 600;
       padding: 0 4px;
+    }
+
+    .section-title {
+      font-size: 24px;
+      font-weight: 700;
+      margin: 20px 0 10px 0;
+      background: linear-gradient(90deg, var(--primary), #5AC8FA);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.5px;
     }
 
     .card { 
@@ -188,8 +258,13 @@
       border: 1px solid rgba(255, 255, 255, 0.05);
     }
 
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+
     .input-row {
-      padding: 12px 16px;
+      padding: 16px;
       background: var(--card-bg);
       border-bottom: 0.5px solid var(--separator);
       transition: var(--transition);
@@ -205,10 +280,11 @@
       width: 100%;
       background: var(--input-bg);
       border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 10px;
+      border-radius: 12px;
       color: var(--text);
       font-size: 16px;
-      padding: 12px;
+      font-weight: 500;
+      padding: 14px;
       -webkit-appearance: none;
       appearance: none;
       transition: var(--transition);
@@ -218,7 +294,8 @@
     select:focus, input:focus {
       outline: none;
       border-color: var(--primary);
-      box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.2);
+      box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.15);
+      background: rgba(44, 44, 46, 0.9);
     }
     
     .select-wrapper { 
@@ -227,7 +304,7 @@
     
     .select-wrapper::after {
       content: '▼';
-      font-size: 10px; 
+      font-size: 12px; 
       color: var(--text-secondary);
       position: absolute; 
       right: 16px; 
@@ -252,14 +329,14 @@
       margin: 0;
     }
 
-    /* Buttons */
+    /* Enhanced Buttons */
     button {
-      background: var(--primary); 
+      background: var(--gradient-primary); 
       color: white; 
       border: none;
       font-size: 16px; 
       font-weight: 600; 
-      padding: 14px 20px;
+      padding: 16px 24px;
       border-radius: var(--radius); 
       cursor: pointer;
       transition: var(--transition);
@@ -269,7 +346,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 10px;
+      box-shadow: 0 4px 15px rgba(10, 132, 255, 0.2);
     }
     
     button::after {
@@ -302,8 +380,8 @@
     }
     
     button:hover { 
-      background: var(--primary-dark);
-      transform: translateY(-1px);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(10, 132, 255, 0.3);
     }
     
     button:active { 
@@ -313,38 +391,43 @@
     button.secondary { 
       background: rgba(118, 118, 128, 0.24); 
       color: var(--primary); 
+      box-shadow: none;
     }
     
     button.secondary:hover {
       background: rgba(118, 118, 128, 0.32);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
     
     .btn-export {
       background: rgba(118, 118, 128, 0.24);
       color: var(--primary);
-      font-size: 12px;
-      padding: 6px 12px;
-      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 8px 14px;
+      border-radius: 10px;
       text-transform: none;
       width: auto;
       letter-spacing: 0;
-      font-weight: 500;
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 6px;
       border: 1px solid rgba(255, 255, 255, 0.1);
       cursor: pointer;
+      transition: var(--transition);
     }
     
     .btn-export:hover {
       background: rgba(118, 118, 128, 0.32);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
 
-    /* Sets Layout */
+    /* Enhanced Sets Layout */
     .set-row {
       display: flex; 
       align-items: center; 
-      padding: 12px 16px;
+      padding: 16px;
       border-bottom: 0.5px solid var(--separator);
       transition: var(--transition);
       animation: slideIn 0.3s ease-out;
@@ -366,10 +449,10 @@
     }
     
     .set-index { 
-      width: 30px; 
+      width: 36px; 
       color: var(--text-secondary); 
-      font-size: 15px; 
-      font-weight: 500;
+      font-size: 16px; 
+      font-weight: 600;
       text-align: center;
     }
     
@@ -383,27 +466,34 @@
       background: var(--input-bg);
       text-align: center;
       font-weight: 600;
-      padding: 10px;
-      font-size: 16px;
+      padding: 12px;
+      font-size: 17px;
       border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+    }
+    
+    .set-inputs input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.1);
     }
     
     .btn-delete {
-      width: 32px; 
-      height: 32px; 
-      background: var(--danger); 
-      border-radius: 50%;
+      width: 36px; 
+      height: 36px; 
+      background: var(--gradient-danger); 
+      border-radius: 10px;
       display: flex; 
       align-items: center; 
       justify-content: center; 
       margin-left: 10px; 
       padding: 0;
       transition: var(--transition);
+      box-shadow: 0 2px 8px rgba(255, 69, 58, 0.2);
     }
     
     .btn-delete:hover {
-      background: #d43530;
       transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(255, 69, 58, 0.3);
     }
     
     .btn-delete:active {
@@ -411,100 +501,104 @@
     }
     
     .btn-delete svg { 
-      width: 14px; 
-      height: 14px; 
+      width: 16px; 
+      height: 16px; 
       fill: white; 
     }
 
-    /* Stats */
+    /* Enhanced Stats */
     .stats-row {
       display: flex;
-      gap: 10px;
-      padding: 12px 16px;
+      gap: 12px;
+      padding: 16px;
       background: rgba(10, 132, 255, 0.1);
       border-radius: var(--radius);
-      margin: 10px 0 20px 0;
+      margin: 15px 0 25px 0;
       animation: fadeIn 0.5s ease-out;
       border: 1px solid rgba(10, 132, 255, 0.2);
+      backdrop-filter: blur(10px);
     }
     
     .stat-item {
       flex: 1;
       text-align: center;
-      padding: 8px;
+      padding: 12px 8px;
       background: rgba(255, 255, 255, 0.05);
-      border-radius: 8px;
+      border-radius: 10px;
+      transition: var(--transition);
+    }
+    
+    .stat-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+      transform: translateY(-2px);
     }
     
     .stat-value {
-      font-size: 18px;
-      font-weight: 700;
+      font-size: 22px;
+      font-weight: 800;
       color: var(--primary);
+      margin-bottom: 4px;
     }
     
     .stat-label {
       font-size: 11px;
       color: var(--text-secondary);
-      margin-top: 2px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
+      font-weight: 600;
     }
 
-    /* History */
+    /* Enhanced History */
     .history-group { 
-      margin-bottom: 20px; 
+      margin-bottom: 24px; 
     }
     
     .history-date { 
-      font-size: 18px; 
-      font-weight: 700; 
-      margin: 0 0 10px 0; 
+      font-size: 20px; 
+      font-weight: 800; 
+      margin: 0 0 12px 0; 
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
+      color: var(--text);
     }
     
     .history-date::before {
       content: '';
       width: 4px;
-      height: 16px;
-      background: var(--primary);
+      height: 20px;
+      background: var(--gradient-primary);
       border-radius: 2px;
     }
     
     .history-item { 
       background: var(--card-bg); 
-      padding: 16px; 
-      margin-bottom: 1px; 
+      padding: 18px; 
+      margin-bottom: 8px; 
       transition: var(--transition);
       animation: slideIn 0.3s ease-out;
+      border-radius: var(--radius);
+      border: 1px solid rgba(255, 255, 255, 0.05);
     }
     
     .history-item:hover {
       background: rgba(44, 44, 46, 0.8);
-    }
-    
-    .history-item:first-child { 
-      border-top-left-radius: var(--radius); 
-      border-top-right-radius: var(--radius); 
-    }
-    
-    .history-item:last-child { 
-      border-bottom-left-radius: var(--radius); 
-      border-bottom-right-radius: var(--radius); 
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
     }
     
     .tag { 
-      font-size: 13px; 
+      font-size: 14px; 
       background: rgba(10, 132, 255, 0.15); 
       color: var(--primary); 
-      padding: 4px 10px; 
-      border-radius: 6px; 
+      padding: 6px 12px; 
+      border-radius: 8px; 
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      font-weight: 500;
+      gap: 6px;
+      font-weight: 600;
       transition: var(--transition);
+      border: 1px solid rgba(10, 132, 255, 0.1);
     }
     
     .tag:hover {
@@ -512,17 +606,17 @@
       transform: translateY(-1px);
     }
 
-    /* FAB */
+    /* Enhanced FAB */
     .fab-container {
       position: fixed; 
-      bottom: calc(20px + var(--safe-bottom));
-      left: 16px; 
-      right: 16px; 
+      bottom: calc(24px + var(--safe-bottom));
+      left: 20px; 
+      right: 20px; 
       max-width: 500px; 
       margin: 0 auto; 
       z-index: 90;
       animation: fadeInUp 0.3s ease-out;
-      bottom: max(20px, calc(20px + var(--safe-bottom)));
+      bottom: max(24px, calc(24px + var(--safe-bottom)));
     }
     
     @keyframes fadeInUp {
@@ -536,13 +630,13 @@
       }
     }
 
-    /* Modal */
+    /* Enhanced Modal */
     .modal {
       position: fixed; 
       inset: 0; 
       background: rgba(0,0,0,0.8); 
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       z-index: 1000; 
       display: none; 
       align-items: flex-end;
@@ -557,14 +651,14 @@
     .modal-card {
       background: var(--card-bg); 
       width: 100%; 
-      border-radius: 20px 20px 0 0;
-      padding: 20px; 
-      padding-bottom: calc(20px + var(--safe-bottom));
+      border-radius: 24px 24px 0 0;
+      padding: 24px; 
+      padding-bottom: calc(24px + var(--safe-bottom));
       max-height: 90vh; 
       display: flex; 
       flex-direction: column;
       animation: slideUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-      box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 -20px 50px rgba(0, 0, 0, 0.5);
       border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
     
@@ -586,51 +680,61 @@
       cursor: grabbing;
     }
 
-    /* Empty State */
+    /* Enhanced Empty State */
     .empty-state {
       text-align: center;
-      padding: 40px 20px;
+      padding: 60px 20px;
       color: var(--text-secondary);
     }
     
     .empty-state svg {
-      width: 64px;
-      height: 64px;
+      width: 80px;
+      height: 80px;
       fill: var(--text-secondary);
-      opacity: 0.3;
-      margin-bottom: 16px;
+      opacity: 0.2;
+      margin-bottom: 20px;
     }
 
-    /* Toast */
+    /* Enhanced Toast */
     .toast {
       position: fixed;
-      top: 20px;
+      top: 30px;
       left: 50%;
       transform: translateX(-50%) translateY(-100px);
       background: var(--card-bg);
-      padding: 12px 20px;
+      padding: 14px 22px;
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       z-index: 1000;
       transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       border-left: 4px solid var(--primary);
       max-width: 90%;
       word-break: break-word;
       border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
     }
     
     .toast.show {
       transform: translateX(-50%) translateY(0);
     }
     
-    .toast.success { border-color: var(--success); }
-    .toast.error { border-color: var(--danger); }
-    .toast.warning { border-color: var(--warning); }
+    .toast.success { 
+      border-color: var(--success); 
+      background: rgba(28, 28, 30, 0.95);
+    }
+    .toast.error { 
+      border-color: var(--danger); 
+      background: rgba(28, 28, 30, 0.95);
+    }
+    .toast.warning { 
+      border-color: var(--warning); 
+      background: rgba(28, 28, 30, 0.95);
+    }
 
-    /* Loader */
+    /* Enhanced Loader */
     .loader {
       display: inline-block;
       width: 20px;
@@ -645,13 +749,13 @@
       to { transform: rotate(360deg); }
     }
 
-    /* Quick weight buttons */
+    /* Enhanced Quick weight buttons */
     .quick-weight-container {
       display: flex;
-      gap: 8px;
+      gap: 10px;
       margin-bottom: 20px;
       overflow-x: auto;
-      padding: 8px 0;
+      padding: 10px 0;
       -webkit-overflow-scrolling: touch;
     }
     
@@ -662,30 +766,34 @@
     .quick-weight-btn {
       background: rgba(118, 118, 128, 0.24);
       color: var(--primary);
-      padding: 8px 12px;
-      border-radius: 20px;
-      font-size: 14px;
-      font-weight: 500;
+      padding: 10px 16px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
       white-space: nowrap;
       border: none;
       cursor: pointer;
       transition: var(--transition);
       border: 1px solid rgba(255, 255, 255, 0.1);
+      min-width: 70px;
     }
     
     .quick-weight-btn:hover {
       background: rgba(118, 118, 128, 0.32);
+      transform: translateY(-1px);
     }
     
     .quick-weight-btn.reset {
       color: var(--danger);
+      background: rgba(255, 69, 58, 0.1);
     }
 
     /* Import/Export buttons */
     .import-export-buttons {
       display: flex;
-      gap: 8px;
-      margin-top: 10px;
+      gap: 10px;
+      margin-top: 15px;
+      flex-wrap: wrap;
     }
 
     /* File input styling */
@@ -693,6 +801,8 @@
       position: relative;
       overflow: hidden;
       display: inline-block;
+      flex: 1;
+      min-width: 140px;
     }
     
     .file-input {
@@ -705,26 +815,27 @@
       cursor: pointer;
     }
 
-    /* Tabs */
+    /* Enhanced Tabs */
     .tabs {
       display: flex;
-      gap: 4px;
+      gap: 6px;
       background: rgba(118, 118, 128, 0.12);
-      padding: 4px;
-      border-radius: 12px;
-      margin-bottom: 20px;
+      padding: 6px;
+      border-radius: 14px;
+      margin-bottom: 24px;
+      backdrop-filter: blur(10px);
     }
     
     .tab {
       flex: 1;
       text-align: center;
-      padding: 10px;
+      padding: 12px;
       background: transparent;
       border: none;
       color: var(--text-secondary);
-      font-size: 14px;
-      font-weight: 500;
-      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 10px;
       cursor: pointer;
       transition: var(--transition);
     }
@@ -732,7 +843,7 @@
     .tab.active {
       background: var(--card-bg);
       color: var(--text);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     }
     
     .tab-content {
@@ -765,17 +876,18 @@
     
     .comparison-table th {
       text-align: left;
-      padding: 12px;
+      padding: 14px;
       background: rgba(255, 255, 255, 0.05);
       border-bottom: 1px solid var(--separator);
       font-size: 12px;
       color: var(--text-secondary);
       text-transform: uppercase;
       letter-spacing: 0.5px;
+      font-weight: 600;
     }
     
     .comparison-table td {
-      padding: 12px;
+      padding: 14px;
       border-bottom: 1px solid var(--separator);
     }
     
@@ -788,65 +900,157 @@
     }
     
     .comparison-value {
-      font-weight: 600;
+      font-weight: 700;
       color: var(--primary);
       text-align: right;
     }
 
-    /* User profile */
+    /* Enhanced User profile */
     .profile-stats {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin: 15px 0;
+      gap: 12px;
+      margin: 20px 0;
     }
     
     .profile-stat {
       background: rgba(255, 255, 255, 0.05);
-      border-radius: 12px;
-      padding: 15px;
+      border-radius: 14px;
+      padding: 20px;
       text-align: center;
+      transition: var(--transition);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .profile-stat:hover {
+      background: rgba(255, 255, 255, 0.08);
+      transform: translateY(-2px);
     }
     
     .profile-stat-value {
-      font-size: 24px;
-      font-weight: 700;
+      font-size: 28px;
+      font-weight: 800;
       color: var(--primary);
-      margin-bottom: 4px;
+      margin-bottom: 6px;
     }
     
     .profile-stat-label {
-      font-size: 12px;
+      font-size: 13px;
       color: var(--text-secondary);
+      font-weight: 600;
     }
     
     .profile-input-group {
       display: flex;
-      gap: 10px;
-      margin: 15px 0;
+      gap: 12px;
+      margin: 20px 0;
     }
     
     .profile-input-group input {
       flex: 1;
     }
 
+    /* Progress bar for sets */
+    .progress-container {
+      margin: 15px 0;
+    }
+    
+    .progress-bar {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: var(--gradient-primary);
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+
     /* Responsive */
     @media (max-width: 480px) {
-      .container { padding: 12px; }
-      .header-sticky { padding: 10px 12px; }
-      .set-inputs { flex-direction: column; gap: 8px; }
-      .stats-row { flex-wrap: wrap; }
-      .stat-item { min-width: calc(50% - 5px); }
-      .app-title { font-size: 18px; }
-      button { padding: 12px 16px; font-size: 15px; }
-      .header-btn { width: 36px; height: 36px; }
-      .profile-stats { grid-template-columns: 1fr; }
+      .container { padding: 16px; }
+      .header-sticky { 
+        padding: 10px 14px; 
+        gap: 12px;
+      }
+      .header-left, .header-right {
+        gap: 12px;
+      }
+      .header-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+      }
+      .app-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+      }
+      .app-title { 
+        font-size: 19px; 
+        display: none; /* Скрываем текст на очень маленьких экранах */
+      }
+      .user-selector select {
+        min-width: 120px;
+        padding: 6px 12px 6px 36px;
+        font-size: 13px;
+      }
+      .set-inputs { 
+        flex-direction: column; 
+        gap: 10px; 
+      }
+      .stats-row { 
+        flex-wrap: wrap; 
+        gap: 10px;
+        padding: 14px;
+      }
+      .stat-item { 
+        min-width: calc(50% - 5px); 
+        padding: 10px 6px;
+      }
+      .stat-value {
+        font-size: 20px;
+      }
+      button { 
+        padding: 14px 20px; 
+        font-size: 15px; 
+      }
+      .profile-stats { 
+        grid-template-columns: 1fr; 
+        gap: 10px;
+      }
+      .profile-stat {
+        padding: 16px;
+      }
+      .profile-stat-value {
+        font-size: 24px;
+      }
+      .history-item {
+        padding: 16px;
+      }
+      .import-export-buttons {
+        flex-direction: column;
+      }
+      .file-input-wrapper {
+        width: 100%;
+      }
+    }
+
+    /* Для экранов где можно показать заголовок */
+    @media (min-width: 380px) {
+      .app-title { 
+        display: block; 
+        font-size: 20px;
+      }
     }
 
     /* iPhone 13 Pro Max specific */
     @media only screen and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) {
-      .container { padding: 16px 20px; }
-      .header-sticky { padding: 15px 20px; }
+      .container { padding: 20px; }
+      .header-sticky { padding: 14px 20px; }
       .fab-container { left: 20px; right: 20px; }
     }
 
@@ -860,6 +1064,88 @@
         --text-secondary: #8e8e93;
         --separator: #c6c6c8;
       }
+      
+      .header-sticky {
+        background: rgba(242, 242, 247, 0.98);
+        border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
+      }
+      
+      .header-btn {
+        background: rgba(118, 118, 128, 0.12);
+      }
+      
+      .header-btn:hover {
+        background: rgba(118, 118, 128, 0.18);
+      }
+      
+      .card {
+        border: 1px solid rgba(0, 0, 0, 0.05);
+      }
+      
+      .history-item:hover {
+        background: rgba(229, 229, 234, 0.8);
+      }
+      
+      .modal {
+        background: rgba(242, 242, 247, 0.8);
+      }
+      
+      .toast {
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+      }
+    }
+
+    /* Smooth scroll */
+    html {
+      scroll-behavior: smooth;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 3px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: rgba(118, 118, 128, 0.5);
+      border-radius: 3px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(118, 118, 128, 0.7);
+    }
+
+    /* Pulse animation for important elements */
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+
+    /* Gradient text */
+    .gradient-text {
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Glass morphism effect */
+    .glass {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
   </style>
 </head>
@@ -871,17 +1157,22 @@
       <div class="app-icon">F</div>
       <div class="app-title">FitTrack</div>
     </div>
-  </div>
-  
-  <div class="user-selector">
-    <span class="user-icon">👤</span>
-    <select id="userSelect" onchange="switchUser()"></select>
+    <div class="user-selector">
+      <span class="user-icon">👤</span>
+      <select id="userSelect" onchange="switchUser()"></select>
+    </div>
   </div>
   
   <div class="header-right">
-    <button class="header-btn" onclick="openExerciseManager()" title="Управление упражнениями">🏋️</button>
-    <button class="header-btn" onclick="openUserProfile()" title="Профиль пользователя">📊</button>
-    <button class="header-btn" id="lockBtn" onclick="toggleEditMode()" title="Режим редактирования">✏️</button>
+    <button class="header-btn" onclick="openExerciseManager()" title="Управление упражнениями">
+      🏋️
+    </button>
+    <button class="header-btn" onclick="openUserProfile()" title="Профиль пользователя">
+      📊
+    </button>
+    <button class="header-btn" id="lockBtn" onclick="toggleEditMode()" title="Режим редактирования">
+      ✏️
+    </button>
   </div>
 </div>
 
@@ -1083,7 +1374,7 @@
         <input type="number" id="editHeight" placeholder="Рост (см)" min="100" max="250">
         <input type="number" id="editWeight" placeholder="Вес (кг)" min="30" max="200" step="0.1">
       </div>
-      <button onclick="saveUserParameters()" style="width:100%; margin-bottom: 15px;">💾 Сохранить</button>
+      <button onclick="saveProfileParameters()" style="width:100%; margin-bottom: 15px;">💾 Сохранить</button>
       
       <div style="font-size: 12px; color: var(--text-secondary); text-align: center; margin-top: 10px;">
         <div>ИМТ = вес (кг) / (рост (м))²</div>
@@ -1160,6 +1451,15 @@ let editingId = null;
 let originalSetsBackup = null;
 let chartPeriod = 30;
 let parametersChart = null;
+
+// Функция сохранения параметров пользователей в localStorage
+function saveUserParametersToStorage() {
+  try {
+    localStorage.setItem(USER_PARAMS_KEY, JSON.stringify(userParameters));
+  } catch (e) {
+    console.error('Ошибка сохранения параметров пользователей:', e);
+  }
+}
 
 // Инициализация при загрузке
 window.onload = () => {
@@ -1289,7 +1589,6 @@ function loadUserParameters() {
           history: []
         };
       });
-      // ИСПРАВЛЕНИЕ: Используем новую функцию сохранения
       saveUserParametersToStorage();
     }
   } catch (e) {
@@ -1311,15 +1610,6 @@ function saveCurrentUser() {
     localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(currentUser));
   } catch (e) {
     console.error('Ошибка сохранения текущего пользователя:', e);
-  }
-}
-
-// ИСПРАВЛЕНИЕ: Создаем отдельную функцию для сохранения параметров в localStorage
-function saveUserParametersToStorage() {
-  try {
-    localStorage.setItem(USER_PARAMS_KEY, JSON.stringify(userParameters));
-  } catch (e) {
-    console.error('Ошибка сохранения параметров пользователей:', e);
   }
 }
 
@@ -1508,7 +1798,6 @@ function addUser() {
   };
   
   saveUsers();
-  // ИСПРАВЛЕНИЕ: Используем новую функцию сохранения
   saveUserParametersToStorage();
   renderUsersManagerList();
   input.value = '';
@@ -1584,7 +1873,6 @@ function removeUser(userId) {
   // Удаляем параметры пользователя
   if (userParameters[userId]) {
     delete userParameters[userId];
-    // ИСПРАВЛЕНИЕ: Используем новую функцию сохранения
     saveUserParametersToStorage();
   }
   
@@ -2587,7 +2875,7 @@ function triggerFileInput() {
   document.getElementById('csvImport').click();
 }
 
-// Импорт из CSV - ИСПРАВЛЕННАЯ ФУНКЦИЯ
+// Импорт из CSV - УПРОЩЕННАЯ И ИСПРАВЛЕННАЯ ФУНКЦИЯ
 function importFromCSV(event) {
   const file = event.target.files[0];
   if (!file) {
@@ -2610,9 +2898,10 @@ function importFromCSV(event) {
       const lines = content.split('\n');
       
       // Пропускаем заголовок
+      const headers = lines[0].split(';').map(h => h.trim().replace(/"/g, ''));
+      
       let importedCount = 0;
       let skippedCount = 0;
-      let errors = [];
       
       // Создаем временный массив для новых тренировок
       const newWorkouts = [];
@@ -2622,28 +2911,11 @@ function importFromCSV(event) {
         if (!line) continue;
         
         try {
-          // Разделяем строку CSV с учетом кавычек
-          const parts = [];
-          let currentPart = '';
-          let inQuotes = false;
+          // Простая обработка CSV
+          const values = line.split(';').map(v => v.trim().replace(/"/g, ''));
           
-          for (let char of line) {
-            if (char === '"') {
-              inQuotes = !inQuotes;
-            } else if (char === ';' && !inQuotes) {
-              parts.push(currentPart.trim());
-              currentPart = '';
-            } else {
-              currentPart += char;
-            }
-          }
-          parts.push(currentPart.trim());
-          
-          // Убираем кавычки из значений
-          const cleanParts = parts.map(part => part.replace(/^"|"$/g, ''));
-          
-          if (cleanParts.length >= 6) {
-            const [dateStr, timeStr, exerciseName, setIndexStr, weightStr, repsStr] = cleanParts;
+          if (values.length >= 7) {
+            const [dateStr, timeStr, exerciseName, setIndexStr, weightStr, repsStr, volumeStr] = values;
             
             if (!exerciseName || exerciseName === '') {
               skippedCount++;
@@ -2653,7 +2925,6 @@ function importFromCSV(event) {
             // Парсим дату
             let date;
             try {
-              // Пробуем разные форматы дат
               if (dateStr.includes('.')) {
                 // Формат DD.MM.YYYY
                 const [day, month, year] = dateStr.split('.');
@@ -2662,9 +2933,6 @@ function importFromCSV(event) {
                   const [hours, minutes] = timeStr.split(':');
                   date.setHours(parseInt(hours) || 0, parseInt(minutes) || 0);
                 }
-              } else if (dateStr.includes('-')) {
-                // Формат YYYY-MM-DD
-                date = new Date(dateStr + 'T' + (timeStr || '00:00'));
               } else {
                 // Пробуем стандартный парсинг
                 date = new Date(dateStr + ' ' + timeStr);
@@ -2716,7 +2984,6 @@ function importFromCSV(event) {
           }
         } catch (parseError) {
           console.error(`Ошибка парсинга строки ${i}:`, line, parseError);
-          errors.push(`Строка ${i}`);
           skippedCount++;
         }
       }
@@ -2964,8 +3231,8 @@ function loadUserProfile() {
   renderParametersChart();
 }
 
-// ИСПРАВЛЕНИЕ: Переименованная функция сохранения параметров пользователя
-function saveUserParameters() {
+// Функция сохранения параметров из профиля
+function saveProfileParameters() {
   const heightInput = document.getElementById('editHeight');
   const weightInput = document.getElementById('editWeight');
   
@@ -3014,7 +3281,6 @@ function saveUserParameters() {
     }
   }
   
-  // ИСПРАВЛЕНИЕ: Используем новую функцию сохранения
   saveUserParametersToStorage();
   loadUserProfile();
   
@@ -3551,6 +3817,109 @@ if (isIPhone13ProMax()) {
     document.head.appendChild(style);
   });
 }
+
+// Добавим анимацию при наведении на элементы
+document.addEventListener('DOMContentLoaded', function() {
+  // Добавляем эффект пульсации для кнопки сохранения
+  const saveBtn = document.querySelector('.fab-container button');
+  if (saveBtn) {
+    saveBtn.addEventListener('mouseenter', function() {
+      this.classList.add('pulse');
+    });
+    
+    saveBtn.addEventListener('mouseleave', function() {
+      this.classList.remove('pulse');
+    });
+  }
+  
+  // Добавляем интерактивность для статистики
+  const statItems = document.querySelectorAll('.stat-item');
+  statItems.forEach(item => {
+    item.addEventListener('click', function() {
+      this.style.transform = 'scale(0.95)';
+      setTimeout(() => {
+        this.style.transform = '';
+      }, 200);
+    });
+  });
+  
+  // Улучшаем навигацию с клавиатуры
+  document.addEventListener('keydown', function(e) {
+    // Tab для навигации по элементам
+    if (e.key === 'Tab') {
+      document.querySelectorAll('button, input, select').forEach(el => {
+        el.addEventListener('focus', function() {
+          this.style.outline = '2px solid var(--primary)';
+          this.style.outlineOffset = '2px';
+        });
+        
+        el.addEventListener('blur', function() {
+          this.style.outline = 'none';
+        });
+      });
+    }
+  });
+  
+  // Показываем прогресс заполнения подходов
+  function updateSetsProgress() {
+    const completedSets = currentSets.filter(s => s.reps && s.weight).length;
+    const totalSets = currentSets.length;
+    const progress = totalSets > 0 ? (completedSets / totalSets) * 100 : 0;
+    
+    // Создаем или обновляем прогресс-бар
+    let progressBar = document.querySelector('.progress-container');
+    if (!progressBar) {
+      progressBar = document.createElement('div');
+      progressBar.className = 'progress-container';
+      progressBar.innerHTML = `
+        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+          <span style="font-size: 14px; color: var(--text-secondary);">Прогресс заполнения:</span>
+          <span style="font-size: 14px; font-weight: 600; color: var(--primary);">${completedSets}/${totalSets}</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: ${progress}%"></div>
+        </div>
+      `;
+      
+      const setsTitle = document.querySelector('h3:nth-of-type(2)');
+      if (setsTitle) {
+        setsTitle.parentNode.insertBefore(progressBar, setsTitle.nextElementSibling);
+      }
+    } else {
+      progressBar.innerHTML = `
+        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+          <span style="font-size: 14px; color: var(--text-secondary);">Прогресс заполнения:</span>
+          <span style="font-size: 14px; font-weight: 600; color: var(--primary);">${completedSets}/${totalSets}</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: ${progress}%"></div>
+        </div>
+      `;
+    }
+  }
+  
+  // Обновляем прогресс при изменении подходов
+  const originalUpdateSet = window.updateSet;
+  window.updateSet = function(idx, field, value) {
+    originalUpdateSet(idx, field, value);
+    updateSetsProgress();
+  };
+  
+  const originalAddSet = window.addSet;
+  window.addSet = function() {
+    originalAddSet();
+    updateSetsProgress();
+  };
+  
+  const originalRemoveSet = window.removeSet;
+  window.removeSet = function(idx) {
+    originalRemoveSet(idx);
+    updateSetsProgress();
+  };
+  
+  // Инициализируем прогресс-бар
+  setTimeout(updateSetsProgress, 100);
+});
 </script>
 </body>
 </html>
