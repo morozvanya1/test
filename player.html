@@ -115,12 +115,14 @@
             box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
             margin-bottom: 30px;
             position: relative;
+            background-color: #000;
         }
         
         .album-art img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            display: block;
         }
         
         .album-art-overlay {
@@ -129,12 +131,16 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.7));
+            background-color: rgba(0, 0, 0, 0.7);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 60px;
             color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .album-art.no-cover .album-art-overlay {
+            background-color: #000;
         }
         
         .track-info {
@@ -316,7 +322,7 @@
             color: #FF3366;
         }
         
-        /* НОВОЕ: Нижняя панель управления */
+        /* Новая нижняя панель управления */
         .now-playing-bar {
             position: absolute;
             bottom: 0;
@@ -346,12 +352,17 @@
             overflow: hidden;
             margin-right: 12px;
             flex-shrink: 0;
+            background-color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .now-playing-art img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            display: block;
         }
         
         .now-playing-text {
@@ -464,6 +475,109 @@
             background-color: rgba(255, 51, 102, 0.3);
         }
         
+        /* Форма для загрузки с сайта */
+        .online-form {
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            margin: 0 20px 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #aaa;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+        }
+        
+        .form-input::placeholder {
+            color: #888;
+        }
+        
+        .form-button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #FF3366 0%, #FF6B6B 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .form-button:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
+        
+        /* Кнопки управления треками */
+        .track-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .action-btn {
+            flex: 1;
+            padding: 8px;
+            border-radius: 8px;
+            border: none;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .save-btn {
+            background-color: rgba(0, 123, 255, 0.2);
+            color: #4da3ff;
+            border: 1px solid rgba(0, 123, 255, 0.3);
+        }
+        
+        .save-btn:active {
+            background-color: rgba(0, 123, 255, 0.3);
+        }
+        
+        .delete-btn {
+            background-color: rgba(255, 51, 102, 0.2);
+            color: #FF6B6B;
+            border: 1px solid rgba(255, 51, 102, 0.3);
+        }
+        
+        .delete-btn:active {
+            background-color: rgba(255, 51, 102, 0.3);
+        }
+        
+        /* Индикатор загрузки */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #FF3366;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
         /* Сообщения */
         .message {
             position: fixed;
@@ -557,8 +671,8 @@
             </div>
             
             <div class="player-main">
-                <div class="album-art" id="albumArt">
-                    <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80" alt="Album Art">
+                <div class="album-art no-cover" id="albumArt">
+                    <img src="" alt="Album Art" id="albumArtImage" style="display: none;">
                     <div class="album-art-overlay">
                         <i class="fas fa-music"></i>
                     </div>
@@ -611,14 +725,40 @@
                     <input type="file" id="fileInput" class="file-input" accept="audio/*" multiple>
                     
                     <div style="text-align: center; margin-top: 15px; font-size: 14px; color: #aaa;">
-                        <i class="fas fa-info-circle"></i> Вы можете выбрать MP3, M4A, WAV файлы
+                        <i class="fas fa-info-circle"></i> Поддерживаются MP3, M4A, WAV файлы
                     </div>
                 </div>
                 
-                <!-- Контейнер для онлайн треков (скрыт по умолчанию) -->
+                <!-- Контейнер для онлайн треков -->
                 <div class="file-input-container" id="onlineTracksContainer" style="display: none;">
-                    <div style="padding: 12px 20px; background-color: rgba(255, 255, 255, 0.05); border-radius: 12px; text-align: center; color: #aaa;">
-                        <i class="fas fa-cloud"></i> Онлайн треки в разработке
+                    <div class="online-form">
+                        <div class="form-group">
+                            <label class="form-label">URL аудиофайла</label>
+                            <input type="text" class="form-input" id="audioUrl" placeholder="https://example.com/music.mp3">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Название трека</label>
+                            <input type="text" class="form-input" id="trackName" placeholder="Введите название">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Исполнитель</label>
+                            <input type="text" class="form-input" id="trackArtistInput" placeholder="Введите исполнителя">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">URL обложки (необязательно)</label>
+                            <input type="text" class="form-input" id="trackCover" placeholder="https://example.com/cover.jpg">
+                        </div>
+                        
+                        <button class="form-button" id="addOnlineTrack">
+                            <span id="addButtonText">Добавить трек</span>
+                        </button>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 15px; font-size: 14px; color: #aaa;">
+                        <i class="fas fa-info-circle"></i> Треки сохраняются на устройстве
                     </div>
                 </div>
             </div>
@@ -633,7 +773,7 @@
                     <div class="empty-playlist" id="emptyPlaylist">
                         <i class="fas fa-music"></i>
                         <p>Ваш плейлист пуст</p>
-                        <p>Загрузите музыку с вашего устройства</p>
+                        <p>Загрузите музыку с вашего устройства или добавьте онлайн треки</p>
                     </div>
                     <ul class="track-list" id="trackList" style="display: none;">
                         <!-- Треки будут загружены здесь -->
@@ -642,11 +782,12 @@
             </div>
         </div>
         
-        <!-- Новая нижняя панель воспроизведения -->
+        <!-- Нижняя панель воспроизведения -->
         <div class="now-playing-bar" id="nowPlayingBar" style="display: none;">
             <div class="now-playing-info">
-                <div class="now-playing-art">
-                    <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80" alt="Album Art">
+                <div class="now-playing-art" id="nowPlayingArt">
+                    <img src="" alt="Album Art" id="nowPlayingImage" style="display: none;">
+                    <i class="fas fa-music"></i>
                 </div>
                 <div class="now-playing-text">
                     <div class="now-playing-title" id="nowPlayingTitle">Не выбрано</div>
@@ -680,6 +821,7 @@
         let isRepeated = false;
         let playlist = [];
         let currentSource = 'local'; // 'local' или 'online'
+        let savedTracks = {}; // Для сохранения треков в localStorage
         
         // Элементы DOM
         const trackTitle = document.getElementById('trackTitle');
@@ -697,23 +839,34 @@
         const emptyPlaylist = document.getElementById('emptyPlaylist');
         const playlistContent = document.getElementById('playlistContent');
         const albumArt = document.getElementById('albumArt');
+        const albumArtImage = document.getElementById('albumArtImage');
         const fileInput = document.getElementById('fileInput');
         const trackCount = document.getElementById('trackCount');
         const message = document.getElementById('message');
         const messageText = document.getElementById('messageText');
         
-        // Элементы новой нижней панели
+        // Элементы нижней панели
         const nowPlayingBar = document.getElementById('nowPlayingBar');
         const nowPlayingTitle = document.getElementById('nowPlayingTitle');
         const nowPlayingArtist = document.getElementById('nowPlayingArtist');
         const nowPlayingPlayBtn = document.getElementById('nowPlayingPlayBtn');
         const nowPlayingPrevBtn = document.getElementById('nowPlayingPrevBtn');
         const nowPlayingNextBtn = document.getElementById('nowPlayingNextBtn');
+        const nowPlayingArt = document.getElementById('nowPlayingArt');
+        const nowPlayingImage = document.getElementById('nowPlayingImage');
         
         // Элементы табов
         const sourceTabs = document.querySelectorAll('.tab');
         const localFilesContainer = document.getElementById('localFilesContainer');
         const onlineTracksContainer = document.getElementById('onlineTracksContainer');
+        
+        // Элементы для онлайн треков
+        const audioUrl = document.getElementById('audioUrl');
+        const trackName = document.getElementById('trackName');
+        const trackArtistInput = document.getElementById('trackArtistInput');
+        const trackCover = document.getElementById('trackCover');
+        const addOnlineTrack = document.getElementById('addOnlineTrack');
+        const addButtonText = document.getElementById('addButtonText');
         
         // Инициализация
         function init() {
@@ -732,12 +885,10 @@
             audio.addEventListener('play', () => {
                 isPlaying = true;
                 updatePlayButtons();
-                // Убрано вращение обложки
             });
             audio.addEventListener('pause', () => {
                 isPlaying = false;
                 updatePlayButtons();
-                // Убрано вращение обложки
             });
             
             // Обработчики событий для кнопок
@@ -768,12 +919,21 @@
                 });
             });
             
+            // Обработчик добавления онлайн трека
+            addOnlineTrack.addEventListener('click', addTrackFromUrl);
+            
             // Обновляем время на статус-баре
             updateTime();
             setInterval(updateTime, 60000);
             
-            // Проверяем, есть ли сохранённые треки
+            // Загружаем сохранённые треки
             loadSavedTracks();
+            
+            // Устанавливаем пример URL для тестирования
+            audioUrl.value = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
+            trackName.value = 'SoundHelix Song 1';
+            trackArtistInput.value = 'SoundHelix';
+            trackCover.value = 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80';
         }
         
         // Переключение между источниками
@@ -815,16 +975,50 @@
             playlist.forEach((track, index) => {
                 const trackItem = document.createElement('li');
                 trackItem.className = `track-item ${index === currentTrackIndex ? 'active' : ''}`;
+                
+                // Определяем иконку источника
+                const sourceIcon = track.source === 'local' ? 'fa-file-audio' : 'fa-cloud';
+                
                 trackItem.innerHTML = `
-                    <div class="track-number">${index + 1}</div>
+                    <div class="track-number">
+                        <i class="fas ${sourceIcon}" style="font-size: 12px;"></i>
+                    </div>
                     <div class="track-item-info">
                         <div class="track-item-title">${track.title}</div>
                         <div class="track-item-artist">${track.artist}</div>
                     </div>
                     <div class="track-duration">${formatTime(track.duration)}</div>
+                    <div class="track-actions">
+                        <button class="action-btn save-btn" data-index="${index}">
+                            <i class="fas fa-save"></i>
+                        </button>
+                        <button class="action-btn delete-btn" data-index="${index}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
                 `;
                 
-                trackItem.addEventListener('click', () => playTrack(index));
+                // Обработчик клика на трек
+                trackItem.addEventListener('click', (e) => {
+                    if (!e.target.closest('.track-actions')) {
+                        playTrack(index);
+                    }
+                });
+                
+                // Обработчики кнопок действий
+                const saveBtn = trackItem.querySelector('.save-btn');
+                const deleteBtn = trackItem.querySelector('.delete-btn');
+                
+                saveBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    saveTrackToStorage(track);
+                });
+                
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteTrack(index);
+                });
+                
                 trackList.appendChild(trackItem);
             });
         }
@@ -843,24 +1037,54 @@
             nowPlayingArtist.textContent = track.artist;
             
             // Обновляем обложку
-            const albumArtImg = albumArt.querySelector('img');
-            const nowPlayingArtImg = document.querySelector('.now-playing-art img');
-            
-            if (track.cover) {
-                albumArtImg.src = track.cover;
-                nowPlayingArtImg.src = track.cover;
-            }
+            updateCoverImage(track);
             
             // Загружаем и воспроизводим аудио
             audio.src = track.url;
+            audio.load();
+            
+            // Пробуем воспроизвести
             audio.play().catch(e => {
                 console.error('Ошибка воспроизведения:', e);
-                showMessage('Не удалось воспроизвести трек');
+                showMessage('Не удалось воспроизвести трек. Проверьте доступность файла.');
             });
             
             // Обновляем список треков и показываем нижнюю панель
             renderPlaylist();
             showNowPlayingBar();
+        }
+        
+        // Обновление обложки
+        function updateCoverImage(track) {
+            const albumArtImg = albumArtImage;
+            const nowPlayingImg = nowPlayingImage;
+            
+            if (track.cover && track.cover.trim() !== '') {
+                // Показываем обложку
+                albumArtImg.src = track.cover;
+                albumArtImg.style.display = 'block';
+                albumArt.classList.remove('no-cover');
+                
+                nowPlayingImg.src = track.cover;
+                nowPlayingImg.style.display = 'block';
+                nowPlayingArt.querySelector('i').style.display = 'none';
+                
+                // Проверяем, загрузилась ли обложка
+                albumArtImg.onerror = () => {
+                    albumArtImg.style.display = 'none';
+                    albumArt.classList.add('no-cover');
+                    
+                    nowPlayingImg.style.display = 'none';
+                    nowPlayingArt.querySelector('i').style.display = 'block';
+                };
+            } else {
+                // Скрываем обложку, показываем иконку ноты
+                albumArtImg.style.display = 'none';
+                albumArt.classList.add('no-cover');
+                
+                nowPlayingImg.style.display = 'none';
+                nowPlayingArt.querySelector('i').style.display = 'block';
+            }
         }
         
         // Показать нижнюю панель воспроизведения
@@ -978,7 +1202,6 @@
                 if (currentTrackIndex >= 0 && playlist[currentTrackIndex]) {
                     playlist[currentTrackIndex].duration = audio.duration;
                     saveTracksToStorage();
-                    renderPlaylist();
                 }
             }
         }
@@ -998,11 +1221,14 @@
             return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
         }
         
-        // Обработка загрузки файлов
+        // Обработка загрузки файлов с устройства
         function handleFileUpload(e) {
             const files = Array.from(e.target.files);
             
             if (files.length === 0) return;
+            
+            // Показываем сообщение о начале загрузки
+            showMessage(`Загрузка ${files.length} файлов...`);
             
             // Создаем промисы для каждого файла
             const filePromises = files.map((file, index) => {
@@ -1017,57 +1243,40 @@
                     // Создаем URL для файла
                     const fileURL = URL.createObjectURL(file);
                     
-                    // Извлекаем метаданные из файла
-                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    const reader = new FileReader();
-                    
-                    reader.onload = function(e) {
-                        audioContext.decodeAudioData(e.target.result, function(buffer) {
-                            const duration = buffer.duration;
-                            
-                            // Извлекаем название и исполнителя из имени файла
-                            let title = file.name.replace(/\.[^/.]+$/, ""); // Убираем расширение
-                            let artist = "Неизвестный исполнитель";
-                            
-                            // Попытка разобрать имя файла (формат "Исполнитель - Название")
-                            const match = title.match(/(.+)\s*-\s*(.+)/);
-                            if (match) {
-                                artist = match[1].trim();
-                                title = match[2].trim();
-                            }
-                            
-                            // Создаем объект трека
-                            const track = {
-                                id: Date.now() + index,
-                                title: title,
-                                artist: artist,
-                                duration: duration,
-                                url: fileURL,
-                                cover: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80',
-                                isLocal: true,
-                                fileName: file.name,
-                                fileSize: file.size
-                            };
-                            
-                            resolve(track);
-                        }, function() {
-                            // Если не удалось декодировать, используем значения по умолчанию
-                            const track = {
-                                id: Date.now() + index,
-                                title: file.name.replace(/\.[^/.]+$/, ""),
-                                artist: "Неизвестный исполнитель",
-                                duration: 0,
-                                url: fileURL,
-                                cover: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80',
-                                isLocal: true,
-                                fileName: file.name,
-                                fileSize: file.size
-                            };
-                            resolve(track);
-                        });
-                    };
-                    
-                    reader.readAsArrayBuffer(file);
+                    // Пытаемся извлечь метаданные из файла
+                    extractMetadataFromFile(file, fileURL).then(metadata => {
+                        // Создаем объект трека
+                        const track = {
+                            id: Date.now() + index,
+                            title: metadata.title || file.name.replace(/\.[^/.]+$/, ""),
+                            artist: metadata.artist || "Неизвестный исполнитель",
+                            duration: metadata.duration || 0,
+                            url: fileURL,
+                            cover: metadata.cover || '',
+                            source: 'local',
+                            fileName: file.name,
+                            fileSize: file.size,
+                            fileType: file.type,
+                            metadata: metadata
+                        };
+                        
+                        resolve(track);
+                    }).catch(() => {
+                        // Если не удалось извлечь метаданные, используем базовую информацию
+                        const track = {
+                            id: Date.now() + index,
+                            title: file.name.replace(/\.[^/.]+$/, ""),
+                            artist: "Неизвестный исполнитель",
+                            duration: 0,
+                            url: fileURL,
+                            cover: '',
+                            source: 'local',
+                            fileName: file.name,
+                            fileSize: file.size,
+                            fileType: file.type
+                        };
+                        resolve(track);
+                    });
                 });
             });
             
@@ -1095,6 +1304,193 @@
                 // Сбрасываем input для возможности загрузки тех же файлов снова
                 fileInput.value = '';
             });
+        }
+        
+        // Извлечение метаданных из аудиофайла
+        function extractMetadataFromFile(file, fileURL) {
+            return new Promise((resolve, reject) => {
+                const audio = new Audio();
+                audio.src = fileURL;
+                
+                audio.addEventListener('loadedmetadata', () => {
+                    // Получаем длительность
+                    const duration = audio.duration;
+                    
+                    // Для MP3 файлов пытаемся получить ID3 теги
+                    if (file.type === 'audio/mpeg' || file.name.toLowerCase().endsWith('.mp3')) {
+                        // В реальном приложении здесь можно использовать библиотеку для парсинга ID3 тегов
+                        // Но для простоты используем только базовую информацию
+                        
+                        // Пытаемся извлечь информацию из имени файла
+                        const fileName = file.name.replace(/\.[^/.]+$/, "");
+                        let title = fileName;
+                        let artist = "Неизвестный исполнитель";
+                        
+                        // Попытка разобрать имя файла в формате "Исполнитель - Название"
+                        const match = fileName.match(/(.+)\s*[-–]\s*(.+)/);
+                        if (match) {
+                            artist = match[1].trim();
+                            title = match[2].trim();
+                        }
+                        
+                        resolve({
+                            title: title,
+                            artist: artist,
+                            duration: duration,
+                            cover: '' // Для локальных файлов обложку сложно извлечь без библиотеки
+                        });
+                    } else {
+                        // Для других форматов используем базовую информацию
+                        resolve({
+                            title: file.name.replace(/\.[^/.]+$/, ""),
+                            artist: "Неизвестный исполнитель",
+                            duration: duration,
+                            cover: ''
+                        });
+                    }
+                });
+                
+                audio.addEventListener('error', () => {
+                    reject(new Error('Не удалось загрузить файл'));
+                });
+            });
+        }
+        
+        // Добавление трека с URL
+        function addTrackFromUrl() {
+            const url = audioUrl.value.trim();
+            const title = trackName.value.trim();
+            const artist = trackArtistInput.value.trim();
+            const cover = trackCover.value.trim();
+            
+            // Проверяем обязательные поля
+            if (!url) {
+                showMessage('Введите URL аудиофайла');
+                return;
+            }
+            
+            if (!title) {
+                showMessage('Введите название трека');
+                return;
+            }
+            
+            if (!artist) {
+                showMessage('Введите исполнителя');
+                return;
+            }
+            
+            // Проверяем, что URL валидный
+            try {
+                new URL(url);
+            } catch (e) {
+                showMessage('Введите корректный URL');
+                return;
+            }
+            
+            // Показываем индикатор загрузки
+            addButtonText.innerHTML = '<div class="loading"></div>';
+            
+            // Создаем временный аудиоэлемент для проверки файла
+            const tempAudio = new Audio();
+            tempAudio.src = url;
+            
+            tempAudio.addEventListener('loadedmetadata', () => {
+                // Файл доступен и загрузился
+                const track = {
+                    id: Date.now(),
+                    title: title,
+                    artist: artist,
+                    duration: tempAudio.duration,
+                    url: url,
+                    cover: cover || '',
+                    source: 'online',
+                    originalUrl: url
+                };
+                
+                // Добавляем трек в плейлист
+                playlist.push(track);
+                
+                // Обновляем интерфейс
+                renderPlaylist();
+                updateTrackCount();
+                saveTracksToStorage();
+                
+                // Сбрасываем форму
+                audioUrl.value = '';
+                trackName.value = '';
+                trackArtistInput.value = '';
+                trackCover.value = '';
+                
+                // Показываем сообщение об успехе
+                showMessage('Трек успешно добавлен');
+                
+                // Восстанавливаем кнопку
+                addButtonText.textContent = 'Добавить трек';
+                
+                // Если это первый трек, автоматически выбираем его
+                if (currentTrackIndex === -1 && playlist.length > 0) {
+                    setTimeout(() => playTrack(playlist.length - 1), 500);
+                }
+            });
+            
+            tempAudio.addEventListener('error', () => {
+                showMessage('Не удалось загрузить аудиофайл. Проверьте URL и доступность файла.');
+                addButtonText.textContent = 'Добавить трек';
+            });
+        }
+        
+        // Сохранение трека в локальное хранилище
+        function saveTrackToStorage(track) {
+            try {
+                // Получаем сохранённые треки
+                const savedTracks = JSON.parse(localStorage.getItem('savedTracks')) || {};
+                
+                // Сохраняем трек
+                savedTracks[track.id] = {
+                    ...track,
+                    // Для локальных файлов мы не можем сохранить Object URL, поэтому сохраняем только метаданные
+                    url: track.source === 'online' ? track.url : null,
+                    savedAt: new Date().toISOString()
+                };
+                
+                // Сохраняем в localStorage
+                localStorage.setItem('savedTracks', JSON.stringify(savedTracks));
+                
+                showMessage('Трек сохранён на устройстве');
+            } catch (e) {
+                console.error('Ошибка сохранения трека:', e);
+                showMessage('Не удалось сохранить трек');
+            }
+        }
+        
+        // Удаление трека
+        function deleteTrack(index) {
+            if (index < 0 || index >= playlist.length) return;
+            
+            const track = playlist[index];
+            
+            // Если это текущий трек, останавливаем воспроизведение
+            if (index === currentTrackIndex) {
+                audio.pause();
+                audio.src = '';
+                currentTrackIndex = -1;
+                hideNowPlayingBar();
+            }
+            
+            // Удаляем трек из плейлиста
+            playlist.splice(index, 1);
+            
+            // Если удалённый трек был перед текущим, корректируем индекс
+            if (index < currentTrackIndex) {
+                currentTrackIndex--;
+            }
+            
+            // Обновляем интерфейс
+            renderPlaylist();
+            updateTrackCount();
+            saveTracksToStorage();
+            
+            showMessage('Трек удалён');
         }
         
         // Обновление счетчика треков
@@ -1134,33 +1530,53 @@
         
         // Сохранение треков в localStorage
         function saveTracksToStorage() {
-            // Создаем упрощенную версию треков для хранения
-            const tracksToSave = playlist.map(track => ({
-                id: track.id,
-                title: track.title,
-                artist: track.artist,
-                duration: track.duration,
-                fileName: track.fileName,
-                fileSize: track.fileSize
-            }));
-            
-            localStorage.setItem('musicPlayerPlaylist', JSON.stringify(tracksToSave));
+            try {
+                // Создаем упрощенную версию треков для хранения
+                const tracksToSave = playlist.map(track => ({
+                    id: track.id,
+                    title: track.title,
+                    artist: track.artist,
+                    duration: track.duration,
+                    url: track.source === 'online' ? track.url : null,
+                    cover: track.cover,
+                    source: track.source,
+                    fileName: track.fileName,
+                    fileSize: track.fileSize
+                }));
+                
+                localStorage.setItem('musicPlayerPlaylist', JSON.stringify(tracksToSave));
+            } catch (e) {
+                console.error('Ошибка сохранения плейлиста:', e);
+            }
         }
         
         // Загрузка треков из localStorage
         function loadSavedTracks() {
-            const savedPlaylist = localStorage.getItem('musicPlayerPlaylist');
-            
-            if (savedPlaylist) {
-                try {
+            try {
+                const savedPlaylist = localStorage.getItem('musicPlayerPlaylist');
+                
+                if (savedPlaylist) {
                     const parsedPlaylist = JSON.parse(savedPlaylist);
                     
-                    if (parsedPlaylist.length > 0) {
-                        showMessage(`Загружено ${parsedPlaylist.length} сохранённых треков`);
+                    // Восстанавливаем только онлайн треки (локальные файлы не могут быть восстановлены)
+                    parsedPlaylist.forEach(savedTrack => {
+                        if (savedTrack.source === 'online' && savedTrack.url) {
+                            // Проверяем, не добавлен ли уже этот трек
+                            const exists = playlist.some(track => track.id === savedTrack.id);
+                            if (!exists) {
+                                playlist.push(savedTrack);
+                            }
+                        }
+                    });
+                    
+                    if (playlist.length > 0) {
+                        renderPlaylist();
+                        updateTrackCount();
+                        showMessage(`Загружено ${playlist.length} сохранённых треков`);
                     }
-                } catch (e) {
-                    console.error('Ошибка загрузки сохранённых треков:', e);
                 }
+            } catch (e) {
+                console.error('Ошибка загрузки сохранённых треков:', e);
             }
         }
         
