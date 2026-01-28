@@ -1648,6 +1648,7 @@ async function saveWorkout() {
   
   saveData();
   currentSets = [];
+  addSet(); // Добавляем один пустой подход после сохранения
   sessionStorage.removeItem(`currentSets_${currentUser.id}`);
   renderSets();
   renderHistory();
@@ -1895,8 +1896,8 @@ function toggleEditMode() {
   if (editMode && editingId && originalSetsBackup) {
     // Отменяем редактирование
     if (confirm('Отменить редактирование текущей тренировки?')) {
-      // Восстанавливаем оригинальные подходы
-      currentSets = JSON.parse(JSON.stringify(originalSetsBackup));
+      // Сбрасываем текущие подходы и оставляем один пустой подход
+      currentSets = [{ id: Date.now() + Math.random(), reps: '', weight: '' }];
       editingId = null;
       originalSetsBackup = null;
       
@@ -1909,9 +1910,26 @@ function toggleEditMode() {
       // Сбрасываем выбор упражнения
       document.getElementById('exerciseSelect').value = 'Выбрать упражнение...';
       
+      // Скрываем подсказку о последней тренировке
+      const hint = document.getElementById('lastSessionHint');
+      if (hint) {
+        hint.style.display = 'none';
+      }
+      
       renderSets();
       updateStats();
       showToast('Редактирование отменено', 'warning');
+      
+      // Выйти из режима редактирования после отмены
+      editMode = false;
+      const lockBtn = document.getElementById('lockBtn');
+      if (lockBtn) {
+        lockBtn.classList.remove('active');
+        lockBtn.title = 'Режим редактирования выключен';
+      }
+      
+      renderHistory();
+      return; // Не переключаем editMode в конце функции
     } else {
       return; // Не выходим из режима редактирования
     }
