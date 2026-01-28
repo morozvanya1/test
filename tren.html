@@ -331,6 +331,8 @@
       display: inline-flex;
       align-items: center;
       gap: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      cursor: pointer;
     }
     
     .btn-export:hover {
@@ -692,7 +694,7 @@
       display: inline-block;
     }
     
-    .file-input-wrapper input[type="file"] {
+    .file-input {
       position: absolute;
       left: 0;
       top: 0;
@@ -827,10 +829,10 @@
      </div>
      <div class="import-export-buttons">
        <div class="file-input-wrapper">
-         <button class="btn-export" style="background: rgba(50, 215, 75, 0.1); color: var(--success);">
+         <button class="btn-export" onclick="triggerFileInput()" style="background: rgba(50, 215, 75, 0.1); color: var(--success);">
            📥 Импорт CSV
          </button>
-         <input type="file" id="csvImport" accept=".csv" style="display: none;" onchange="importFromCSV(event)">
+         <input type="file" id="csvImport" accept=".csv" class="file-input" onchange="importFromCSV(event)">
        </div>
        <button class="btn-export" onclick="showStats()">📊 Статистика</button>
      </div>
@@ -913,10 +915,10 @@
 
 <script>
 // Константы и глобальные переменные
-const STORAGE_KEY_PREFIX = 'fitness_data_v6';
-const EXERCISE_KEY_PREFIX = 'fitness_exercises_v6';
-const USERS_KEY = 'fitness_users_v3';
-const CURRENT_USER_KEY = 'fitness_current_user_v3';
+const STORAGE_KEY_PREFIX = 'fitness_data_v7';
+const EXERCISE_KEY_PREFIX = 'fitness_exercises_v7';
+const USERS_KEY = 'fitness_users_v4';
+const CURRENT_USER_KEY = 'fitness_current_user_v4';
 
 // Инициализируем как пустые массивы/объекты
 let appData = [];
@@ -926,6 +928,7 @@ let users = [];
 let currentUser = null;
 let editMode = false;
 let editingId = null;
+let originalSetsBackup = null;
 
 // Инициализация при загрузке
 window.onload = () => {
@@ -972,9 +975,6 @@ window.onload = () => {
       showToast('Ошибка загрузки интерфейса', 'error');
     }
   }, 100);
-  
-  // Добавляем обработчик для кнопки импорта
-  document.getElementById('csvImport').addEventListener('change', importFromCSV);
 };
 
 // Загрузка пользователей
@@ -988,14 +988,20 @@ function loadUsers() {
       users = [];
     }
     
-    // Если пользователей нет, создаем первого
+    // Если пользователей нет, создаем двух пользователей по умолчанию
     if (users.length === 0) {
-      users = [{ id: 'default', name: 'Основной', createdAt: Date.now() }];
+      users = [
+        { id: 'user_ivan', name: 'Иван', createdAt: Date.now() },
+        { id: 'user_andrey', name: 'Андрей', createdAt: Date.now() + 1 }
+      ];
       saveUsers();
     }
   } catch (e) {
     console.error('Ошибка загрузки пользователей:', e);
-    users = [{ id: 'default', name: 'Основной', createdAt: Date.now() }];
+    users = [
+      { id: 'user_ivan', name: 'Иван', createdAt: Date.now() },
+      { id: 'user_andrey', name: 'Андрей', createdAt: Date.now() + 1 }
+    ];
   }
 }
 
@@ -1165,7 +1171,7 @@ function renderUsersManagerList() {
       </div>
       <div style="display: flex; gap: 8px;">
         <button class="header-btn" onclick="renameUser('${user.id}')" title="Переименовать" style="width: 32px; height: 32px; font-size: 12px;">✏️</button>
-        ${user.id !== 'default' ? `<button class="header-btn" onclick="removeUser('${user.id}')" title="Удалить" style="width: 32px; height: 32px; color: var(--danger);">🗑️</button>` : ''}
+        ${user.id !== 'user_ivan' ? `<button class="header-btn" onclick="removeUser('${user.id}')" title="Удалить" style="width: 32px; height: 32px; color: var(--danger);">🗑️</button>` : ''}
       </div>
     `;
     
@@ -1243,7 +1249,7 @@ function renameUser(userId) {
 }
 
 function removeUser(userId) {
-  if (userId === 'default') {
+  if (userId === 'user_ivan') {
     showToast('Основного пользователя нельзя удалить', 'warning');
     return;
   }
@@ -1257,7 +1263,7 @@ function removeUser(userId) {
   
   // Если удаляем текущего пользователя, переключаемся на основного
   if (userId === currentUser.id) {
-    currentUser = users.find(u => u.id === 'default');
+    currentUser = users.find(u => u.id === 'user_ivan');
     saveCurrentUser();
     
     // Загружаем данные основного пользователя
@@ -1421,16 +1427,41 @@ function removeSet(idx) {
   updateStats();
 }
 
+// Функция для валидации ввода - только числа
+function validateNumberInput(value) {
+  // Удаляем все символы, кроме цифр и точки
+  let cleaned = value.replace(/[^\d.]/g, '');
+  
+  // Удаляем лишние точки (оставляем только первую)
+  const parts = cleaned.split('.');
+  if (parts.length > 2) {
+    cleaned = parts[0] + '.' + parts.slice(1).join('');
+  }
+  
+  // Ограничиваем дробную часть до 1 знака
+  if (cleaned.includes('.')) {
+    const [integer, decimal] = cleaned.split('.');
+    if (decimal.length > 1) {
+      cleaned = integer + '.' + decimal.substring(0, 1);
+    }
+  }
+  
+  return cleaned;
+}
+
 function updateSet(idx, field, value) {
-  // Валидация ввода
+  // Валидация ввода - только числа
   if (field === 'weight' || field === 'reps') {
-    // Удаляем все нецифровые символы, кроме точки и запятой
-    value = value.replace(/[^\d.,]/g, '').replace(',', '.');
+    // Очищаем ввод
+    value = validateNumberInput(value);
     
     // Ограничиваем максимальное значение
     const numValue = parseFloat(value);
     if (field === 'weight' && numValue > 1000) value = '1000';
     if (field === 'reps' && numValue > 200) value = '200';
+    
+    // Не позволяем вводить только точку
+    if (value === '.') value = '0.';
   }
   
   if (currentSets[idx]) {
@@ -1438,8 +1469,6 @@ function updateSet(idx, field, value) {
   }
   
   updateStats();
-  
-  // УБРАНО автоматическое переключение на поле повторов
 }
 
 function renderSets() {
@@ -1467,22 +1496,20 @@ function renderSets() {
       <span class="set-index">${i + 1}</span>
       <div class="set-inputs">
         <input 
-          type="number" 
+          type="text" 
+          inputmode="decimal"
           placeholder="кг" 
           value="${set.weight || ''}" 
           oninput="updateSet(${i},'weight',this.value)"
-          min="0" 
-          max="1000"
-          step="0.5"
+          pattern="[0-9]*[.]?[0-9]*"
         >
         <input 
-          type="number" 
+          type="text" 
+          inputmode="numeric"
           placeholder="повт" 
           value="${set.reps || ''}" 
           oninput="updateSet(${i},'reps',this.value)"
-          min="0" 
-          max="200"
-          step="1"
+          pattern="[0-9]*"
         >
       </div>
       <button class="btn-delete" onclick="removeSet(${i})" title="Удалить подход">
@@ -1613,6 +1640,7 @@ async function saveWorkout() {
       appData.push(record);
     }
     editingId = null;
+    originalSetsBackup = null;
     saveBtnText.textContent = '💾 Сохранить тренировку';
   } else {
     appData.push(record);
@@ -1812,6 +1840,9 @@ function editRec(id) {
   currentSets = JSON.parse(JSON.stringify(record.sets || []));
   editingId = id;
   
+  // Сохраняем копию оригинальных подходов для отмены
+  originalSetsBackup = JSON.parse(JSON.stringify(record.sets || []));
+  
   const saveBtn = document.querySelector('.fab-container button');
   if (saveBtn) {
     saveBtn.innerHTML = '<span id="saveBtnText">✏️ Обновить тренировку</span><span id="saveBtnLoader" class="loader" style="display: none; margin-left: 8px;"></span>';
@@ -1859,8 +1890,33 @@ function clearHistory() {
   showToast('История очищена', 'error');
 }
 
-// Режим редактирования
+// Режим редактирования - с отменой редактирования при выходе
 function toggleEditMode() {
+  if (editMode && editingId && originalSetsBackup) {
+    // Отменяем редактирование
+    if (confirm('Отменить редактирование текущей тренировки?')) {
+      // Восстанавливаем оригинальные подходы
+      currentSets = JSON.parse(JSON.stringify(originalSetsBackup));
+      editingId = null;
+      originalSetsBackup = null;
+      
+      // Сбрасываем кнопку сохранения
+      const saveBtn = document.querySelector('.fab-container button');
+      if (saveBtn) {
+        saveBtn.innerHTML = '<span id="saveBtnText">💾 Сохранить тренировку</span><span id="saveBtnLoader" class="loader" style="display: none; margin-left: 8px;"></span>';
+      }
+      
+      // Сбрасываем выбор упражнения
+      document.getElementById('exerciseSelect').value = 'Выбрать упражнение...';
+      
+      renderSets();
+      updateStats();
+      showToast('Редактирование отменено', 'warning');
+    } else {
+      return; // Не выходим из режима редактирования
+    }
+  }
+  
   editMode = !editMode;
   const lockBtn = document.getElementById('lockBtn');
   
@@ -2197,6 +2253,11 @@ function exportToCSV() {
   }
 }
 
+// Триггер для открытия выбора файла
+function triggerFileInput() {
+  document.getElementById('csvImport').click();
+}
+
 // Импорт из CSV - ИСПРАВЛЕННАЯ ФУНКЦИЯ
 function importFromCSV(event) {
   const file = event.target.files[0];
@@ -2232,11 +2293,33 @@ function importFromCSV(event) {
         if (!line) continue;
         
         try {
-          // Разделяем строку CSV
-          const parts = line.split(';').map(part => part.replace(/^"|"$/g, '').trim());
+          // Разделяем строку CSV с учетом кавычек
+          const parts = [];
+          let currentPart = '';
+          let inQuotes = false;
           
-          if (parts.length >= 6) {
-            const [dateStr, timeStr, exerciseName, setIndexStr, weightStr, repsStr] = parts;
+          for (let char of line) {
+            if (char === '"') {
+              inQuotes = !inQuotes;
+            } else if (char === ';' && !inQuotes) {
+              parts.push(currentPart.trim());
+              currentPart = '';
+            } else {
+              currentPart += char;
+            }
+          }
+          parts.push(currentPart.trim());
+          
+          // Убираем кавычки из значений
+          const cleanParts = parts.map(part => part.replace(/^"|"$/g, ''));
+          
+          if (cleanParts.length >= 6) {
+            const [dateStr, timeStr, exerciseName, setIndexStr, weightStr, repsStr] = cleanParts;
+            
+            if (!exerciseName || exerciseName === '') {
+              skippedCount++;
+              continue;
+            }
             
             // Парсим дату
             let date;
@@ -2267,7 +2350,6 @@ function importFromCSV(event) {
             
             const weight = parseFloat(weightStr.replace(',', '.')) || 0;
             const reps = parseInt(repsStr) || 0;
-            const setIndex = parseInt(setIndexStr) || 1;
             
             if (weight > 0 && reps > 0 && exerciseName) {
               // Ищем существующую тренировку на эту дату с этим упражнением
