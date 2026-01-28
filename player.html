@@ -545,26 +545,6 @@
             margin-bottom: 10px;
         }
         
-        /* Кнопка для тестового трека */
-        .demo-button {
-            width: 100%;
-            padding: 12px 20px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            color: white;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-top: 10px;
-            text-align: center;
-        }
-        
-        .demo-button:active {
-            transform: scale(0.98);
-            background: rgba(255, 255, 255, 0.15);
-        }
-        
         /* Адаптация под экран iPhone */
         @media (max-width: 428px) {
             .iphone-container {
@@ -682,16 +662,11 @@
                     <label for="fileInput" class="file-input-label">
                         <i class="fas fa-folder-open"></i> Выбрать музыку с устройства
                     </label>
-                    <input type="file" id="fileInput" class="file-input" accept=".mp3,.mp4,.m4a,.wav,.aac,.ogg,.flac" multiple>
+                    <input type="file" id="fileInput" class="file-input" accept="audio/*,.mp3,.mp4,.m4a,.wav,.aac,.ogg,.flac" multiple>
                     
                     <div class="supported-formats">
-                        <i class="fas fa-info-circle"></i> Поддерживаются MP3, MP4, M4A, WAV, AAC
+                        <i class="fas fa-info-circle"></i> Поддерживаются MP3, MP4, M4A, WAV, AAC и другие аудиоформаты
                     </div>
-                    
-                    <!-- Кнопка для добавления демо-трека -->
-                    <button class="demo-button" id="addDemoTrack">
-                        <i class="fas fa-plus"></i> Добавить демо-трек
-                    </button>
                 </div>
             </div>
             
@@ -784,9 +759,6 @@
         const nowPlayingArt = document.getElementById('nowPlayingArt');
         const nowPlayingImage = document.getElementById('nowPlayingImage');
         
-        // Кнопка добавления демо-трека
-        const addDemoTrack = document.getElementById('addDemoTrack');
-        
         // Инициализация
         function init() {
             playlist = [];
@@ -827,18 +799,12 @@
             // Обработчик загрузки файлов
             fileInput.addEventListener('change', handleFileUpload);
             
-            // Обработчик добавления демо-трека
-            addDemoTrack.addEventListener('click', addDemoTrackToPlaylist);
-            
             // Обновляем время на статус-баре
             updateTime();
             setInterval(updateTime, 60000);
             
             // Настройка обработки файлов для iOS
             setupIOSFileHandling();
-            
-            // Загружаем сохранённые треки из localStorage
-            loadSavedTracks();
         }
         
         // Настройка обработки файлов для iOS
@@ -855,7 +821,7 @@
             // Обработчик для отображения выбранных файлов
             fileInput.addEventListener('input', function(e) {
                 if (this.files.length > 0) {
-                    showMessage(`Выбрано ${this.files.length} файлов`);
+                    showMessage(`Выбрано ${this.files.length} файлов. Обработка...`);
                 }
             });
         }
@@ -907,7 +873,8 @@
         
         // Получить расширение файла
         function getFileExtension(filename) {
-            return filename.slice((filename.lastIndexOf(".") - 1 >>> 0) + 2).toLowerCase();
+            const ext = filename.slice((filename.lastIndexOf(".") - 1 >>> 0) + 2).toLowerCase();
+            return ext || 'unknown';
         }
         
         // Получить иконку для формата файла
@@ -916,16 +883,22 @@
                 'mp3': 'fa-file-audio',
                 'mp4': 'fa-file-video',
                 'm4a': 'fa-file-audio',
+                'm4b': 'fa-file-audio',
                 'wav': 'fa-file-audio',
                 'aac': 'fa-file-audio',
                 'ogg': 'fa-file-audio',
-                'flac': 'fa-file-audio'
+                'flac': 'fa-file-audio',
+                'aif': 'fa-file-audio',
+                'aiff': 'fa-file-audio',
+                'opus': 'fa-file-audio',
+                'webm': 'fa-file-video'
             };
             return iconMap[extension] || 'fa-file-audio';
         }
         
         // Экранирование HTML для безопасности
         function escapeHtml(text) {
+            if (!text) return '';
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
@@ -1123,7 +1096,6 @@
                 // Сохраняем длительность в объект трека
                 if (currentTrackIndex >= 0 && playlist[currentTrackIndex]) {
                     playlist[currentTrackIndex].duration = audio.duration;
-                    saveTracksToStorage();
                 }
             }
         }
@@ -1139,7 +1111,7 @@
                 clientX = e.clientX;
             }
             
-            const percent = (clientX - rect.left) / rect.width;
+            const percent = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
             audio.currentTime = percent * audio.duration;
         }
         
@@ -1159,35 +1131,38 @@
         }
         
         // Обработка загрузки файлов с устройства
-        function handleFileUpload(e) {
+        async function handleFileUpload(e) {
             const files = Array.from(e.target.files);
             
-            if (files.length === 0) return;
+            if (files.length === 0) {
+                showMessage('Файлы не выбраны');
+                return;
+            }
             
             // Показываем сообщение о начале загрузки
-            showMessage(`Загрузка ${files.length} файлов...`);
+            showMessage(`Обработка ${files.length} файлов...`);
             
-            let loadedCount = 0;
+            // Сбрасываем input для возможности загрузки тех же файлов снова
+            fileInput.value = '';
             
-            // Обрабатываем каждый файл
-            files.forEach((file, index) => {
-                // Проверяем, что это аудиофайл или MP4 с аудио
-                const fileExt = getFileExtension(file.name);
-                const isAudioFile = file.type.startsWith('audio/') || 
-                                   ['mp3', 'mp4', 'm4a', 'wav', 'aac', 'ogg', 'flac'].includes(fileExt);
-                
-                if (!isAudioFile) {
-                    showMessage(`Файл ${file.name} не является аудиофайлом`);
-                    loadedCount++;
-                    checkAllFilesLoaded(files.length, loadedCount);
-                    return;
-                }
-                
-                // Создаем URL для файла
-                const fileURL = URL.createObjectURL(file);
-                
-                // Извлекаем метаданные из файла
-                extractMetadataFromFile(file, fileURL).then(metadata => {
+            for (const [index, file] of files.entries()) {
+                try {
+                    // Проверяем, что это аудиофайл
+                    const fileExt = getFileExtension(file.name);
+                    const isAudioFile = file.type.startsWith('audio/') || 
+                                       ['mp3', 'mp4', 'm4a', 'wav', 'aac', 'ogg', 'flac', 'm4b', 'aif', 'aiff', 'opus', 'webm'].includes(fileExt);
+                    
+                    if (!isAudioFile) {
+                        console.warn(`Файл ${file.name} не является аудиофайлом`);
+                        continue;
+                    }
+                    
+                    // Создаем URL для файла
+                    const fileURL = URL.createObjectURL(file);
+                    
+                    // Извлекаем метаданные из файла
+                    const metadata = await extractMetadataFromFile(file, fileURL);
+                    
                     // Создаем объект трека
                     const track = {
                         id: `local_${Date.now()}_${index}`,
@@ -1207,53 +1182,24 @@
                     // Добавляем трек в плейлист
                     playlist.push(track);
                     
-                    loadedCount++;
-                    checkAllFilesLoaded(files.length, loadedCount);
+                    console.log(`Файл добавлен: ${track.title} - ${track.artist}`);
                     
-                }).catch((error) => {
-                    console.error('Ошибка обработки файла:', error);
-                    
-                    // Создаем трек с базовой информацией
-                    const track = {
-                        id: `local_${Date.now()}_${index}_error`,
-                        title: file.name.replace(/\.[^/.]+$/, ""),
-                        artist: "Неизвестный исполнитель",
-                        duration: 0,
-                        url: fileURL,
-                        cover: 'none',
-                        source: 'local',
-                        fileName: file.name,
-                        fileSize: file.size,
-                        fileType: file.type,
-                        fileExtension: fileExt
-                    };
-                    
-                    playlist.push(track);
-                    
-                    loadedCount++;
-                    checkAllFilesLoaded(files.length, loadedCount);
-                });
-            });
-        }
-        
-        // Проверка завершения загрузки всех файлов
-        function checkAllFilesLoaded(totalFiles, loadedFiles) {
-            if (loadedFiles >= totalFiles) {
-                // Все файлы обработаны
-                showMessage(`Успешно загружено ${playlist.length} треков`);
-                
-                // Если это первый трек, автоматически выбираем его
-                if (currentTrackIndex === -1 && playlist.length > 0) {
-                    setTimeout(() => playTrack(0), 500);
+                } catch (error) {
+                    console.error('Ошибка обработки файла:', error, file.name);
                 }
-                
-                // Обновляем плейлист
-                renderPlaylist();
-                updateTrackCount();
-                saveTracksToStorage();
-                
-                // Сбрасываем input для возможности загрузки тех же файлов снова
-                fileInput.value = '';
+            }
+            
+            // Показываем сообщение об успешной загрузке
+            const addedCount = files.length;
+            showMessage(`Добавлено ${addedCount} треков`);
+            
+            // Обновляем плейлист
+            renderPlaylist();
+            updateTrackCount();
+            
+            // Если это первый трек, автоматически выбираем его
+            if (currentTrackIndex === -1 && playlist.length > 0) {
+                setTimeout(() => playTrack(0), 500);
             }
         }
         
@@ -1265,14 +1211,16 @@
                 audio.preload = "metadata";
                 
                 let timeoutId = setTimeout(() => {
-                    reject(new Error('Таймаут загрузки метаданных'));
-                }, 10000);
+                    // Если метаданные не загрузились за 5 секунд, используем базовую информацию
+                    clearTimeout(timeoutId);
+                    resolve(getBasicMetadata(file));
+                }, 5000);
                 
                 audio.addEventListener('loadedmetadata', () => {
                     clearTimeout(timeoutId);
                     
                     // Получаем длительность
-                    const duration = audio.duration;
+                    const duration = audio.duration || 0;
                     
                     // Извлекаем название и исполнителя из имени файла
                     let title = file.name.replace(/\.[^/.]+$/, ""); // Убираем расширение
@@ -1301,86 +1249,34 @@
                 
                 audio.addEventListener('error', () => {
                     clearTimeout(timeoutId);
-                    reject(new Error('Не удалось загрузить файл'));
+                    // Если не удалось загрузить метаданные, используем базовую информацию
+                    resolve(getBasicMetadata(file));
                 });
             });
         }
         
-        // Добавление демо-трека
-        function addDemoTrackToPlaylist() {
-            // Используем публичный аудиофайл для демонстрации
-            const demoUrl = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
+        // Получение базовых метаданных из файла
+        function getBasicMetadata(file) {
+            const title = file.name.replace(/\.[^/.]+$/, "");
+            let artist = "Неизвестный исполнитель";
             
-            const demoTrack = {
-                id: `demo_${Date.now()}`,
-                title: 'Демо трек',
-                artist: 'SoundHelix',
-                duration: 183,
-                url: demoUrl,
-                cover: 'none',
-                source: 'demo',
-                fileName: 'demo-track.mp3',
-                fileSize: 0,
-                fileType: 'audio/mp3',
-                fileExtension: 'mp3'
+            // Попытка разобрать имя файла
+            const separators = [' - ', ' – ', ' — ', '-', '–', '—'];
+            for (const separator of separators) {
+                const parts = title.split(separator);
+                if (parts.length >= 2) {
+                    artist = parts[0].trim();
+                    title = parts.slice(1).join(separator).trim();
+                    break;
+                }
+            }
+            
+            return {
+                title: title,
+                artist: artist,
+                duration: 0,
+                cover: 'none'
             };
-            
-            playlist.push(demoTrack);
-            
-            showMessage('Демо-трек добавлен');
-            
-            // Если это первый трек, автоматически выбираем его
-            if (currentTrackIndex === -1 && playlist.length > 0) {
-                setTimeout(() => playTrack(playlist.length - 1), 500);
-            }
-            
-            // Обновляем плейлист
-            renderPlaylist();
-            updateTrackCount();
-            saveTracksToStorage();
-        }
-        
-        // Сохранение треков в localStorage
-        function saveTracksToStorage() {
-            try {
-                // Создаем упрощенную версию треков для хранения
-                const tracksToSave = playlist.map(track => {
-                    return {
-                        id: track.id,
-                        title: track.title,
-                        artist: track.artist,
-                        duration: track.duration,
-                        source: track.source,
-                        fileName: track.fileName,
-                        fileExtension: track.fileExtension
-                    };
-                });
-                
-                localStorage.setItem('musicPlayerPlaylist', JSON.stringify(tracksToSave));
-            } catch (e) {
-                console.error('Ошибка сохранения плейлиста:', e);
-                // Если localStorage переполнен, показываем сообщение
-                if (e.name === 'QuotaExceededError') {
-                    showMessage('Недостаточно места для сохранения. Удалите некоторые треки.');
-                }
-            }
-        }
-        
-        // Загрузка треков из localStorage
-        function loadSavedTracks() {
-            try {
-                const savedPlaylist = localStorage.getItem('musicPlayerPlaylist');
-                
-                if (savedPlaylist) {
-                    const parsedPlaylist = JSON.parse(savedPlaylist);
-                    
-                    if (parsedPlaylist.length > 0) {
-                        showMessage(`Найдено ${parsedPlaylist.length} сохранённых треков`);
-                    }
-                }
-            } catch (e) {
-                console.error('Ошибка загрузки сохранённых треков:', e);
-            }
         }
         
         // Обновление счетчика треков
