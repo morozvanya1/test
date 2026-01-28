@@ -316,88 +316,99 @@
             color: #FF3366;
         }
         
-        /* Нижняя панель управления */
-        .bottom-controls {
+        /* НОВОЕ: Нижняя панель управления */
+        .now-playing-bar {
             position: absolute;
             bottom: 0;
             left: 0;
             width: 100%;
-            padding: 15px 20px 30px;
-            background-color: rgba(0, 0, 0, 0.7);
+            height: 70px;
+            background-color: rgba(0, 0, 0, 0.8);
             backdrop-filter: blur(20px);
             border-top: 1px solid rgba(255, 255, 255, 0.1);
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            padding: 0 15px;
+            z-index: 1000;
         }
         
-        .mini-player {
+        .now-playing-info {
             display: flex;
             align-items: center;
             flex-grow: 1;
-            gap: 12px;
+            min-width: 0;
         }
         
-        .mini-album-art {
-            width: 50px;
-            height: 50px;
+        .now-playing-art {
+            width: 45px;
+            height: 45px;
             border-radius: 8px;
             overflow: hidden;
+            margin-right: 12px;
+            flex-shrink: 0;
         }
         
-        .mini-album-art img {
+        .now-playing-art img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
         
-        .mini-track-info {
+        .now-playing-text {
+            min-width: 0;
             flex-grow: 1;
         }
         
-        .mini-track-title {
+        .now-playing-title {
             font-weight: 500;
-            font-size: 15px;
+            font-size: 14px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
         
-        .mini-track-artist {
-            font-size: 13px;
+        .now-playing-artist {
+            font-size: 12px;
             color: #aaa;
-        }
-        
-        .mini-controls {
-            display: flex;
-            gap: 20px;
-            align-items: center;
-        }
-        
-        .volume-container {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-right: 10px;
-        }
-        
-        .volume-icon {
-            color: #aaa;
-            font-size: 16px;
-        }
-        
-        .volume-slider {
-            width: 80px;
-            height: 4px;
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 2px;
+            white-space: nowrap;
             overflow: hidden;
+            text-overflow: ellipsis;
         }
         
-        .volume-progress {
-            height: 100%;
-            background: linear-gradient(90deg, #FF3366 0%, #FF6B6B 100%);
-            width: 70%;
+        .now-playing-controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-shrink: 0;
+            margin-left: 15px;
+        }
+        
+        .now-playing-btn {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 18px;
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .now-playing-btn:active {
+            transform: scale(0.9);
+            color: #FF3366;
+        }
+        
+        .now-playing-play-btn {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #FF3366 0%, #FF6B6B 100%);
+            border-radius: 50%;
+            font-size: 16px;
+            box-shadow: 0 3px 10px rgba(255, 51, 102, 0.3);
         }
         
         /* Элементы для демонстрации работы с файлами */
@@ -424,6 +435,33 @@
         
         .file-input {
             display: none;
+        }
+        
+        /* Табы для переключения между источниками */
+        .source-tabs {
+            display: flex;
+            margin: 0 20px 20px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .tab.active {
+            background-color: #FF3366;
+            color: white;
+        }
+        
+        .tab:active {
+            background-color: rgba(255, 51, 102, 0.3);
         }
         
         /* Сообщения */
@@ -453,6 +491,23 @@
             to { opacity: 1; }
         }
         
+        /* Пустой плейлист */
+        .empty-playlist {
+            text-align: center;
+            padding: 40px 20px;
+            color: #aaa;
+        }
+        
+        .empty-playlist i {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #555;
+        }
+        
+        .empty-playlist p {
+            margin-bottom: 10px;
+        }
+        
         /* Адаптация под экран iPhone */
         @media (max-width: 428px) {
             .iphone-container {
@@ -460,16 +515,6 @@
                 height: 100vh;
                 max-width: 100%;
             }
-        }
-        
-        /* Анимация вращения обложки */
-        @keyframes rotateAlbum {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        
-        .album-art.playing {
-            animation: rotateAlbum 20s linear infinite;
         }
         
         /* Скрываем скроллбар для красоты */
@@ -505,17 +550,23 @@
                 <div class="avatar">U</div>
             </div>
             
+            <!-- Табы для переключения источников -->
+            <div class="source-tabs" id="sourceTabs">
+                <div class="tab active" data-source="local">Локальные файлы</div>
+                <div class="tab" data-source="online">Онлайн треки</div>
+            </div>
+            
             <div class="player-main">
                 <div class="album-art" id="albumArt">
-                    <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" alt="Album Art">
+                    <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80" alt="Album Art">
                     <div class="album-art-overlay">
                         <i class="fas fa-music"></i>
                     </div>
                 </div>
                 
                 <div class="track-info">
-                    <div class="track-title" id="trackTitle">Не выбрано</div>
-                    <div class="track-artist" id="trackArtist">Выберите трек из списка</div>
+                    <div class="track-title" id="trackTitle">Добро пожаловать</div>
+                    <div class="track-artist" id="trackArtist">Загрузите треки для начала</div>
                 </div>
                 
                 <div class="progress-container">
@@ -552,11 +603,23 @@
                     </button>
                 </div>
                 
-                <div class="file-input-container">
+                <!-- Контейнер для локальных файлов -->
+                <div class="file-input-container" id="localFilesContainer">
                     <label for="fileInput" class="file-input-label">
-                        <i class="fas fa-file-audio"></i> Загрузить треки с устройства
+                        <i class="fas fa-folder-open"></i> Выбрать музыку с устройства
                     </label>
                     <input type="file" id="fileInput" class="file-input" accept="audio/*" multiple>
+                    
+                    <div style="text-align: center; margin-top: 15px; font-size: 14px; color: #aaa;">
+                        <i class="fas fa-info-circle"></i> Вы можете выбрать MP3, M4A, WAV файлы
+                    </div>
+                </div>
+                
+                <!-- Контейнер для онлайн треков (скрыт по умолчанию) -->
+                <div class="file-input-container" id="onlineTracksContainer" style="display: none;">
+                    <div style="padding: 12px 20px; background-color: rgba(255, 255, 255, 0.05); border-radius: 12px; text-align: center; color: #aaa;">
+                        <i class="fas fa-cloud"></i> Онлайн треки в разработке
+                    </div>
                 </div>
             </div>
             
@@ -565,31 +628,40 @@
                     <span>Мой плейлист</span>
                     <span id="trackCount">0 треков</span>
                 </div>
-                <ul class="track-list" id="trackList">
-                    <!-- Треки будут загружены здесь -->
-                </ul>
+                <div id="playlistContent">
+                    <!-- Пустой плейлист по умолчанию -->
+                    <div class="empty-playlist" id="emptyPlaylist">
+                        <i class="fas fa-music"></i>
+                        <p>Ваш плейлист пуст</p>
+                        <p>Загрузите музыку с вашего устройства</p>
+                    </div>
+                    <ul class="track-list" id="trackList" style="display: none;">
+                        <!-- Треки будут загружены здесь -->
+                    </ul>
+                </div>
             </div>
         </div>
         
-        <div class="bottom-controls">
-            <div class="mini-player">
-                <div class="mini-album-art">
-                    <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" alt="Album Art">
+        <!-- Новая нижняя панель воспроизведения -->
+        <div class="now-playing-bar" id="nowPlayingBar" style="display: none;">
+            <div class="now-playing-info">
+                <div class="now-playing-art">
+                    <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80" alt="Album Art">
                 </div>
-                <div class="mini-track-info">
-                    <div class="mini-track-title" id="miniTrackTitle">Не выбрано</div>
-                    <div class="mini-track-artist" id="miniTrackArtist">Выберите трек</div>
+                <div class="now-playing-text">
+                    <div class="now-playing-title" id="nowPlayingTitle">Не выбрано</div>
+                    <div class="now-playing-artist" id="nowPlayingArtist">Выберите трек</div>
                 </div>
             </div>
-            <div class="mini-controls">
-                <div class="volume-container">
-                    <i class="fas fa-volume-up volume-icon"></i>
-                    <div class="volume-slider" id="volumeSlider">
-                        <div class="volume-progress" id="volumeProgress"></div>
-                    </div>
-                </div>
-                <button class="control-btn" id="miniPlayBtn" title="Воспроизвести">
+            <div class="now-playing-controls">
+                <button class="now-playing-btn" id="nowPlayingPrevBtn" title="Предыдущий трек">
+                    <i class="fas fa-step-backward"></i>
+                </button>
+                <button class="now-playing-btn now-playing-play-btn" id="nowPlayingPlayBtn" title="Воспроизвести">
                     <i class="fas fa-play"></i>
+                </button>
+                <button class="now-playing-btn" id="nowPlayingNextBtn" title="Следующий трек">
+                    <i class="fas fa-step-forward"></i>
                 </button>
             </div>
         </div>
@@ -607,15 +679,12 @@
         let isShuffled = false;
         let isRepeated = false;
         let playlist = [];
-        let userFiles = [];
+        let currentSource = 'local'; // 'local' или 'online'
         
         // Элементы DOM
         const trackTitle = document.getElementById('trackTitle');
         const trackArtist = document.getElementById('trackArtist');
-        const miniTrackTitle = document.getElementById('miniTrackTitle');
-        const miniTrackArtist = document.getElementById('miniTrackArtist');
         const playPauseBtn = document.getElementById('playPauseBtn');
-        const miniPlayBtn = document.getElementById('miniPlayBtn');
         const prevBtn = document.getElementById('prevBtn');
         const nextBtn = document.getElementById('nextBtn');
         const shuffleBtn = document.getElementById('shuffleBtn');
@@ -625,68 +694,36 @@
         const currentTimeEl = document.getElementById('currentTime');
         const durationEl = document.getElementById('duration');
         const trackList = document.getElementById('trackList');
+        const emptyPlaylist = document.getElementById('emptyPlaylist');
+        const playlistContent = document.getElementById('playlistContent');
         const albumArt = document.getElementById('albumArt');
         const fileInput = document.getElementById('fileInput');
         const trackCount = document.getElementById('trackCount');
-        const volumeSlider = document.getElementById('volumeSlider');
-        const volumeProgress = document.getElementById('volumeProgress');
         const message = document.getElementById('message');
         const messageText = document.getElementById('messageText');
         
-        // Предзагруженные треки (имитация загрузки с сайта)
-        const defaultPlaylist = [
-            {
-                id: 1,
-                title: "Bohemian Rhapsody",
-                artist: "Queen",
-                duration: 354,
-                url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
-                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80"
-            },
-            {
-                id: 2,
-                title: "Stairway to Heaven",
-                artist: "Led Zeppelin",
-                duration: 482,
-                url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
-                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80"
-            },
-            {
-                id: 3,
-                title: "Hotel California",
-                artist: "Eagles",
-                duration: 391,
-                url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
-                cover: "https://images.unsplash.com/photo-1518609878373-06d740f60d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80"
-            },
-            {
-                id: 4,
-                title: "Imagine",
-                artist: "John Lennon",
-                duration: 183,
-                url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3",
-                cover: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80"
-            },
-            {
-                id: 5,
-                title: "Smells Like Teen Spirit",
-                artist: "Nirvana",
-                duration: 301,
-                url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3",
-                cover: "https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80"
-            }
-        ];
+        // Элементы новой нижней панели
+        const nowPlayingBar = document.getElementById('nowPlayingBar');
+        const nowPlayingTitle = document.getElementById('nowPlayingTitle');
+        const nowPlayingArtist = document.getElementById('nowPlayingArtist');
+        const nowPlayingPlayBtn = document.getElementById('nowPlayingPlayBtn');
+        const nowPlayingPrevBtn = document.getElementById('nowPlayingPrevBtn');
+        const nowPlayingNextBtn = document.getElementById('nowPlayingNextBtn');
+        
+        // Элементы табов
+        const sourceTabs = document.querySelectorAll('.tab');
+        const localFilesContainer = document.getElementById('localFilesContainer');
+        const onlineTracksContainer = document.getElementById('onlineTracksContainer');
         
         // Инициализация
         function init() {
-            // Загружаем плейлист по умолчанию
-            playlist = [...defaultPlaylist];
-            renderPlaylist();
+            // Начинаем с пустого плейлиста
+            playlist = [];
             updateTrackCount();
+            hideNowPlayingBar();
             
             // Настройка аудио
             audio.volume = 0.7;
-            volumeProgress.style.width = '70%';
             
             // Обработчики событий для аудио
             audio.addEventListener('timeupdate', updateProgress);
@@ -695,19 +732,21 @@
             audio.addEventListener('play', () => {
                 isPlaying = true;
                 updatePlayButtons();
-                albumArt.classList.add('playing');
+                // Убрано вращение обложки
             });
             audio.addEventListener('pause', () => {
                 isPlaying = false;
                 updatePlayButtons();
-                albumArt.classList.remove('playing');
+                // Убрано вращение обложки
             });
             
             // Обработчики событий для кнопок
             playPauseBtn.addEventListener('click', togglePlay);
-            miniPlayBtn.addEventListener('click', togglePlay);
+            nowPlayingPlayBtn.addEventListener('click', togglePlay);
             prevBtn.addEventListener('click', playPrevTrack);
+            nowPlayingPrevBtn.addEventListener('click', playPrevTrack);
             nextBtn.addEventListener('click', playNextTrack);
+            nowPlayingNextBtn.addEventListener('click', playNextTrack);
             shuffleBtn.addEventListener('click', toggleShuffle);
             repeatBtn.addEventListener('click', toggleRepeat);
             
@@ -718,32 +757,60 @@
                 audio.currentTime = percent * audio.duration;
             });
             
-            // Обработчик громкости
-            volumeSlider.addEventListener('click', (e) => {
-                const rect = volumeSlider.getBoundingClientRect();
-                const percent = (e.clientX - rect.left) / rect.width;
-                audio.volume = Math.max(0, Math.min(1, percent));
-                volumeProgress.style.width = `${percent * 100}%`;
-            });
-            
             // Обработчик загрузки файлов
             fileInput.addEventListener('change', handleFileUpload);
+            
+            // Обработчики табов
+            sourceTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const source = tab.getAttribute('data-source');
+                    switchSource(source);
+                });
+            });
             
             // Обновляем время на статус-баре
             updateTime();
             setInterval(updateTime, 60000);
             
-            // Показываем сообщение о том, как добавить на главный экран
-            if (window.navigator.standalone !== true) {
-                setTimeout(() => {
-                    showMessage('Для фонового воспроизведения добавьте это приложение на главный экран');
-                }, 2000);
+            // Проверяем, есть ли сохранённые треки
+            loadSavedTracks();
+        }
+        
+        // Переключение между источниками
+        function switchSource(source) {
+            currentSource = source;
+            
+            // Обновляем активный таб
+            sourceTabs.forEach(tab => {
+                if (tab.getAttribute('data-source') === source) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+            
+            // Показываем соответствующий контейнер
+            if (source === 'local') {
+                localFilesContainer.style.display = 'block';
+                onlineTracksContainer.style.display = 'none';
+            } else {
+                localFilesContainer.style.display = 'none';
+                onlineTracksContainer.style.display = 'block';
             }
         }
         
         // Рендер плейлиста
         function renderPlaylist() {
             trackList.innerHTML = '';
+            
+            if (playlist.length === 0) {
+                emptyPlaylist.style.display = 'block';
+                trackList.style.display = 'none';
+                return;
+            }
+            
+            emptyPlaylist.style.display = 'none';
+            trackList.style.display = 'block';
             
             playlist.forEach((track, index) => {
                 const trackItem = document.createElement('li');
@@ -772,14 +839,17 @@
             // Обновляем интерфейс
             trackTitle.textContent = track.title;
             trackArtist.textContent = track.artist;
-            miniTrackTitle.textContent = track.title;
-            miniTrackArtist.textContent = track.artist;
+            nowPlayingTitle.textContent = track.title;
+            nowPlayingArtist.textContent = track.artist;
             
             // Обновляем обложку
             const albumArtImg = albumArt.querySelector('img');
-            const miniAlbumArtImg = document.querySelector('.mini-album-art img');
-            albumArtImg.src = track.cover || 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80';
-            miniAlbumArtImg.src = track.cover || 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80';
+            const nowPlayingArtImg = document.querySelector('.now-playing-art img');
+            
+            if (track.cover) {
+                albumArtImg.src = track.cover;
+                nowPlayingArtImg.src = track.cover;
+            }
             
             // Загружаем и воспроизводим аудио
             audio.src = track.url;
@@ -788,8 +858,19 @@
                 showMessage('Не удалось воспроизвести трек');
             });
             
-            // Обновляем список треков
+            // Обновляем список треков и показываем нижнюю панель
             renderPlaylist();
+            showNowPlayingBar();
+        }
+        
+        // Показать нижнюю панель воспроизведения
+        function showNowPlayingBar() {
+            nowPlayingBar.style.display = 'flex';
+        }
+        
+        // Скрыть нижнюю панель воспроизведения
+        function hideNowPlayingBar() {
+            nowPlayingBar.style.display = 'none';
         }
         
         // Переключение воспроизведения/паузы
@@ -892,6 +973,13 @@
         function updateDuration() {
             if (!isNaN(audio.duration)) {
                 durationEl.textContent = formatTime(audio.duration);
+                
+                // Сохраняем длительность в объект трека
+                if (currentTrackIndex >= 0 && playlist[currentTrackIndex]) {
+                    playlist[currentTrackIndex].duration = audio.duration;
+                    saveTracksToStorage();
+                    renderPlaylist();
+                }
             }
         }
         
@@ -899,11 +987,12 @@
         function updatePlayButtons() {
             const playIcon = isPlaying ? 'fas fa-pause' : 'fas fa-play';
             playPauseBtn.innerHTML = `<i class="${playIcon}"></i>`;
-            miniPlayBtn.innerHTML = `<i class="${playIcon}"></i>`;
+            nowPlayingPlayBtn.innerHTML = `<i class="${playIcon}"></i>`;
         }
         
         // Форматирование времени
         function formatTime(seconds) {
+            if (isNaN(seconds)) return "0:00";
             const mins = Math.floor(seconds / 60);
             const secs = Math.floor(seconds % 60);
             return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
@@ -915,55 +1004,97 @@
             
             if (files.length === 0) return;
             
-            files.forEach((file, index) => {
-                // Проверяем, что это аудиофайл
-                if (!file.type.startsWith('audio/')) {
-                    showMessage(`Файл ${file.name} не является аудиофайлом`);
-                    return;
-                }
-                
-                // Создаем URL для файла
-                const fileURL = URL.createObjectURL(file);
-                
-                // Создаем объект трека
-                const track = {
-                    id: playlist.length + index + 1,
-                    title: file.name.replace(/\.[^/.]+$/, ""), // Убираем расширение
-                    artist: "Локальный файл",
-                    duration: 0, // Будет обновлено при загрузке
-                    url: fileURL,
-                    cover: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80',
-                    isLocal: true
-                };
-                
-                // Добавляем трек в плейлист
-                playlist.push(track);
-                userFiles.push({ file, url: fileURL });
-                
-                // Пытаемся получить длительность трека
-                const tempAudio = new Audio();
-                tempAudio.src = fileURL;
-                tempAudio.addEventListener('loadedmetadata', () => {
-                    track.duration = tempAudio.duration;
-                    renderPlaylist();
-                    updateTrackCount();
+            // Создаем промисы для каждого файла
+            const filePromises = files.map((file, index) => {
+                return new Promise((resolve) => {
+                    // Проверяем, что это аудиофайл
+                    if (!file.type.startsWith('audio/')) {
+                        showMessage(`Файл ${file.name} не является аудиофайлом`);
+                        resolve(null);
+                        return;
+                    }
+                    
+                    // Создаем URL для файла
+                    const fileURL = URL.createObjectURL(file);
+                    
+                    // Извлекаем метаданные из файла
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        audioContext.decodeAudioData(e.target.result, function(buffer) {
+                            const duration = buffer.duration;
+                            
+                            // Извлекаем название и исполнителя из имени файла
+                            let title = file.name.replace(/\.[^/.]+$/, ""); // Убираем расширение
+                            let artist = "Неизвестный исполнитель";
+                            
+                            // Попытка разобрать имя файла (формат "Исполнитель - Название")
+                            const match = title.match(/(.+)\s*-\s*(.+)/);
+                            if (match) {
+                                artist = match[1].trim();
+                                title = match[2].trim();
+                            }
+                            
+                            // Создаем объект трека
+                            const track = {
+                                id: Date.now() + index,
+                                title: title,
+                                artist: artist,
+                                duration: duration,
+                                url: fileURL,
+                                cover: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80',
+                                isLocal: true,
+                                fileName: file.name,
+                                fileSize: file.size
+                            };
+                            
+                            resolve(track);
+                        }, function() {
+                            // Если не удалось декодировать, используем значения по умолчанию
+                            const track = {
+                                id: Date.now() + index,
+                                title: file.name.replace(/\.[^/.]+$/, ""),
+                                artist: "Неизвестный исполнитель",
+                                duration: 0,
+                                url: fileURL,
+                                cover: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80',
+                                isLocal: true,
+                                fileName: file.name,
+                                fileSize: file.size
+                            };
+                            resolve(track);
+                        });
+                    };
+                    
+                    reader.readAsArrayBuffer(file);
                 });
             });
             
-            // Показываем сообщение об успешной загрузке
-            showMessage(`Загружено ${files.length} треков`);
-            
-            // Если это первый трек, автоматически выбираем его
-            if (currentTrackIndex === -1 && playlist.length > 0) {
-                setTimeout(() => playTrack(0), 500);
-            }
-            
-            // Обновляем плейлист
-            renderPlaylist();
-            updateTrackCount();
-            
-            // Сбрасываем input для возможности загрузки тех же файлов снова
-            fileInput.value = '';
+            // Когда все промисы завершены
+            Promise.all(filePromises).then(tracks => {
+                const validTracks = tracks.filter(track => track !== null);
+                
+                validTracks.forEach(track => {
+                    playlist.push(track);
+                });
+                
+                // Показываем сообщение об успешной загрузке
+                showMessage(`Загружено ${validTracks.length} треков`);
+                
+                // Если это первый трек, автоматически выбираем его
+                if (currentTrackIndex === -1 && playlist.length > 0) {
+                    setTimeout(() => playTrack(0), 500);
+                }
+                
+                // Обновляем плейлист
+                renderPlaylist();
+                updateTrackCount();
+                saveTracksToStorage();
+                
+                // Сбрасываем input для возможности загрузки тех же файлов снова
+                fileInput.value = '';
+            });
         }
         
         // Обновление счетчика треков
@@ -1001,18 +1132,46 @@
             }, 3000);
         }
         
+        // Сохранение треков в localStorage
+        function saveTracksToStorage() {
+            // Создаем упрощенную версию треков для хранения
+            const tracksToSave = playlist.map(track => ({
+                id: track.id,
+                title: track.title,
+                artist: track.artist,
+                duration: track.duration,
+                fileName: track.fileName,
+                fileSize: track.fileSize
+            }));
+            
+            localStorage.setItem('musicPlayerPlaylist', JSON.stringify(tracksToSave));
+        }
+        
+        // Загрузка треков из localStorage
+        function loadSavedTracks() {
+            const savedPlaylist = localStorage.getItem('musicPlayerPlaylist');
+            
+            if (savedPlaylist) {
+                try {
+                    const parsedPlaylist = JSON.parse(savedPlaylist);
+                    
+                    if (parsedPlaylist.length > 0) {
+                        showMessage(`Загружено ${parsedPlaylist.length} сохранённых треков`);
+                    }
+                } catch (e) {
+                    console.error('Ошибка загрузки сохранённых треков:', e);
+                }
+            }
+        }
+        
         // Инициализация при загрузке страницы
         document.addEventListener('DOMContentLoaded', init);
         
         // Обработчик для добавления на главный экран
         window.addEventListener('beforeinstallprompt', (e) => {
-            // Предотвращаем автоматическое отображение подсказки
             e.preventDefault();
-            
-            // Сохраняем событие для последующего использования
             window.deferredPrompt = e;
             
-            // Показываем пользовательское сообщение
             showMessage('Добавьте это приложение на главный экран для фонового воспроизведения');
         });
     </script>
