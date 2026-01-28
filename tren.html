@@ -7,6 +7,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>FitTrack Pro</title>
   <style>
+    /* Стили остаются без изменений */
     :root {
       --bg-color: #000000;
       --card-bg: #1c1c1e;
@@ -559,7 +560,7 @@
       border-radius: 20px 20px 0 0;
       padding: 20px; 
       padding-bottom: calc(20px + var(--safe-bottom));
-      max-height: 85vh; 
+      max-height: 90vh; 
       display: flex; 
       flex-direction: column;
       animation: slideUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -704,6 +705,131 @@
       cursor: pointer;
     }
 
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      background: rgba(118, 118, 128, 0.12);
+      padding: 4px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+    
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 10px;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    
+    .tab.active {
+      background: var(--card-bg);
+      color: var(--text);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Charts */
+    .chart-container {
+      width: 100%;
+      height: 250px;
+      position: relative;
+      margin: 15px 0;
+    }
+    
+    canvas {
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    /* User comparison */
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    
+    .comparison-table th {
+      text-align: left;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid var(--separator);
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .comparison-table td {
+      padding: 12px;
+      border-bottom: 1px solid var(--separator);
+    }
+    
+    .comparison-table tr:last-child td {
+      border-bottom: none;
+    }
+    
+    .comparison-table tr:hover {
+      background: rgba(255, 255, 255, 0.03);
+    }
+    
+    .comparison-value {
+      font-weight: 600;
+      color: var(--primary);
+      text-align: right;
+    }
+
+    /* User profile */
+    .profile-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 15px 0;
+    }
+    
+    .profile-stat {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 15px;
+      text-align: center;
+    }
+    
+    .profile-stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+    
+    .profile-stat-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    
+    .profile-input-group {
+      display: flex;
+      gap: 10px;
+      margin: 15px 0;
+    }
+    
+    .profile-input-group input {
+      flex: 1;
+    }
+
     /* Responsive */
     @media (max-width: 480px) {
       .container { padding: 12px; }
@@ -714,6 +840,7 @@
       .app-title { font-size: 18px; }
       button { padding: 12px 16px; font-size: 15px; }
       .header-btn { width: 36px; height: 36px; }
+      .profile-stats { grid-template-columns: 1fr; }
     }
 
     /* iPhone 13 Pro Max specific */
@@ -753,6 +880,7 @@
   
   <div class="header-right">
     <button class="header-btn" onclick="openExerciseManager()" title="Управление упражнениями">🏋️</button>
+    <button class="header-btn" onclick="openUserProfile()" title="Профиль пользователя">📊</button>
     <button class="header-btn" id="lockBtn" onclick="toggleEditMode()" title="Режим редактирования">✏️</button>
   </div>
 </div>
@@ -835,6 +963,7 @@
          <input type="file" id="csvImport" accept=".csv" class="file-input" onchange="importFromCSV(event)">
        </div>
        <button class="btn-export" onclick="showStats()">📊 Статистика</button>
+       <button class="btn-export" onclick="openUsersComparison()">👥 Сравнение</button>
      </div>
      <div id="historyList">
        <div class="empty-state" id="emptyHistory">
@@ -913,22 +1042,124 @@
   </div>
 </div>
 
+<!-- Модальное окно профиля пользователя -->
+<div class="modal" id="profileModal">
+  <div class="modal-card">
+    <div class="modal-handle"></div>
+    <div style="display:flex; justify-content:space-between; margin-bottom:20px; align-items: center;">
+      <h2 style="margin:0; font-size:20px;">👤 Профиль</h2>
+      <button class="secondary" style="width:auto; padding:6px 12px;" onclick="closeUserProfile()">Готово</button>
+    </div>
+    
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('profile-tab')">Профиль</button>
+      <button class="tab" onclick="switchTab('history-tab')">История</button>
+      <button class="tab" onclick="switchTab('chart-tab')">График</button>
+    </div>
+    
+    <!-- Вкладка профиля -->
+    <div id="profile-tab" class="tab-content active">
+      <div class="profile-stats">
+        <div class="profile-stat">
+          <div class="profile-stat-value" id="profileHeight">- см</div>
+          <div class="profile-stat-label">Рост</div>
+        </div>
+        <div class="profile-stat">
+          <div class="profile-stat-value" id="profileWeight">- кг</div>
+          <div class="profile-stat-label">Вес</div>
+        </div>
+        <div class="profile-stat">
+          <div class="profile-stat-value" id="profileIMC">-</div>
+          <div class="profile-stat-label">ИМТ</div>
+        </div>
+        <div class="profile-stat">
+          <div class="profile-stat-value" id="profileWorkouts">0</div>
+          <div class="profile-stat-label">Тренировок</div>
+        </div>
+      </div>
+      
+      <h3 style="margin: 20px 0 10px 0;">📝 Изменить параметры</h3>
+      <div class="profile-input-group">
+        <input type="number" id="editHeight" placeholder="Рост (см)" min="100" max="250">
+        <input type="number" id="editWeight" placeholder="Вес (кг)" min="30" max="200" step="0.1">
+      </div>
+      <button onclick="saveUserParameters()" style="width:100%; margin-bottom: 15px;">💾 Сохранить</button>
+      
+      <div style="font-size: 12px; color: var(--text-secondary); text-align: center; margin-top: 10px;">
+        <div>ИМТ = вес (кг) / (рост (м))²</div>
+        <div style="margin-top: 5px;">
+          <span style="color: var(--success);">18.5-24.9</span> - норма,
+          <span style="color: var(--warning);">25-29.9</span> - избыток,
+          <span style="color: var(--danger);">≥30</span> - ожирение
+        </div>
+      </div>
+    </div>
+    
+    <!-- Вкладка истории -->
+    <div id="history-tab" class="tab-content">
+      <div id="parametersHistory" style="overflow-y: auto; max-height: 300px;">
+        <!-- История будет загружена динамически -->
+      </div>
+    </div>
+    
+    <!-- Вкладка графика -->
+    <div id="chart-tab" class="tab-content">
+      <div class="chart-container">
+        <canvas id="parametersChart"></canvas>
+      </div>
+      <div style="display: flex; gap: 10px; margin-top: 10px;">
+        <button class="secondary" style="flex:1; font-size: 12px;" onclick="chartPeriod = 7; renderParametersChart()">Неделя</button>
+        <button class="secondary" style="flex:1; font-size: 12px;" onclick="chartPeriod = 30; renderParametersChart()">Месяц</button>
+        <button class="secondary" style="flex:1; font-size: 12px;" onclick="chartPeriod = 90; renderParametersChart()">3 месяца</button>
+        <button class="secondary" style="flex:1; font-size: 12px;" onclick="chartPeriod = 365; renderParametersChart()">Год</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Модальное окно сравнения пользователей -->
+<div class="modal" id="comparisonModal">
+  <div class="modal-card">
+    <div class="modal-handle"></div>
+    <div style="display:flex; justify-content:space-between; margin-bottom:20px; align-items: center;">
+      <h2 style="margin:0; font-size:20px;">👥 Сравнение пользователей</h2>
+      <button class="secondary" style="width:auto; padding:6px 12px;" onclick="closeUsersComparison()">Закрыть</button>
+    </div>
+    
+    <div style="margin-bottom: 15px;">
+      <div class="select-wrapper">
+        <select id="comparisonExercise" onchange="renderUsersComparison()">
+          <option value="">Все упражнения</option>
+        </select>
+      </div>
+    </div>
+    
+    <div style="overflow-y:auto; flex:1; min-height: 300px;" id="comparisonContent">
+      <!-- Сравнение будет загружено динамически -->
+    </div>
+  </div>
+</div>
+
 <script>
 // Константы и глобальные переменные
-const STORAGE_KEY_PREFIX = 'fitness_data_v7';
-const EXERCISE_KEY_PREFIX = 'fitness_exercises_v7';
-const USERS_KEY = 'fitness_users_v4';
-const CURRENT_USER_KEY = 'fitness_current_user_v4';
+const STORAGE_KEY_PREFIX = 'fitness_data_v8';
+const EXERCISE_KEY_PREFIX = 'fitness_exercises_v8';
+const USERS_KEY = 'fitness_users_v5';
+const CURRENT_USER_KEY = 'fitness_current_user_v5';
+const USER_PARAMS_KEY = 'fitness_user_params_v1';
 
 // Инициализируем как пустые массивы/объекты
 let appData = [];
 let exercises = [];
 let currentSets = [];
 let users = [];
+let userParameters = {};
 let currentUser = null;
 let editMode = false;
 let editingId = null;
 let originalSetsBackup = null;
+let chartPeriod = 30;
+let parametersChart = null;
 
 // Инициализация при загрузке
 window.onload = () => {
@@ -937,10 +1168,12 @@ window.onload = () => {
   exercises = [];
   currentSets = [];
   users = [];
+  userParameters = {};
   
   // Затем загружаем данные
   loadUsers();
   loadCurrentUser();
+  loadUserParameters();
   loadData();
   renderExercises();
   renderHistory();
@@ -1029,6 +1262,42 @@ function loadCurrentUser() {
   renderUserSelector();
 }
 
+function loadUserParameters() {
+  try {
+    const storedParams = localStorage.getItem(USER_PARAMS_KEY);
+    if (storedParams) {
+      const parsed = JSON.parse(storedParams);
+      userParameters = typeof parsed === 'object' ? parsed : {};
+      
+      // Инициализируем параметры для пользователей, у которых их нет
+      users.forEach(user => {
+        if (!userParameters[user.id]) {
+          userParameters[user.id] = {
+            height: null,
+            weight: null,
+            history: []
+          };
+        }
+      });
+    } else {
+      // Инициализируем пустые параметры для всех пользователей
+      userParameters = {};
+      users.forEach(user => {
+        userParameters[user.id] = {
+          height: null,
+          weight: null,
+          history: []
+        };
+      });
+      // ИСПРАВЛЕНИЕ: Используем новую функцию сохранения
+      saveUserParametersToStorage();
+    }
+  } catch (e) {
+    console.error('Ошибка загрузки параметров пользователей:', e);
+    userParameters = {};
+  }
+}
+
 function saveUsers() {
   try {
     localStorage.setItem(USERS_KEY, JSON.stringify(users));
@@ -1042,6 +1311,15 @@ function saveCurrentUser() {
     localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(currentUser));
   } catch (e) {
     console.error('Ошибка сохранения текущего пользователя:', e);
+  }
+}
+
+// ИСПРАВЛЕНИЕ: Создаем отдельную функцию для сохранения параметров в localStorage
+function saveUserParametersToStorage() {
+  try {
+    localStorage.setItem(USER_PARAMS_KEY, JSON.stringify(userParameters));
+  } catch (e) {
+    console.error('Ошибка сохранения параметров пользователей:', e);
   }
 }
 
@@ -1162,11 +1440,21 @@ function renderUsersManagerList() {
     `;
     
     const isCurrent = user.id === currentUser.id;
+    const params = userParameters[user.id] || { height: null, weight: null };
+    const bmi = params.height && params.weight ? 
+      (params.weight / ((params.height/100) * (params.height/100))).toFixed(1) : '-';
     
     userElement.innerHTML = `
       <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
         <span style="color: var(--text-secondary); font-size: 12px; width: 24px;">${index + 1}.</span>
-        <span style="flex: 1; font-weight: ${isCurrent ? '600' : '400'}; color: ${isCurrent ? 'var(--primary)' : 'var(--text)'};">${user.name}</span>
+        <div style="flex: 1;">
+          <div style="font-weight: ${isCurrent ? '600' : '400'}; color: ${isCurrent ? 'var(--primary)' : 'var(--text)'};">${user.name}</div>
+          <div style="font-size: 11px; color: var(--text-secondary);">
+            ${params.height ? params.height + ' см' : 'Рост не указан'} • 
+            ${params.weight ? params.weight + ' кг' : 'Вес не указан'} • 
+            ИМТ: ${bmi}
+          </div>
+        </div>
         ${isCurrent ? '<span style="font-size: 10px; color: var(--success); background: rgba(50, 215, 75, 0.1); padding: 2px 6px; border-radius: 10px;">текущий</span>' : ''}
       </div>
       <div style="display: flex; gap: 8px;">
@@ -1212,7 +1500,16 @@ function addUser() {
   };
   
   users.push(newUser);
+  // Инициализируем параметры для нового пользователя
+  userParameters[newUser.id] = {
+    height: null,
+    weight: null,
+    history: []
+  };
+  
   saveUsers();
+  // ИСПРАВЛЕНИЕ: Используем новую функцию сохранения
+  saveUserParametersToStorage();
   renderUsersManagerList();
   input.value = '';
   input.focus();
@@ -1283,6 +1580,13 @@ function removeUser(userId) {
   // Удаляем данные пользователя из localStorage
   localStorage.removeItem(`${STORAGE_KEY_PREFIX}_${userId}`);
   localStorage.removeItem(`${EXERCISE_KEY_PREFIX}_${userId}`);
+  
+  // Удаляем параметры пользователя
+  if (userParameters[userId]) {
+    delete userParameters[userId];
+    // ИСПРАВЛЕНИЕ: Используем новую функцию сохранения
+    saveUserParametersToStorage();
+  }
   
   // Удаляем пользователя из списка
   users = users.filter(u => u.id !== userId);
@@ -2027,6 +2331,7 @@ function loadLastSessionHint() {
 function renderExercises() {
   const select = document.getElementById('exerciseSelect');
   const filter = document.getElementById('filterExercise');
+  const comparisonExercise = document.getElementById('comparisonExercise');
   
   if (!select || !filter) return;
   
@@ -2036,6 +2341,9 @@ function renderExercises() {
   // Очищаем и сортируем по алфавиту
   select.innerHTML = '<option disabled selected>Выбрать упражнение...</option>';
   filter.innerHTML = '<option value="">Все упражнения</option>';
+  if (comparisonExercise) {
+    comparisonExercise.innerHTML = '<option value="">Все упражнения</option>';
+  }
   
   // Проверяем, что exercises - массив
   if (!Array.isArray(exercises)) {
@@ -2047,6 +2355,9 @@ function renderExercises() {
   [...exercises].sort().forEach(exercise => {
     select.add(new Option(exercise, exercise));
     filter.add(new Option(exercise, exercise));
+    if (comparisonExercise) {
+      comparisonExercise.add(new Option(exercise, exercise));
+    }
   });
   
   // Восстанавливаем значения
@@ -2519,23 +2830,47 @@ function showStats() {
     .sort((a, b) => b[1].maxWeight - a[1].maxWeight)
     .slice(0, 5);
   
+  // Параметры пользователя
+  const userParams = userParameters[currentUser.id] || {};
+  const bmi = userParams.height && userParams.weight ? 
+    (userParams.weight / ((userParams.height/100) * (userParams.height/100))).toFixed(1) : '-';
+  
   container.innerHTML = `
-    <div class="stats-row" style="margin: 0 0 20px 0;">
-      <div class="stat-item">
-        <div class="stat-value">${totalWorkouts}</div>
-        <div class="stat-label">Тренировок</div>
+    <div class="profile-stats" style="margin: 0 0 20px 0;">
+      <div class="profile-stat">
+        <div class="profile-stat-value">${totalWorkouts}</div>
+        <div class="profile-stat-label">Тренировок</div>
       </div>
-      <div class="stat-item">
-        <div class="stat-value">${totalExercises}</div>
-        <div class="stat-label">Упражнений</div>
+      <div class="profile-stat">
+        <div class="profile-stat-value">${totalExercises}</div>
+        <div class="profile-stat-label">Упражнений</div>
       </div>
-      <div class="stat-item">
-        <div class="stat-value">${totalSets}</div>
-        <div class="stat-label">Подходов</div>
+      <div class="profile-stat">
+        <div class="profile-stat-value">${totalSets}</div>
+        <div class="profile-stat-label">Подходов</div>
       </div>
-      <div class="stat-item">
-        <div class="stat-value">${Math.round(totalVolume)}</div>
-        <div class="stat-label">кг общий объем</div>
+      <div class="profile-stat">
+        <div class="profile-stat-value">${Math.round(totalVolume)}</div>
+        <div class="profile-stat-label">кг общий объем</div>
+      </div>
+    </div>
+    
+    <h3 style="margin: 20px 0 10px 0;">👤 Параметры пользователя</h3>
+    <div style="background: var(--card-bg); border-radius: var(--radius); padding: 16px; margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.05);">
+      <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+        <span>Рост:</span>
+        <span style="font-weight: 600; color: ${userParams.height ? 'var(--primary)' : 'var(--text-secondary)'};">${userParams.height ? userParams.height + ' см' : 'Не указан'}</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+        <span>Вес:</span>
+        <span style="font-weight: 600; color: ${userParams.weight ? 'var(--primary)' : 'var(--text-secondary)'};">${userParams.weight ? userParams.weight + ' кг' : 'Не указан'}</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+        <span>Индекс массы тела (ИМТ):</span>
+        <span style="font-weight: 600; color: ${bmi !== '-' ? 
+          (bmi < 18.5 ? 'var(--warning)' : 
+           bmi <= 24.9 ? 'var(--success)' : 
+           bmi <= 29.9 ? 'var(--warning)' : 'var(--danger)') : 'var(--text-secondary)'}">${bmi}</span>
       </div>
     </div>
     
@@ -2590,6 +2925,475 @@ function closeStats() {
   document.getElementById('statsModal').classList.remove('active');
 }
 
+// Профиль пользователя
+function openUserProfile() {
+  loadUserProfile();
+  document.getElementById('profileModal').classList.add('active');
+}
+
+function closeUserProfile() {
+  document.getElementById('profileModal').classList.remove('active');
+}
+
+function loadUserProfile() {
+  const params = userParameters[currentUser.id] || { height: null, weight: null, history: [] };
+  
+  // Обновляем значения в UI
+  document.getElementById('profileHeight').textContent = params.height ? params.height + ' см' : '- см';
+  document.getElementById('profileWeight').textContent = params.weight ? params.weight + ' кг' : '- кг';
+  
+  // Рассчитываем ИМТ
+  let bmi = '-';
+  if (params.height && params.weight) {
+    bmi = (params.weight / ((params.height/100) * (params.height/100))).toFixed(1);
+  }
+  document.getElementById('profileIMC').textContent = bmi;
+  
+  // Подсчитываем тренировки
+  const workoutCount = appData.length;
+  document.getElementById('profileWorkouts').textContent = workoutCount;
+  
+  // Заполняем поля ввода текущими значениями
+  document.getElementById('editHeight').value = params.height || '';
+  document.getElementById('editWeight').value = params.weight || '';
+  
+  // Загружаем историю
+  loadParametersHistory();
+  
+  // Рендерим график
+  renderParametersChart();
+}
+
+// ИСПРАВЛЕНИЕ: Переименованная функция сохранения параметров пользователя
+function saveUserParameters() {
+  const heightInput = document.getElementById('editHeight');
+  const weightInput = document.getElementById('editWeight');
+  
+  if (!heightInput || !weightInput) {
+    showToast('Ошибка: поля ввода не найдены', 'error');
+    return;
+  }
+  
+  const height = parseFloat(heightInput.value);
+  const weight = parseFloat(weightInput.value);
+  
+  if ((height && (height < 100 || height > 250)) || (weight && (weight < 30 || weight > 200))) {
+    showToast('Некорректные значения роста или веса', 'error');
+    return;
+  }
+  
+  if (!userParameters[currentUser.id]) {
+    userParameters[currentUser.id] = { height: null, weight: null, history: [] };
+  }
+  
+  // Сохраняем новые значения
+  const oldHeight = userParameters[currentUser.id].height;
+  const oldWeight = userParameters[currentUser.id].weight;
+  
+  userParameters[currentUser.id].height = height || null;
+  userParameters[currentUser.id].weight = weight || null;
+  
+  // Добавляем запись в историю, если значения изменились
+  if ((height && height !== oldHeight) || (weight && weight !== oldWeight)) {
+    if (!userParameters[currentUser.id].history) {
+      userParameters[currentUser.id].history = [];
+    }
+    
+    userParameters[currentUser.id].history.push({
+      date: Date.now(),
+      height: height || oldHeight,
+      weight: weight || oldWeight
+    });
+    
+    // Сортируем историю по дате (новые сверху)
+    userParameters[currentUser.id].history.sort((a, b) => b.date - a.date);
+    
+    // Ограничиваем историю 100 записями
+    if (userParameters[currentUser.id].history.length > 100) {
+      userParameters[currentUser.id].history = userParameters[currentUser.id].history.slice(0, 100);
+    }
+  }
+  
+  // ИСПРАВЛЕНИЕ: Используем новую функцию сохранения
+  saveUserParametersToStorage();
+  loadUserProfile();
+  
+  showToast('Параметры сохранены', 'success');
+}
+
+function loadParametersHistory() {
+  const container = document.getElementById('parametersHistory');
+  if (!container) return;
+  
+  const params = userParameters[currentUser.id] || { history: [] };
+  
+  if (!params.history || params.history.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state" style="padding: 20px;">
+        <p>Нет истории изменений</p>
+        <p style="font-size: 12px; margin-top: 8px;">Добавьте рост и вес в профиле</p>
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = '';
+  
+  // Группируем по датам
+  const grouped = params.history.reduce((groups, entry) => {
+    const date = new Date(entry.date).toLocaleDateString('ru-RU', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+    
+    if (!groups[date]) groups[date] = [];
+    groups[date].push(entry);
+    return groups;
+  }, {});
+  
+  Object.entries(grouped).forEach(([date, entries]) => {
+    const groupElement = document.createElement('div');
+    groupElement.style.marginBottom = '15px';
+    
+    groupElement.innerHTML = `
+      <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px; color: var(--primary);">${date}</div>
+    `;
+    
+    entries.forEach(entry => {
+      const time = new Date(entry.date).toLocaleTimeString('ru-RU', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      });
+      
+      const bmi = entry.height && entry.weight ? 
+        (entry.weight / ((entry.height/100) * (entry.height/100))).toFixed(1) : '-';
+      
+      const entryElement = document.createElement('div');
+      entryElement.style.cssText = `
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 8px;
+      `;
+      
+      entryElement.innerHTML = `
+        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+          <span style="font-size: 12px; color: var(--text-secondary);">${time}</span>
+          <span style="font-size: 12px; color: var(--primary); font-weight: 600;">ИМТ: ${bmi}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <div>
+            <div style="font-size: 11px; color: var(--text-secondary);">Рост</div>
+            <div style="font-weight: 600;">${entry.height || '-'} см</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; color: var(--text-secondary);">Вес</div>
+            <div style="font-weight: 600;">${entry.weight || '-'} кг</div>
+          </div>
+        </div>
+      `;
+      
+      groupElement.appendChild(entryElement);
+    });
+    
+    container.appendChild(groupElement);
+  });
+}
+
+function renderParametersChart() {
+  const canvas = document.getElementById('parametersChart');
+  if (!canvas) return;
+  
+  const ctx = canvas.getContext('2d');
+  const params = userParameters[currentUser.id] || { history: [] };
+  
+  // Фильтруем историю по выбранному периоду
+  const cutoffDate = Date.now() - (chartPeriod * 24 * 60 * 60 * 1000);
+  const filteredHistory = params.history.filter(entry => entry.date >= cutoffDate);
+  
+  if (filteredHistory.length < 2) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Получаем значение CSS переменной
+    const textSecondary = getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim();
+    ctx.fillStyle = textSecondary || '#8E8E93';
+    ctx.font = '14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Недостаточно данных для графика', canvas.width/2, canvas.height/2);
+    return;
+  }
+  
+  // Сортируем по дате
+  const sortedHistory = [...filteredHistory].sort((a, b) => a.date - b.date);
+  
+  // Подготавливаем данные
+  const dates = sortedHistory.map(entry => 
+    new Date(entry.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })
+  );
+  
+  const weights = sortedHistory.map(entry => entry.weight).filter(w => w);
+  const heights = sortedHistory.map(entry => entry.height).filter(h => h);
+  
+  // Если есть предыдущий график, уничтожаем его
+  if (parametersChart) {
+    parametersChart.destroy();
+  }
+  
+  // Создаем новый график
+  parametersChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: dates,
+      datasets: [
+        {
+          label: 'Вес (кг)',
+          data: weights,
+          borderColor: 'rgb(10, 132, 255)',
+          backgroundColor: 'rgba(10, 132, 255, 0.1)',
+          tension: 0.3,
+          fill: true
+        },
+        {
+          label: 'Рост (см)',
+          data: heights,
+          borderColor: 'rgb(50, 215, 75)',
+          backgroundColor: 'rgba(50, 215, 75, 0.1)',
+          tension: 0.3,
+          fill: true
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          labels: {
+            color: 'var(--text)',
+            font: {
+              size: 12
+            }
+          }
+        },
+        tooltip: {
+          backgroundColor: 'var(--card-bg)',
+          titleColor: 'var(--text)',
+          bodyColor: 'var(--text)',
+          borderColor: 'var(--separator)',
+          borderWidth: 1
+        }
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: 'var(--text-secondary)',
+            maxRotation: 45
+          },
+          grid: {
+            color: 'rgba(255, 255, 255, 0.05)'
+          }
+        },
+        y: {
+          ticks: {
+            color: 'var(--text-secondary)'
+          },
+          grid: {
+            color: 'rgba(255, 255, 255, 0.05)'
+          }
+        }
+      }
+    }
+  });
+}
+
+// Сравнение пользователей
+function openUsersComparison() {
+  renderUsersComparison();
+  document.getElementById('comparisonModal').classList.add('active');
+}
+
+function closeUsersComparison() {
+  document.getElementById('comparisonModal').classList.remove('active');
+}
+
+function renderUsersComparison() {
+  const container = document.getElementById('comparisonContent');
+  const exerciseSelect = document.getElementById('comparisonExercise');
+  const selectedExercise = exerciseSelect ? exerciseSelect.value : '';
+  
+  if (!container) return;
+  
+  if (users.length < 2) {
+    container.innerHTML = `
+      <div class="empty-state" style="padding: 40px 20px;">
+        <p>Для сравнения нужно минимум 2 пользователя</p>
+        <p style="font-size: 12px; margin-top: 8px;">Добавьте пользователей в управлении</p>
+      </div>
+    `;
+    return;
+  }
+  
+  // Собираем статистику для каждого пользователя
+  const userStats = users.map(user => {
+    // Загружаем данные пользователя
+    const userAppData = loadUserData(user.id);
+    const params = userParameters[user.id] || { height: null, weight: null };
+    
+    // Фильтруем по упражнению, если выбрано
+    let filteredData = userAppData;
+    if (selectedExercise) {
+      filteredData = userAppData.filter(item => item.name === selectedExercise);
+    }
+    
+    // Рассчитываем статистику
+    const totalWorkouts = filteredData.length;
+    const totalSets = filteredData.reduce((sum, w) => sum + w.sets.length, 0);
+    const totalVolume = filteredData.reduce((sum, w) => sum + (w.volume || 0), 0);
+    const avgVolume = totalWorkouts > 0 ? Math.round(totalVolume / totalWorkouts) : 0;
+    
+    // Лучший результат (максимальный вес в одном подходе)
+    let maxWeight = 0;
+    filteredData.forEach(workout => {
+      workout.sets.forEach(set => {
+        const weight = parseFloat(set.weight) || 0;
+        if (weight > maxWeight) maxWeight = weight;
+      });
+    });
+    
+    // Последняя тренировка
+    const lastWorkout = filteredData.length > 0 ? 
+      new Date(Math.max(...filteredData.map(w => w.date))).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }) : 
+      'Нет';
+    
+    // Рассчитываем ИМТ
+    let bmi = '-';
+    if (params.height && params.weight) {
+      bmi = (params.weight / ((params.height/100) * (params.height/100))).toFixed(1);
+    }
+    
+    return {
+      id: user.id,
+      name: user.name,
+      height: params.height,
+      weight: params.weight,
+      bmi: bmi,
+      totalWorkouts,
+      totalSets,
+      totalVolume,
+      avgVolume,
+      maxWeight,
+      lastWorkout
+    };
+  });
+  
+  // Сортируем по общему объему (от большего к меньшему)
+  userStats.sort((a, b) => b.totalVolume - a.totalVolume);
+  
+  // Строим таблицу сравнения
+  let tableHTML = `
+    <table class="comparison-table">
+      <thead>
+        <tr>
+          <th>Пользователь</th>
+          <th>Рост/Вес</th>
+          <th>Тренировок</th>
+          <th>Объем</th>
+          <th>Макс. вес</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+  
+  userStats.forEach(stat => {
+    const isCurrent = stat.id === currentUser.id;
+    
+    tableHTML += `
+      <tr style="${isCurrent ? 'background: rgba(10, 132, 255, 0.1);' : ''}">
+        <td>
+          <div style="font-weight: ${isCurrent ? '600' : '400'}; color: ${isCurrent ? 'var(--primary)' : 'var(--text)'};">${stat.name}</div>
+          <div style="font-size: 11px; color: var(--text-secondary);">${stat.lastWorkout}</div>
+        </td>
+        <td>
+          <div>${stat.height ? stat.height + ' см' : '-'}</div>
+          <div style="font-size: 11px; color: var(--text-secondary);">${stat.weight ? stat.weight + ' кг' : '-'}</div>
+          <div style="font-size: 10px; color: ${stat.bmi !== '-' ? 
+            (stat.bmi < 18.5 ? 'var(--warning)' : 
+             stat.bmi <= 24.9 ? 'var(--success)' : 
+             stat.bmi <= 29.9 ? 'var(--warning)' : 'var(--danger)') : 'var(--text-secondary)'}">
+            ИМТ: ${stat.bmi}
+          </div>
+        </td>
+        <td class="comparison-value">${stat.totalWorkouts}</td>
+        <td class="comparison-value">
+          <div>${Math.round(stat.totalVolume)} кг</div>
+          <div style="font-size: 11px; color: var(--text-secondary);">${stat.avgVolume} кг/тр.</div>
+        </td>
+        <td class="comparison-value">${Math.round(stat.maxWeight)} кг</td>
+      </tr>
+    `;
+  });
+  
+  tableHTML += `
+      </tbody>
+    </table>
+    
+    <div style="margin-top: 20px; padding: 15px; background: rgba(10, 132, 255, 0.05); border-radius: var(--radius);">
+      <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">📊 Сводная статистика:</div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div style="text-align: center;">
+          <div style="font-size: 18px; font-weight: 700; color: var(--primary);">${userStats.length}</div>
+          <div style="font-size: 11px; color: var(--text-secondary);">Пользователей</div>
+        </div>
+        <div style="text-align: center;">
+          <div style="font-size: 18px; font-weight: 700; color: var(--primary);">${userStats.reduce((sum, s) => sum + s.totalWorkouts, 0)}</div>
+          <div style="font-size: 11px; color: var(--text-secondary);">Всего тренировок</div>
+        </div>
+        <div style="text-align: center;">
+          <div style="font-size: 18px; font-weight: 700; color: var(--primary);">${Math.round(userStats.reduce((sum, s) => sum + s.totalVolume, 0))}</div>
+          <div style="font-size: 11px; color: var(--text-secondary);">Общий объем (кг)</div>
+        </div>
+        <div style="text-align: center;">
+          <div style="font-size: 18px; font-weight: 700; color: var(--primary);">${Math.round(Math.max(...userStats.map(s => s.maxWeight)))}</div>
+          <div style="font-size: 11px; color: var(--text-secondary);">Рекорд веса</div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  container.innerHTML = tableHTML;
+}
+
+function loadUserData(userId) {
+  try {
+    const storageKey = `${STORAGE_KEY_PREFIX}_${userId}`;
+    const storedAppData = localStorage.getItem(storageKey);
+    if (storedAppData) {
+      const parsed = JSON.parse(storedAppData);
+      return Array.isArray(parsed) ? parsed : [];
+    }
+    return [];
+  } catch (e) {
+    console.error(`Ошибка загрузки данных пользователя ${userId}:`, e);
+    return [];
+  }
+}
+
+// Вспомогательные функции для вкладок
+function switchTab(tabId) {
+  // Убираем активный класс со всех вкладок
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.classList.remove('active');
+  });
+  
+  document.querySelectorAll('.tab-content').forEach(content => {
+    content.classList.remove('active');
+  });
+  
+  // Добавляем активный класс выбранной вкладке
+  document.querySelector(`[onclick="switchTab('${tabId}')"]`).classList.add('active');
+  document.getElementById(tabId).classList.add('active');
+}
+
 // Уведомления
 function showToast(message, type = 'info') {
   const toast = document.getElementById('toast');
@@ -2625,6 +3429,8 @@ function initDOMCheck() {
     'exerciseModal',
     'usersModal',
     'statsModal',
+    'profileModal',
+    'comparisonModal',
     'toast'
   ];
   
