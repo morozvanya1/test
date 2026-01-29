@@ -474,6 +474,26 @@
             transform: scale(0.9);
         }
         
+        .restore-track-btn {
+            background: rgba(255, 193, 7, 0.2);
+            border: none;
+            color: #ffc107;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 12px;
+        }
+        
+        .restore-track-btn:active {
+            background: rgba(255, 193, 7, 0.4);
+            transform: scale(0.9);
+        }
+        
         .now-playing-bar {
             position: fixed;
             bottom: 0;
@@ -657,6 +677,12 @@
             border: 1px solid rgba(220, 53, 69, 0.3);
         }
         
+        .sync-btn.restore {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+        }
+        
         .sync-btn:active {
             transform: scale(0.98);
             opacity: 0.8;
@@ -757,7 +783,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.95);
+            background-color: rgba(0, 0, 0, 0.9);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -1203,6 +1229,9 @@
                 <button class="sync-btn delete-all" id="deleteSelectedBtn">
                     <i class="fas fa-trash"></i> Удалить выбранные
                 </button>
+                <button class="sync-btn restore" id="restoreAllBtn">
+                    <i class="fas fa-redo"></i> Восстановить все
+                </button>
             </div>
         </div>
         
@@ -1293,6 +1322,36 @@
     </div>
 
     <script>
+        // Преобразование файла в base64
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+        
+        // Преобразование base64 в файл
+        function base64ToFile(base64, fileName, fileType) {
+            try {
+                const byteString = atob(base64.split(',')[1]);
+                const mimeString = base64.split(',')[0].split(':')[1].split(';')[0];
+                const ab = new ArrayBuffer(byteString.length);
+                const ia = new Uint8Array(ab);
+                
+                for (let i = 0; i < byteString.length; i++) {
+                    ia[i] = byteString.charCodeAt(i);
+                }
+                
+                const blob = new Blob([ab], { type: mimeString });
+                return new File([blob], fileName, { type: fileType });
+            } catch (error) {
+                console.error('Ошибка преобразования base64 в файл:', error);
+                return null;
+            }
+        }
+        
         // Основные переменные
         const audio = new Audio();
         let currentTrackIndex = -1;
@@ -1327,6 +1386,7 @@
         const importBtn = document.getElementById('importBtn');
         const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
         const moveSelectedBtn = document.getElementById('moveSelectedBtn');
+        const restoreAllBtn = document.getElementById('restoreAllBtn');
         const addPlaylistBtn = document.getElementById('addPlaylistBtn');
         const renamePlaylistBtn = document.getElementById('renamePlaylistBtn');
         const deletePlaylistBtn = document.getElementById('deletePlaylistBtn');
@@ -1426,6 +1486,7 @@
             importBtn.addEventListener('click', importPlaylistFromZip);
             deleteSelectedBtn.addEventListener('click', deleteSelectedTracks);
             moveSelectedBtn.addEventListener('click', showPlaylistSelectModal);
+            restoreAllBtn.addEventListener('click', restoreAllTracks);
             
             // Обработчики кнопок управления плейлистами
             addPlaylistBtn.addEventListener('click', showCreatePlaylistModal);
@@ -1464,9 +1525,6 @@
             
             // Обработчик ошибок аудио
             audio.addEventListener('error', handleAudioError);
-            audio.addEventListener('canplay', () => {
-                console.log('Audio can play');
-            });
             
             // Загружаем сохранённые данные
             loadSavedData();
@@ -1788,7 +1846,8 @@
                     const copiedTrack = {
                         ...track,
                         id: `track_${Date.now()}_${index}_${deviceId}`,
-                        url: track.url ? track.url + '_copy' : null // Создаем уникальный URL
+                        // Не копируем blob URL - он будет создан при необходимости
+                        url: null
                     };
                     copiedTracks.push(copiedTrack);
                 }
@@ -1805,6 +1864,33 @@
             
             playlistSelectModal.classList.add('hidden');
             showMessage(`Скопировано ${copiedTracks.length} треков в "${targetPlaylist.name}"`);
+        }
+        
+        // Восстановление всех недоступных треков
+        function restoreAllTracks() {
+            const playlist = playlists[currentPlaylistIndex];
+            if (!playlist) return;
+            
+            let restoredCount = 0;
+            let failedCount = 0;
+            
+            for (const track of playlist.tracks) {
+                if (!track.hasAudio && track.file) {
+                    if (recreateBlobUrl(track)) {
+                        restoredCount++;
+                    } else {
+                        failedCount++;
+                    }
+                }
+            }
+            
+            if (restoredCount > 0 || failedCount > 0) {
+                saveData();
+                renderPlaylist();
+                showMessage(`Восстановлено: ${restoredCount}, Не удалось: ${failedCount}`);
+            } else {
+                showMessage('Нет треков для восстановления');
+            }
         }
         
         // Показать/скрыть модальное окно прогресса
@@ -1837,13 +1923,41 @@
         // Сохранение данных
         async function saveData() {
             try {
+                // Преобразуем каждый трек в каждом плейлисте, добавляя поле fileData (base64)
+                const playlistsWithBase64 = await Promise.all(playlists.map(async (playlist) => {
+                    const tracksWithBase64 = await Promise.all(playlist.tracks.map(async (track) => {
+                        let fileData = null;
+                        if (track.file) {
+                            fileData = await fileToBase64(track.file);
+                        }
+                        return {
+                            id: track.id,
+                            title: track.title,
+                            artist: track.artist,
+                            fileName: track.fileName,
+                            fileType: track.fileType,
+                            fileSize: track.fileSize,
+                            duration: track.duration,
+                            addedDate: track.addedDate,
+                            deviceId: track.deviceId,
+                            hasAudio: track.hasAudio,
+                            fileData: fileData
+                        };
+                    }));
+                    return {
+                        id: playlist.id,
+                        name: playlist.name,
+                        tracks: tracksWithBase64
+                    };
+                }));
+
                 const data = {
-                    playlists: playlists,
+                    playlists: playlistsWithBase64,
                     currentPlaylistIndex: currentPlaylistIndex,
                     deviceId: deviceId,
-                    version: '4.0'
+                    version: '4.2'
                 };
-                
+
                 localStorage.setItem('musicPlayerData', JSON.stringify(data));
                 console.log('Данные сохранены');
                 return true;
@@ -1872,7 +1986,58 @@
                 }
                 
                 const data = JSON.parse(savedData);
-                playlists = data.playlists || [];
+                playlists = [];
+                
+                // Восстанавливаем плейлисты
+                for (const savedPlaylist of data.playlists || []) {
+                    const playlist = {
+                        id: savedPlaylist.id,
+                        name: savedPlaylist.name,
+                        tracks: []
+                    };
+                    
+                    // Восстанавливаем треки
+                    for (const savedTrack of savedPlaylist.tracks || []) {
+                        let trackFile = null;
+                        let trackUrl = null;
+                        let hasAudio = savedTrack.hasAudio || false;
+                        
+                        // Восстанавливаем файл из base64 если есть данные
+                        if (savedTrack.fileData) {
+                            try {
+                                trackFile = base64ToFile(savedTrack.fileData, savedTrack.fileName, savedTrack.fileType);
+                                if (trackFile) {
+                                    // Создаем blob URL из файла
+                                    trackUrl = URL.createObjectURL(trackFile);
+                                    hasAudio = true;
+                                }
+                            } catch (error) {
+                                console.error('Ошибка восстановления файла трека:', error);
+                                hasAudio = false;
+                            }
+                        }
+                        
+                        const track = {
+                            id: savedTrack.id,
+                            title: savedTrack.title || 'Неизвестный трек',
+                            artist: savedTrack.artist || 'Неизвестный исполнитель',
+                            url: trackUrl,
+                            file: trackFile,
+                            fileName: savedTrack.fileName,
+                            fileType: savedTrack.fileType,
+                            fileSize: savedTrack.fileSize,
+                            duration: savedTrack.duration || 0,
+                            addedDate: savedTrack.addedDate || new Date().toISOString(),
+                            deviceId: savedTrack.deviceId || deviceId,
+                            hasAudio: hasAudio
+                        };
+                        
+                        playlist.tracks.push(track);
+                    }
+                    
+                    playlists.push(playlist);
+                }
+                
                 currentPlaylistIndex = data.currentPlaylistIndex || 0;
                 deviceId = data.deviceId || await getDeviceId();
                 
@@ -1973,7 +2138,7 @@
                         currentPlaylistIndex = state.currentPlaylistIndex;
                         currentTrackIndex = state.currentTrackIndex;
                         
-                        // Загружаем трек, но не воспроизводим автоматически
+                        // Загружаем трек
                         const track = playlist.tracks[currentTrackIndex];
                         if (track) {
                             trackTitle.textContent = track.title;
@@ -1981,68 +2146,25 @@
                             nowPlayingTitle.textContent = track.title;
                             nowPlayingArtist.textContent = track.artist;
                             
-                            // Пытаемся восстановить аудио
-                            restoreAudioTrack(track).then(success => {
-                                if (success) {
-                                    showNowPlayingBar();
-                                    updateMediaSessionMetadata(track);
+                            if (track.hasAudio && track.url) {
+                                audio.src = track.url;
+                                audio.currentTime = Math.min(state.currentTime || 0, track.duration || 0);
+                                
+                                if (state.isPlaying) {
+                                    audio.play().catch(e => {
+                                        console.log('Автовоспроизведение заблокировано');
+                                    });
                                 }
-                            });
+                                
+                                showNowPlayingBar();
+                                updateMediaSessionMetadata(track);
+                            }
                         }
                     }
                 }
                 
-                updatePlaylistSelect();
-                renderPlaylist();
-                
             } catch (error) {
                 console.error('Ошибка восстановления состояния воспроизведения:', error);
-            }
-        }
-        
-        // Восстановление аудио трека
-        async function restoreAudioTrack(track) {
-            if (!track.url) {
-                console.log('Трек не имеет URL:', track);
-                return false;
-            }
-            
-            try {
-                // Проверяем, является ли URL действительным blob URL
-                if (track.url.startsWith('blob:')) {
-                    // Пробуем загрузить аудио
-                    audio.src = track.url;
-                    audio.load();
-                    
-                    return new Promise((resolve) => {
-                        const onCanPlay = () => {
-                            audio.removeEventListener('canplay', onCanPlay);
-                            audio.removeEventListener('error', onError);
-                            resolve(true);
-                        };
-                        
-                        const onError = () => {
-                            audio.removeEventListener('canplay', onCanPlay);
-                            audio.removeEventListener('error', onError);
-                            console.log('Blob URL недействителен:', track.url);
-                            resolve(false);
-                        };
-                        
-                        audio.addEventListener('canplay', onCanPlay);
-                        audio.addEventListener('error', onError);
-                        
-                        setTimeout(() => {
-                            audio.removeEventListener('canplay', onCanPlay);
-                            audio.removeEventListener('error', onError);
-                            resolve(false);
-                        }, 2000);
-                    });
-                }
-                
-                return false;
-            } catch (error) {
-                console.error('Ошибка восстановления аудио трека:', error);
-                return false;
             }
         }
         
@@ -2058,30 +2180,6 @@
             
             updatePlaylistSelect();
             renderPlaylist();
-            
-            // Если был воспроизводимый трек, пытаемся восстановить его в новом плейлисте
-            const savedState = JSON.parse(localStorage.getItem('playbackState') || '{}');
-            if (savedState.currentPlaylistIndex === index && savedState.currentTrackIndex >= 0) {
-                const playlist = playlists[index];
-                if (savedState.currentTrackIndex < playlist.tracks.length) {
-                    currentTrackIndex = savedState.currentTrackIndex;
-                    const track = playlist.tracks[currentTrackIndex];
-                    if (track) {
-                        trackTitle.textContent = track.title;
-                        trackArtist.textContent = track.artist;
-                        nowPlayingTitle.textContent = track.title;
-                        nowPlayingArtist.textContent = track.artist;
-                        
-                        restoreAudioTrack(track).then(success => {
-                            if (success) {
-                                audio.currentTime = Math.min(savedState.currentTime || 0, track.duration || 0);
-                                updateMediaSessionMetadata(track);
-                                showNowPlayingBar();
-                            }
-                        });
-                    }
-                }
-            }
         }
         
         // Показать модальное окно создания плейлиста
@@ -2168,6 +2266,7 @@
                 hideNowPlayingBar();
             }
             
+            // Освобождаем blob URL всех треков в плейлисте
             playlist.tracks.forEach(track => {
                 if (track.url && track.url.startsWith('blob:')) {
                     try {
@@ -2255,6 +2354,7 @@
                         title: title,
                         artist: artist,
                         url: fileURL,
+                        file: file,
                         fileName: file.name,
                         fileType: file.type,
                         fileSize: file.size,
@@ -2312,6 +2412,22 @@
             });
         }
         
+        // Пересоздание blob URL для трека
+        function recreateBlobUrl(track) {
+            if (track.file && !track.url) {
+                try {
+                    track.url = URL.createObjectURL(track.file);
+                    track.hasAudio = true;
+                    return true;
+                } catch (error) {
+                    console.error('Ошибка пересоздания blob URL:', error);
+                    track.hasAudio = false;
+                    return false;
+                }
+            }
+            return false;
+        }
+        
         // Удаление одного трека
         function deleteTrack(index, event) {
             if (event) {
@@ -2324,31 +2440,40 @@
             const track = playlist.tracks[index];
             const trackTitleText = track.title;
             
+            // Останавливаем воспроизведение, если удаляется текущий трек
             if (currentTrackIndex === index) {
                 audio.pause();
                 audio.src = '';
                 
                 if (playlist.tracks.length > 1) {
-                    if (index < playlist.tracks.length - 1) {
-                        currentTrackIndex = index;
-                        playTrack(index);
-                    } else {
-                        currentTrackIndex = index - 1;
-                        if (currentTrackIndex >= 0) {
-                            playTrack(currentTrackIndex);
-                        } else {
-                            currentTrackIndex = -1;
-                            resetPlayerUI();
+                    // Ищем следующий доступный трек
+                    let nextIndex = -1;
+                    for (let i = 1; i < playlist.tracks.length; i++) {
+                        const checkIndex = (index + i) % playlist.tracks.length;
+                        if (checkIndex !== index && playlist.tracks[checkIndex]?.hasAudio) {
+                            nextIndex = checkIndex;
+                            break;
                         }
+                    }
+                    
+                    if (nextIndex !== -1) {
+                        currentTrackIndex = nextIndex;
+                        setTimeout(() => playTrack(nextIndex), 100);
+                    } else {
+                        currentTrackIndex = -1;
+                        resetPlayerUI();
+                        hideNowPlayingBar();
                     }
                 } else {
                     currentTrackIndex = -1;
                     resetPlayerUI();
+                    hideNowPlayingBar();
                 }
             } else if (currentTrackIndex > index) {
                 currentTrackIndex--;
             }
             
+            // Освобождаем ресурсы
             if (track.url && track.url.startsWith('blob:')) {
                 try {
                     URL.revokeObjectURL(track.url);
@@ -2365,10 +2490,6 @@
             renderPlaylist();
             
             showMessage(`Трек "${trackTitleText}" удален`);
-            
-            if (playlist.tracks.length === 0) {
-                hideNowPlayingBar();
-            }
         }
         
         // Удаление выбранных треков
@@ -2468,7 +2589,7 @@
                 
                 const zip = new JSZip();
                 const metadata = {
-                    version: '4.0',
+                    version: '4.2',
                     exportDate: new Date().toISOString(),
                     deviceId: deviceId,
                     playlistName: playlist.name,
@@ -2507,15 +2628,9 @@
                         };
                         metadata.tracks.push(trackMetadata);
                         
-                        // Пытаемся получить файл из blob URL
-                        if (track.url && track.url.startsWith('blob:')) {
-                            try {
-                                const response = await fetch(track.url);
-                                const blob = await response.blob();
-                                tracksFolder.file(track.fileName, blob);
-                            } catch (error) {
-                                console.error(`Ошибка получения файла ${track.fileName}:`, error);
-                            }
+                        // Пытаемся получить файл
+                        if (track.file) {
+                            tracksFolder.file(track.fileName, track.file);
                         }
                         
                         processedTracks++;
@@ -2607,6 +2722,10 @@
                                     const track = {
                                         ...trackMetadata,
                                         url: fileURL,
+                                        file: new File([audioBlob], trackMetadata.fileName, {
+                                            type: trackMetadata.fileType,
+                                            lastModified: Date.now()
+                                        }),
                                         hasAudio: true
                                     };
                                     
@@ -2616,6 +2735,7 @@
                                     const track = {
                                         ...trackMetadata,
                                         url: null,
+                                        file: null,
                                         hasAudio: false
                                     };
                                     
@@ -2691,25 +2811,173 @@
         function handleAudioError(e) {
             console.error('Audio error:', e, audio.error);
             
-            switch(audio.error?.code) {
-                case MediaError.MEDIA_ERR_ABORTED:
-                    console.log('Воспроизведение было прервано');
+            if (audio.error) {
+                switch(audio.error.code) {
+                    case MediaError.MEDIA_ERR_ABORTED:
+                        console.log('Воспроизведение было прервано');
+                        break;
+                    case MediaError.MEDIA_ERR_NETWORK:
+                        showMessage('Ошибка сети. Проверьте подключение к интернету');
+                        break;
+                    case MediaError.MEDIA_ERR_DECODE:
+                        showMessage('Ошибка декодирования аудио. Файл поврежден');
+                        // Пробуем следующий трек
+                        setTimeout(() => playNextAvailableTrack(), 1000);
+                        break;
+                    case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
+                        showMessage('Формат аудио не поддерживается');
+                        // Пробуем следующий трек
+                        setTimeout(() => playNextAvailableTrack(), 1000);
+                        break;
+                    default:
+                        showMessage('Ошибка воспроизведения аудио');
+                }
+            }
+        }
+        
+        // Воспроизведение трека
+        async function playTrack(index) {
+            const playlist = playlists[currentPlaylistIndex];
+            if (!playlist || index < 0 || index >= playlist.tracks.length) return;
+            
+            const track = playlist.tracks[index];
+            
+            // Проверяем, есть ли у трека данные для воспроизведения
+            if (!track.hasAudio) {
+                showMessage('Аудиофайл не загружен или недоступен');
+                return;
+            }
+            
+            currentTrackIndex = index;
+            
+            console.log(`Воспроизведение: ${track.title} - ${track.artist}`);
+            
+            trackTitle.textContent = track.title;
+            trackArtist.textContent = track.artist;
+            nowPlayingTitle.textContent = track.title;
+            nowPlayingArtist.textContent = track.artist;
+            
+            try {
+                // Останавливаем текущее воспроизведение
+                audio.pause();
+                audio.src = '';
+                
+                // Если у трека есть blob URL, используем его
+                if (track.url && track.url.startsWith('blob:')) {
+                    audio.src = track.url;
+                    audio.load();
+                    
+                    // Ждем пока аудио будет готово к воспроизведению
+                    await new Promise((resolve) => {
+                        const onCanPlay = () => {
+                            audio.removeEventListener('canplay', onCanPlay);
+                            audio.removeEventListener('error', onError);
+                            resolve();
+                        };
+                        
+                        const onError = (e) => {
+                            audio.removeEventListener('canplay', onCanPlay);
+                            audio.removeEventListener('error', onError);
+                            console.error('Ошибка загрузки аудио:', e);
+                            // Пробуем пересоздать blob URL
+                            if (recreateBlobUrl(track)) {
+                                audio.src = track.url;
+                                audio.load();
+                                resolve();
+                            } else {
+                                throw new Error('Не удалось загрузить аудио');
+                            }
+                        };
+                        
+                        audio.addEventListener('canplay', onCanPlay);
+                        audio.addEventListener('error', onError);
+                        
+                        // Таймаут
+                        setTimeout(() => {
+                            audio.removeEventListener('canplay', onCanPlay);
+                            audio.removeEventListener('error', onError);
+                            resolve();
+                        }, 5000);
+                    });
+                } 
+                // Если у трека есть файл, создаем новый blob URL
+                else if (track.file) {
+                    try {
+                        // Создаем новый blob URL из файла
+                        const newBlobUrl = URL.createObjectURL(track.file);
+                        track.url = newBlobUrl; // Сохраняем новый URL
+                        audio.src = newBlobUrl;
+                        audio.load();
+                        
+                        // Ждем загрузки
+                        await new Promise((resolve) => {
+                            const onCanPlay = () => {
+                                audio.removeEventListener('canplay', onCanPlay);
+                                resolve();
+                            };
+                            audio.addEventListener('canplay', onCanPlay);
+                            setTimeout(() => {
+                                audio.removeEventListener('canplay', onCanPlay);
+                                resolve();
+                            }, 3000);
+                        });
+                    } catch (error) {
+                        console.error('Ошибка создания blob URL из файла:', error);
+                        throw error;
+                    }
+                } else {
+                    throw new Error('Нет данных для воспроизведения трека');
+                }
+                
+                updateMediaSessionMetadata(track);
+                
+                // Пытаемся воспроизвести
+                try {
+                    await audio.play();
+                    console.log('Воспроизведение началось');
+                } catch (playError) {
+                    console.error('Ошибка воспроизведения:', playError);
+                    showMessage('Нажмите кнопку воспроизведения для начала');
+                    isPlaying = false;
+                    updatePlayButtons();
+                }
+                
+                renderPlaylist();
+                showNowPlayingBar();
+                
+            } catch (error) {
+                console.error('Ошибка загрузки трека:', error, track);
+                showMessage(`Ошибка загрузки трека: ${track.title}`);
+                
+                // Отмечаем трек как недоступный
+                track.hasAudio = false;
+                
+                // Пытаемся воспроизвести следующий доступный трек
+                setTimeout(() => {
+                    playNextAvailableTrack();
+                }, 1000);
+            }
+        }
+        
+        // Функция для воспроизведения следующего доступного трека
+        function playNextAvailableTrack() {
+            const playlist = playlists[currentPlaylistIndex];
+            if (!playlist || playlist.tracks.length === 0) return;
+            
+            // Ищем следующий доступный трек
+            let nextIndex = currentTrackIndex;
+            for (let i = 1; i <= playlist.tracks.length; i++) {
+                const checkIndex = (currentTrackIndex + i) % playlist.tracks.length;
+                if (playlist.tracks[checkIndex]?.hasAudio) {
+                    nextIndex = checkIndex;
                     break;
-                case MediaError.MEDIA_ERR_NETWORK:
-                    showMessage('Ошибка сети. Проверьте подключение к интернету');
-                    break;
-                case MediaError.MEDIA_ERR_DECODE:
-                    showMessage('Ошибка декодирования аудио. Файл поврежден');
-                    // Пробуем следующий трек
-                    setTimeout(() => playNextTrack(), 1000);
-                    break;
-                case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
-                    showMessage('Формат аудио не поддерживается');
-                    // Пробуем следующий трек
-                    setTimeout(() => playNextTrack(), 1000);
-                    break;
-                default:
-                    showMessage('Ошибка воспроизведения аудио');
+                }
+            }
+            
+            if (nextIndex !== currentTrackIndex) {
+                playTrack(nextIndex);
+            } else {
+                showMessage('Нет доступных треков для воспроизведения');
             }
         }
         
@@ -2749,8 +3017,6 @@
                     <input type="checkbox" class="track-checkbox" ${selectedTracks.has(index) ? 'checked' : ''}>
                     <div class="track-number" title="${sourceTitle}">
                         <i class="fas ${fileIcon}"></i>
-                        <i class="fas ${sourceIcon}" style="font-size: 10px; margin-left: 2px;"></i>
-                        <i class="fas ${audioIcon}" style="font-size: 10px; margin-left: 2px; color: ${audioColor};"></i>
                     </div>
                     <div class="track-item-info">
                         <div class="track-item-title">${escapeHtml(track.title)}</div>
@@ -2768,6 +3034,11 @@
                     </div>
                     <div class="track-duration">${formatTime(track.duration)}</div>
                     <div class="track-item-actions">
+                        ${!track.hasAudio && track.file ? `
+                            <button class="restore-track-btn" title="Восстановить трек">
+                                <i class="fas fa-redo"></i>
+                            </button>
+                        ` : ''}
                         <button class="delete-track-btn" title="Удалить трек">
                             <i class="fas fa-times"></i>
                         </button>
@@ -2785,7 +3056,9 @@
                 });
                 
                 trackItem.addEventListener('click', function(e) {
-                    if (e.target.closest('.track-checkbox') || e.target.closest('.delete-track-btn')) {
+                    if (e.target.closest('.track-checkbox') || 
+                        e.target.closest('.delete-track-btn') || 
+                        e.target.closest('.restore-track-btn')) {
                         return;
                     }
                     playTrack(index);
@@ -2795,6 +3068,21 @@
                 deleteBtn.addEventListener('click', function(e) {
                     deleteTrack(index, e);
                 });
+                
+                // Добавляем обработчик для кнопки восстановления
+                const restoreBtn = trackItem.querySelector('.restore-track-btn');
+                if (restoreBtn) {
+                    restoreBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        if (recreateBlobUrl(track)) {
+                            showMessage(`Трек "${track.title}" восстановлен`);
+                            saveData();
+                            renderPlaylist();
+                        } else {
+                            showMessage('Не удалось восстановить трек');
+                        }
+                    });
+                }
                 
                 trackList.appendChild(trackItem);
             });
@@ -2806,98 +3094,6 @@
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
-        }
-        
-        // Воспроизведение трека
-        async function playTrack(index) {
-            const playlist = playlists[currentPlaylistIndex];
-            if (!playlist || index < 0 || index >= playlist.tracks.length) return;
-            
-            const track = playlist.tracks[index];
-            
-            if (!track.hasAudio || !track.url) {
-                showMessage('Аудиофайл не загружен или недоступен');
-                return;
-            }
-            
-            currentTrackIndex = index;
-            
-            console.log(`Воспроизведение: ${track.title} - ${track.artist}`);
-            console.log('Audio URL:', track.url);
-            
-            trackTitle.textContent = track.title;
-            trackArtist.textContent = track.artist;
-            nowPlayingTitle.textContent = track.title;
-            nowPlayingArtist.textContent = track.artist;
-            
-            try {
-                // Проверяем, доступен ли URL
-                if (track.url.startsWith('blob:')) {
-                    // Для blob URL проверяем доступность
-                    const response = await fetch(track.url, { method: 'HEAD' }).catch(() => null);
-                    if (!response || !response.ok) {
-                        throw new Error('Audio URL not accessible');
-                    }
-                }
-                
-                audio.src = track.url;
-                audio.load();
-                
-                // Ждем пока аудио будет готово
-                await new Promise((resolve, reject) => {
-                    const onCanPlay = () => {
-                        audio.removeEventListener('canplay', onCanPlay);
-                        audio.removeEventListener('error', onError);
-                        resolve();
-                    };
-                    
-                    const onError = (e) => {
-                        audio.removeEventListener('canplay', onCanPlay);
-                        audio.removeEventListener('error', onError);
-                        reject(new Error('Audio load error'));
-                    };
-                    
-                    audio.addEventListener('canplay', onCanPlay);
-                    audio.addEventListener('error', onError);
-                    
-                    // Таймаут
-                    setTimeout(() => {
-                        audio.removeEventListener('canplay', onCanPlay);
-                        audio.removeEventListener('error', onError);
-                        resolve(); // Пробуем воспроизвести даже если canplay не сработал
-                    }, 5000);
-                });
-                
-                updateMediaSessionMetadata(track);
-                
-                const playPromise = audio.play();
-                if (playPromise !== undefined) {
-                    playPromise.then(() => {
-                        console.log('Автовоспроизведение началось');
-                    }).catch(error => {
-                        console.error('Ошибка автовоспроизведения:', error);
-                        // Сохраняем трек для ручного воспроизведения
-                        showMessage('Нажмите кнопку воспроизведения для начала');
-                        isPlaying = false;
-                        updatePlayButtons();
-                    });
-                }
-                
-                renderPlaylist();
-                showNowPlayingBar();
-                
-            } catch (error) {
-                console.error('Ошибка загрузки трека:', error, track);
-                showMessage(`Ошибка загрузки трека: ${track.title}. Пропускаем...`);
-                
-                // Отмечаем трек как недоступный
-                track.hasAudio = false;
-                
-                // Пробуем воспроизвести следующий трек
-                setTimeout(() => {
-                    playNextTrack();
-                }, 1000);
-            }
         }
         
         // Показать/скрыть нижнюю панель
