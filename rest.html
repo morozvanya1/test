@@ -1,23 +1,24 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Pizza & Wok - Пицца, салаты и воки</title>
+    <title>Steeb - Restaurant & Biergarten</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="apple-touch-icon" href="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <style>
-        /* iPhone 13 Pro Max: 428 x 926 точек, безопасные области */
+        /* iPhone 13 Pro Max: 428 x 926 Punkte, sichere Bereiche */
         :root {
-            --primary-color: #FF6B6B;
-            --secondary-color: #2D3436;
-            --accent-color: #FFD166;
+            --primary-color: #D62828; /* Rot - typisch deutsch */
+            --secondary-color: #003049; /* Dunkelblau */
+            --accent-color: #F77F00; /* Orange/Aprikose */
             --light-color: #F8F9FA;
-            --dark-color: #212529;
+            --dark-color: #2A2D34;
             --gray-color: #E9ECEF;
-            --success-color: #06D6A0;
+            --success-color: #2A9D8F;
+            --beer-color: #E9C46A; /* Bierfarben */
             --safe-area-inset-top: env(safe-area-inset-top, 47px);
             --safe-area-inset-bottom: env(safe-area-inset-bottom, 34px);
             --safe-area-inset-left: env(safe-area-inset-left, 0px);
@@ -52,12 +53,12 @@
 
         .container {
             width: 100%;
-            max-width: 428px; /* iPhone 13 Pro Max width */
+            max-width: 428px; /* iPhone 13 Pro Max Breite */
             margin: 0 auto;
             padding: 0 16px;
         }
 
-        /* Header - Optimized for iPhone notch */
+        /* Header - Optimiert für iPhone Notch */
         header {
             background-color: var(--secondary-color);
             color: white;
@@ -89,9 +90,11 @@
         }
 
         .logo h1 {
-            font-size: 1.6rem;
-            color: var(--accent-color);
-            font-weight: 700;
+            font-size: 1.8rem;
+            color: var(--beer-color);
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
         }
 
         .logo i {
@@ -137,8 +140,8 @@
         }
 
         .nav-active {
-            color: var(--accent-color) !important;
-            background-color: rgba(255, 209, 102, 0.1);
+            color: var(--beer-color) !important;
+            background-color: rgba(233, 196, 106, 0.1);
         }
 
         .cart-icon {
@@ -165,7 +168,7 @@
         .main-content {
             flex: 1;
             padding-top: calc(70px + var(--safe-area-inset-top));
-            padding-bottom: 80px; /* For bottom nav */
+            padding-bottom: 80px; /* Für untere Navigation */
         }
 
         .content-section {
@@ -186,7 +189,7 @@
 
         /* Hero Section */
         .hero {
-            background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80');
+            background: linear-gradient(135deg, rgba(0, 48, 73, 0.85), rgba(0, 48, 73, 0.7)), url('https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80');
             background-size: cover;
             background-position: center;
             color: white;
@@ -213,7 +216,7 @@
 
         .btn {
             display: inline-block;
-            background: linear-gradient(135deg, var(--primary-color), #FF8E8E);
+            background: linear-gradient(135deg, var(--primary-color), #E63946);
             color: white;
             padding: 16px 32px;
             border-radius: 50px;
@@ -223,7 +226,7 @@
             border: none;
             cursor: pointer;
             transition: all 0.3s;
-            box-shadow: 0 6px 15px rgba(255, 107, 107, 0.3);
+            box-shadow: 0 6px 15px rgba(214, 40, 40, 0.3);
             min-height: 52px;
             display: flex;
             align-items: center;
@@ -232,7 +235,7 @@
 
         .btn:hover, .btn:active {
             transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(255, 107, 107, 0.4);
+            box-shadow: 0 10px 20px rgba(214, 40, 40, 0.4);
         }
 
         .btn:active {
@@ -289,10 +292,10 @@
         }
 
         .category-btn.active {
-            background: linear-gradient(135deg, var(--primary-color), #FF8E8E);
+            background: linear-gradient(135deg, var(--primary-color), #E63946);
             color: white;
             border-color: transparent;
-            box-shadow: 0 4px 10px rgba(255, 107, 107, 0.2);
+            box-shadow: 0 4px 10px rgba(214, 40, 40, 0.2);
         }
 
         .menu-items {
@@ -359,8 +362,8 @@
         .add-to-cart {
             width: 100%;
             padding: 14px;
-            background: linear-gradient(135deg, var(--accent-color), #FFDE8A);
-            color: var(--secondary-color);
+            background: linear-gradient(135deg, var(--accent-color), #FCBF49);
+            color: white;
             border: none;
             border-radius: 12px;
             font-weight: 700;
@@ -374,12 +377,12 @@
         }
 
         .add-to-cart:hover, .add-to-cart:active {
-            background: linear-gradient(135deg, #FFC745, #FFDE8A);
+            background: linear-gradient(135deg, #F77F00, #FCBF49);
             transform: translateY(-2px);
-            box-shadow: 0 5px 10px rgba(255, 193, 69, 0.3);
+            box-shadow: 0 5px 10px rgba(247, 127, 0, 0.3);
         }
 
-        /* Cart Section */
+        /* Cart Section - FIXED VISIBILITY */
         .cart-container {
             display: flex;
             flex-direction: column;
@@ -399,6 +402,7 @@
             position: sticky;
             bottom: 100px;
             margin-top: 10px;
+            z-index: 10;
         }
 
         .cart-item {
@@ -487,7 +491,7 @@
             margin-left: auto;
             background-color: transparent;
             border: none;
-            color: #FF6B6B;
+            color: #D62828;
             cursor: pointer;
             font-weight: 700;
             font-size: 0.9rem;
@@ -497,7 +501,7 @@
         }
 
         .remove-item:active {
-            background-color: rgba(255, 107, 107, 0.1);
+            background-color: rgba(214, 40, 40, 0.1);
         }
 
         .cart-summary h3 {
@@ -591,7 +595,7 @@
         .form-control:focus {
             border-color: var(--primary-color);
             outline: none;
-            box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.2);
+            box-shadow: 0 0 0 3px rgba(214, 40, 40, 0.2);
         }
 
         .card-icons {
@@ -628,7 +632,7 @@
 
         .payment-method.active {
             border-color: var(--primary-color);
-            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.15);
+            box-shadow: 0 8px 20px rgba(214, 40, 40, 0.15);
         }
 
         .payment-method:active {
@@ -728,13 +732,13 @@
         }
 
         .status-delivered {
-            background-color: rgba(6, 214, 160, 0.15);
+            background-color: rgba(42, 157, 143, 0.15);
             color: var(--success-color);
         }
 
         .status-cooking {
-            background-color: rgba(255, 209, 102, 0.15);
-            color: #E6A500;
+            background-color: rgba(247, 127, 0, 0.15);
+            color: var(--accent-color);
         }
 
         /* Contacts Section */
@@ -761,7 +765,7 @@
         .contact-detail i {
             width: 50px;
             height: 50px;
-            background: linear-gradient(135deg, var(--primary-color), #FF8E8E);
+            background: linear-gradient(135deg, var(--primary-color), #E63946);
             border-radius: 14px;
             display: flex;
             align-items: center;
@@ -816,7 +820,7 @@
         }
 
         .bottom-nav-item:active {
-            background-color: rgba(255, 107, 107, 0.1);
+            background-color: rgba(214, 40, 40, 0.1);
             transform: scale(0.95);
         }
 
@@ -838,7 +842,7 @@
         footer {
             background-color: var(--secondary-color);
             color: white;
-            padding: 40px 0 100px; /* Extra padding for bottom nav */
+            padding: 40px 0 100px; /* Extra padding für untere Navigation */
             margin-top: 40px;
         }
 
@@ -853,7 +857,7 @@
         }
 
         .footer-section h3 {
-            color: var(--accent-color);
+            color: var(--beer-color);
             margin-bottom: 20px;
             font-size: 1.3rem;
         }
@@ -874,7 +878,7 @@
         }
 
         .footer-links a:hover, .footer-links a:active {
-            color: var(--accent-color);
+            color: var(--beer-color);
         }
 
         .social-icons {
@@ -1056,20 +1060,20 @@
     <header>
         <div class="container header-content">
             <div class="logo">
-                <i class="fas fa-pizza-slice"></i>
-                <h1>Pizza & Wok</h1>
+                <i class="fas fa-beer"></i>
+                <h1>STEEB</h1>
             </div>
             <button class="mobile-nav-toggle" id="mobile-nav-toggle">
                 <i class="fas fa-bars"></i>
             </button>
             <nav id="main-nav">
                 <ul>
-                    <li><a href="#" class="nav-link active" data-section="home"><i class="fas fa-home"></i> Главная</a></li>
-                    <li><a href="#" class="nav-link" data-section="menu"><i class="fas fa-utensils"></i> Меню</a></li>
-                    <li><a href="#" class="nav-link" data-section="cart"><i class="fas fa-shopping-cart cart-icon"></i> Корзина <span class="cart-count">0</span></a></li>
-                    <li><a href="#" class="nav-link" data-section="payment"><i class="fas fa-credit-card"></i> Оплата</a></li>
-                    <li><a href="#" class="nav-link" data-section="profile"><i class="fas fa-user"></i> Профиль</a></li>
-                    <li><a href="#" class="nav-link" data-section="contacts"><i class="fas fa-address-book"></i> Контакты</a></li>
+                    <li><a href="#" class="nav-link active" data-section="home"><i class="fas fa-home"></i> Start</a></li>
+                    <li><a href="#" class="nav-link" data-section="menu"><i class="fas fa-utensils"></i> Speisekarte</a></li>
+                    <li><a href="#" class="nav-link" data-section="cart"><i class="fas fa-shopping-cart cart-icon"></i> Warenkorb <span class="cart-count">0</span></a></li>
+                    <li><a href="#" class="nav-link" data-section="payment"><i class="fas fa-credit-card"></i> Bezahlung</a></li>
+                    <li><a href="#" class="nav-link" data-section="profile"><i class="fas fa-user"></i> Profil</a></li>
+                    <li><a href="#" class="nav-link" data-section="contacts"><i class="fas fa-address-book"></i> Kontakt</a></li>
                 </ul>
             </nav>
             <div class="nav-overlay" id="nav-overlay"></div>
@@ -1081,12 +1085,12 @@
         <!-- Home Section -->
         <section id="home" class="content-section active">
             <div class="hero">
-                <h2>Пицца, салаты и воки</h2>
-                <p>Добро пожаловать в наш ресторан! Мы предлагаем вкуснейшую пиццу, свежие салаты и ароматные воки. Готовим только из качественных продуктов с любовью!</p>
-                <a href="#" class="btn nav-link" data-section="menu">Посмотреть меню</a>
+                <h2>Steeb Restaurant & Biergarten</h2>
+                <p>Willkommen in unserem Restaurant! Wir bieten köstliche deutsche Küche, frische Salate und traditionelle Biere. Wir kochen nur mit hochwertigen Zutaten und viel Liebe!</p>
+                <a href="#" class="btn nav-link" data-section="menu">Speisekarte ansehen</a>
             </div>
             
-            <h2 class="section-title">Наши специальные предложения</h2>
+            <h2 class="section-title">Unsere Spezialitäten</h2>
             <div class="menu-items" id="featured-items">
                 <!-- Featured items will be added by JavaScript -->
             </div>
@@ -1094,76 +1098,76 @@
 
         <!-- Menu Section -->
         <section id="menu" class="content-section">
-            <h2 class="section-title">Наше меню</h2>
+            <h2 class="section-title">Unsere Speisekarte</h2>
             <div class="menu-categories">
-                <button class="category-btn active" data-category="all">Все</button>
-                <button class="category-btn" data-category="pizza">Пицца</button>
-                <button class="category-btn" data-category="salad">Салаты</button>
-                <button class="category-btn" data-category="wok">Воки</button>
-                <button class="category-btn" data-category="drink">Напитки</button>
+                <button class="category-btn active" data-category="all">Alle</button>
+                <button class="category-btn" data-category="hauptgericht">Hauptgerichte</button>
+                <button class="category-btn" data-category="salat">Salate</button>
+                <button class="category-btn" data-category="brotzeit">Brotzeit</button>
+                <button class="category-btn" data-category="getrank">Getränke</button>
             </div>
             <div class="menu-items" id="menu-items-container">
                 <!-- Menu items will be added by JavaScript -->
             </div>
         </section>
 
-        <!-- Cart Section -->
+        <!-- Cart Section - NOW VISIBLE -->
         <section id="cart" class="content-section">
-            <h2 class="section-title">Ваша корзина</h2>
+            <h2 class="section-title">Ihr Warenkorb</h2>
             <div class="cart-container">
                 <div class="cart-items" id="cart-items-container">
                     <!-- Cart items will be added by JavaScript -->
                     <div class="empty-cart-message" id="empty-cart-message">
                         <i class="fas fa-shopping-cart empty-cart-icon"></i>
-                        <p>Ваша корзина пуста</p>
-                        <p>Добавьте что-нибудь из меню</p>
+                        <p>Ihr Warenkorb ist leer</p>
+                        <p>Fügen Sie etwas von der Speisekarte hinzu</p>
                     </div>
                 </div>
                 <div class="cart-summary">
-                    <h3>Сумма заказа</h3>
+                    <h3>Bestellübersicht</h3>
                     <div class="summary-row">
-                        <span>Товары:</span>
-                        <span id="subtotal">0 ₽</span>
+                        <span>Artikel:</span>
+                        <span id="subtotal">0 €</span>
                     </div>
                     <div class="summary-row">
-                        <span>Доставка:</span>
-                        <span id="delivery">300 ₽</span>
+                        <span>Lieferung:</span>
+                        <span id="delivery">3,00 €</span>
                     </div>
                     <div class="summary-row summary-total">
-                        <span>Итого:</span>
-                        <span id="total">300 ₽</span>
+                        <span>Gesamt:</span>
+                        <span id="total">3,00 €</span>
                     </div>
-                    <button class="btn checkout-btn nav-link" data-section="payment">Перейти к оплате</button>
+                    <button class="btn checkout-btn nav-link" data-section="payment">Zur Kasse gehen</button>
                 </div>
             </div>
         </section>
 
         <!-- Payment Section -->
         <section id="payment" class="content-section">
-            <h2 class="section-title">Оплата заказа</h2>
+            <h2 class="section-title">Bezahlung</h2>
             <div class="payment-container">
                 <div class="payment-form">
-                    <h3>Данные для оплаты</h3>
+                    <h3>Zahlungsdaten</h3>
                     <form id="payment-form">
                         <div class="form-group">
-                            <label for="card-name">Имя на карте</label>
-                            <input type="text" id="card-name" class="form-control" placeholder="Иван Иванов" required>
+                            <label for="card-name">Name auf der Karte</label>
+                            <input type="text" id="card-name" class="form-control" placeholder="Max Mustermann" required>
                         </div>
                         <div class="form-group">
-                            <label for="card-number">Номер карты</label>
+                            <label for="card-number">Kartennummer</label>
                             <input type="text" id="card-number" class="form-control" placeholder="1234 5678 9012 3456" required>
                             <div class="card-icons">
                                 <div class="card-icon"><i class="fab fa-cc-visa"></i></div>
                                 <div class="card-icon"><i class="fab fa-cc-mastercard"></i></div>
-                                <div class="card-icon"><i class="fab fa-cc-mir"></i></div>
+                                <div class="card-icon"><i class="fab fa-cc-amex"></i></div>
                             </div>
                         </div>
                         <div class="form-group">
                             <div class="form-row">
                                 <div style="display: flex; gap: 15px;">
                                     <div style="flex: 1;">
-                                        <label for="card-expiry">Срок действия</label>
-                                        <input type="text" id="card-expiry" class="form-control" placeholder="ММ/ГГ" required>
+                                        <label for="card-expiry">Gültig bis</label>
+                                        <input type="text" id="card-expiry" class="form-control" placeholder="MM/JJ" required>
                                     </div>
                                     <div style="flex: 1;">
                                         <label for="card-cvc">CVC</label>
@@ -1173,32 +1177,32 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="address">Адрес доставки</label>
-                            <input type="text" id="address" class="form-control" placeholder="ул. Примерная, д. 10, кв. 25" required>
+                            <label for="address">Lieferadresse</label>
+                            <input type="text" id="address" class="form-control" placeholder="Musterstraße 10, 12345 Berlin" required>
                         </div>
-                        <button type="submit" class="btn" style="width: 100%;">Оплатить заказ</button>
+                        <button type="submit" class="btn" style="width: 100%;">Bestellung bezahlen</button>
                     </form>
                 </div>
                 <div class="payment-methods">
                     <div class="payment-method active">
                         <i class="fas fa-credit-card"></i>
                         <div class="payment-method-content">
-                            <h4>Банковская карта</h4>
-                            <p>Оплата Visa, Mastercard или МИР</p>
+                            <h4>Kreditkarte</h4>
+                            <p>Bezahlung mit Visa, Mastercard oder American Express</p>
                         </div>
                     </div>
                     <div class="payment-method">
                         <i class="fas fa-mobile-alt"></i>
                         <div class="payment-method-content">
-                            <h4>Электронные кошельки</h4>
-                            <p>Оплата через Яндекс.Деньги, Qiwi или WebMoney</p>
+                            <h4>PayPal</h4>
+                            <p>Schnell und sicher mit PayPal bezahlen</p>
                         </div>
                     </div>
                     <div class="payment-method">
                         <i class="fas fa-money-bill-wave"></i>
                         <div class="payment-method-content">
-                            <h4>Наличными курьеру</h4>
-                            <p>Оплата при получении заказа</p>
+                            <h4>Bar bei Lieferung</h4>
+                            <p>Bezahlung bei Erhalt der Bestellung</p>
                         </div>
                     </div>
                 </div>
@@ -1207,65 +1211,65 @@
 
         <!-- Profile Section -->
         <section id="profile" class="content-section">
-            <h2 class="section-title">Ваш профиль</h2>
+            <h2 class="section-title">Ihr Profil</h2>
             <div class="profile-container">
                 <div class="profile-info">
-                    <img src="https://images.unsplash.com/photo-1494790108755-2616b786d4d9?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="Аватар пользователя" class="profile-avatar">
-                    <h3 style="margin-bottom: 5px;">Алексей Петров</h3>
-                    <p style="color: #666; margin-bottom: 20px;">Постоянный клиент</p>
+                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="Benutzeravatar" class="profile-avatar">
+                    <h3 style="margin-bottom: 5px;">Thomas Schmidt</h3>
+                    <p style="color: #666; margin-bottom: 20px;">Stammkunde seit 2020</p>
                     <div class="profile-details">
                         <div class="profile-detail">
                             <span><strong>Email:</strong></span>
-                            <span>alexey.petrov@example.com</span>
+                            <span>thomas.schmidt@example.de</span>
                         </div>
                         <div class="profile-detail">
-                            <span><strong>Телефон:</strong></span>
-                            <span>+7 (912) 345-67-89</span>
+                            <span><strong>Telefon:</strong></span>
+                            <span>+49 171 2345678</span>
                         </div>
                         <div class="profile-detail">
-                            <span><strong>Дата регистрации:</strong></span>
-                            <span>15.03.2022</span>
+                            <span><strong>Mitglied seit:</strong></span>
+                            <span>15.03.2020</span>
                         </div>
                         <div class="profile-detail">
-                            <span><strong>Количество заказов:</strong></span>
-                            <span>12</span>
+                            <span><strong>Anzahl Bestellungen:</strong></span>
+                            <span>24</span>
                         </div>
                     </div>
                 </div>
                 <div class="order-history">
-                    <h3 style="margin-bottom: 20px; color: var(--secondary-color);">История заказов</h3>
+                    <h3 style="margin-bottom: 20px; color: var(--secondary-color);">Bestellverlauf</h3>
                     <div class="order-item">
                         <div class="order-header">
                             <div>
-                                <h4>Заказ #12345</h4>
-                                <p>15 января 2023</p>
+                                <h4>Bestellung #12345</h4>
+                                <p>15. Januar 2023</p>
                             </div>
-                            <div class="order-status status-delivered">Доставлен</div>
+                            <div class="order-status status-delivered">Geliefert</div>
                         </div>
-                        <p>Пицца "Маргарита", Салат "Цезарь", Вок с курицей</p>
-                        <p style="margin-top: 10px;"><strong>Сумма:</strong> 1 850 ₽</p>
+                        <p>Schweinshaxe, Kartoffelsalat, 2x Berliner Pilsner</p>
+                        <p style="margin-top: 10px;"><strong>Summe:</strong> 32,50 €</p>
                     </div>
                     <div class="order-item">
                         <div class="order-header">
                             <div>
-                                <h4>Заказ #12344</h4>
-                                <p>10 января 2023</p>
+                                <h4>Bestellung #12344</h4>
+                                <p>10. Januar 2023</p>
                             </div>
-                            <div class="order-status status-delivered">Доставлен</div>
+                            <div class="order-status status-delivered">Geliefert</div>
                         </div>
-                        <p>Пицца "Пепперони", Салат "Греческий", 2x Кола</p>
-                        <p style="margin-top: 10px;"><strong>Сумма:</strong> 1 650 ₽</p>
+                        <p>Currywurst mit Pommes, Grüner Salat, Apfelsaftschorle</p>
+                        <p style="margin-top: 10px;"><strong>Summe:</strong> 18,90 €</p>
                     </div>
                     <div class="order-item">
                         <div class="order-header">
                             <div>
-                                <h4>Заказ #12343</h4>
-                                <p>5 января 2023</p>
+                                <h4>Bestellung #12343</h4>
+                                <p>5. Januar 2023</p>
                             </div>
-                            <div class="order-status status-cooking">Готовится</div>
+                            <div class="order-status status-cooking">In Zubereitung</div>
                         </div>
-                        <p>Пицца "4 сыра", Вок с морепродуктами</p>
-                        <p style="margin-top: 10px;"><strong>Сумма:</strong> 1 450 ₽</p>
+                        <p>Rinderroulade, Spätzle, Rotkohl, 1x Hefeweizen</p>
+                        <p style="margin-top: 10px;"><strong>Summe:</strong> 28,70 €</p>
                     </div>
                 </div>
             </div>
@@ -1273,42 +1277,43 @@
 
         <!-- Contacts Section -->
         <section id="contacts" class="content-section">
-            <h2 class="section-title">Контакты</h2>
+            <h2 class="section-title">Kontakt</h2>
             <div class="contacts-container">
                 <div class="contact-info">
-                    <h3 style="margin-bottom: 25px;">Наши контакты</h3>
+                    <h3 style="margin-bottom: 25px;">Unsere Kontaktdaten</h3>
                     <div class="contact-detail">
                         <i class="fas fa-map-marker-alt"></i>
                         <div>
-                            <h4>Адрес</h4>
-                            <p>г. Москва, ул. Пиццерийная, д. 15</p>
+                            <h4>Adresse</h4>
+                            <p>Steeb Restaurant & Biergarten<br>Musterstraße 123<br>10115 Berlin</p>
                         </div>
                     </div>
                     <div class="contact-detail">
                         <i class="fas fa-phone"></i>
                         <div>
-                            <h4>Телефон</h4>
-                            <p>+7 (495) 123-45-67</p>
+                            <h4>Telefon</h4>
+                            <p>+49 30 12345678</p>
                         </div>
                     </div>
                     <div class="contact-detail">
                         <i class="fas fa-envelope"></i>
                         <div>
                             <h4>Email</h4>
-                            <p>info@pizza-wok.ru</p>
+                            <p>info@steeb-restaurant.de</p>
                         </div>
                     </div>
                     <div class="contact-detail">
                         <i class="fas fa-clock"></i>
                         <div>
-                            <h4>Время работы</h4>
-                            <p>Пн-Чт: 10:00 - 23:00</p>
-                            <p>Пт-Вс: 10:00 - 00:00</p>
+                            <h4>Öffnungszeiten</h4>
+                            <p>Mo-Do: 11:00 - 23:00 Uhr</p>
+                            <p>Fr-Sa: 11:00 - 00:00 Uhr</p>
+                            <p>So: 11:00 - 22:00 Uhr</p>
                         </div>
                     </div>
                 </div>
                 <div class="contact-map">
-                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2245.373789462183!2d37.61763331593049!3d55.75582628055313!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x46b54a50b315e573%3A0xa886bf5a3d9b2e68!2z0JzQvtGB0LrQvtCy0YHQutC40Lkg0L_RgC4sIDE1LCDQnNC-0YHQutCy0LAsIDExNTAzMQ!5e0!3m2!1sru!2sru" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2427.7622934038443!2d13.383371115807625!3d52.51651017981401!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47a851c7411457e9%3A0x6f6b5f5b5c5c5c5c!2sBerlin!5e0!3m2!1sde!2sde!4v1678884577613!5m2!1sde!2sde" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
                 </div>
             </div>
         </section>
@@ -1318,19 +1323,19 @@
     <div class="bottom-nav">
         <a href="#" class="bottom-nav-item bottom-nav-active" data-section="home">
             <i class="fas fa-home"></i>
-            <span>Главная</span>
+            <span>Start</span>
         </a>
         <a href="#" class="bottom-nav-item" data-section="menu">
             <i class="fas fa-utensils"></i>
-            <span>Меню</span>
+            <span>Karte</span>
         </a>
         <a href="#" class="bottom-nav-item" data-section="cart">
             <i class="fas fa-shopping-cart"></i>
-            <span>Корзина</span>
+            <span>Warenkorb</span>
         </a>
         <a href="#" class="bottom-nav-item" data-section="profile">
             <i class="fas fa-user"></i>
-            <span>Профиль</span>
+            <span>Profil</span>
         </a>
     </div>
 
@@ -1338,157 +1343,157 @@
     <footer>
         <div class="container footer-content">
             <div class="footer-section">
-                <h3>Pizza & Wok</h3>
-                <p style="margin-bottom: 20px;">Лучшая пицца, салаты и воки в городе. Готовим с любовью с 2015 года.</p>
+                <h3>Steeb Restaurant</h3>
+                <p style="margin-bottom: 20px;">Traditionelle deutsche Küche und frische Biere in gemütlicher Atmosphäre. Seit 1995 in Berlin.</p>
                 <div class="social-icons">
-                    <a href="#" class="social-icon"><i class="fab fa-vk"></i></a>
-                    <a href="#" class="social-icon"><i class="fab fa-telegram"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
                     <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
-                    <a href="#" class="social-icon"><i class="fab fa-youtube"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-tripadvisor"></i></a>
+                    <a href="#" class="social-icon"><i class="fas fa-utensils"></i></a>
                 </div>
             </div>
             <div class="footer-section">
-                <h3>Навигация</h3>
+                <h3>Navigation</h3>
                 <ul class="footer-links">
-                    <li><a href="#" class="nav-link" data-section="home">Главная</a></li>
-                    <li><a href="#" class="nav-link" data-section="menu">Меню</a></li>
-                    <li><a href="#" class="nav-link" data-section="cart">Корзина</a></li>
-                    <li><a href="#" class="nav-link" data-section="profile">Профиль</a></li>
-                    <li><a href="#" class="nav-link" data-section="contacts">Контакты</a></li>
+                    <li><a href="#" class="nav-link" data-section="home">Startseite</a></li>
+                    <li><a href="#" class="nav-link" data-section="menu">Speisekarte</a></li>
+                    <li><a href="#" class="nav-link" data-section="cart">Warenkorb</a></li>
+                    <li><a href="#" class="nav-link" data-section="profile">Profil</a></li>
+                    <li><a href="#" class="nav-link" data-section="contacts">Kontakt</a></li>
                 </ul>
             </div>
             <div class="footer-section">
-                <h3>Контактная информация</h3>
+                <h3>Kontaktinformation</h3>
                 <ul class="footer-links">
-                    <li><i class="fas fa-map-marker-alt"></i> г. Москва, ул. Пиццерийная, д. 15</li>
-                    <li><i class="fas fa-phone"></i> +7 (495) 123-45-67</li>
-                    <li><i class="fas fa-envelope"></i> info@pizza-wok.ru</li>
+                    <li><i class="fas fa-map-marker-alt"></i> Musterstraße 123, 10115 Berlin</li>
+                    <li><i class="fas fa-phone"></i> +49 30 12345678</li>
+                    <li><i class="fas fa-envelope"></i> info@steeb-restaurant.de</li>
                 </ul>
             </div>
         </div>
         <div class="container copyright">
-            <p>&copy; 2023 Pizza & Wok. Все права защищены.</p>
+            <p>&copy; 2023 Steeb Restaurant & Biergarten. Alle Rechte vorbehalten.</p>
         </div>
     </footer>
 
     <script>
-        // Menu data
+        // Menü-Daten auf Deutsch
         const menuItems = [
             {
                 id: 1,
-                name: "Пицца Маргарита",
-                category: "pizza",
-                price: 450,
-                description: "Классическая пицца с томатным соусом, моцареллой и базиликом",
-                image: "https://images.unsplash.com/photo-1604068549290-dea0e4a305ca?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
+                name: "Schweinshaxe",
+                category: "hauptgericht",
+                price: 18.50,
+                description: "Knusprige Schweinshaxe mit Bratensoße, Serviettenknödel und Sauerkraut",
+                image: "https://images.unsplash.com/photo-1600891964092-4316c288032e?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
             },
             {
                 id: 2,
-                name: "Пицца Пепперони",
-                category: "pizza",
-                price: 550,
-                description: "Острая пицца с пепперони, моцареллой и томатным соусом",
-                image: "https://images.unsplash.com/photo-1628840042765-356cda07504e?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
+                name: "Currywurst mit Pommes",
+                category: "hauptgericht",
+                price: 9.90,
+                description: "Berliner Currywurst mit hausgemachter Currysoße und Pommes frites",
+                image: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
             },
             {
                 id: 3,
-                name: "Пицца 4 сыра",
-                category: "pizza",
-                price: 600,
-                description: "Пицца с моцареллой, пармезаном, горгонзолой и фетой",
-                image: "https://images.unsplash.com/photo-1593246049226-ded77bf90326?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
+                name: "Rinderroulade",
+                category: "hauptgericht",
+                price: 16.80,
+                description: "Traditionelle Rinderroulade mit Speck, Gurken und Zwiebeln, serviert mit Rotkohl und Spätzle",
+                image: "https://images.unsplash.com/photo-1600803907086-f5b6c2b5c6c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
             },
             {
                 id: 4,
-                name: "Салат Цезарь",
-                category: "salad",
-                price: 350,
-                description: "Классический салат с курицей, салатом айсберг, сухариками и соусом цезарь",
-                image: "https://images.unsplash.com/photo-1546793665-c74683f339c1?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
+                name: "Grüner Salat",
+                category: "salat",
+                price: 7.50,
+                description: "Frischer gemischter Salat mit Tomaten, Gurken, Paprika und hausgemachtem Dressing",
+                image: "https://images.unsplash.com/photo-1540420773420-3366772f4999?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
             },
             {
                 id: 5,
-                name: "Греческий салат",
-                category: "salad",
-                price: 320,
-                description: "Свежие овощи, фета, маслины и оливковое масло",
-                image: "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
+                name: "Kartoffelsalat",
+                category: "salat",
+                price: 6.90,
+                description: "Hausgemachter Kartoffelsalat mit Speck und Zwiebeln",
+                image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
             },
             {
                 id: 6,
-                name: "Вок с курицей",
-                category: "wok",
-                price: 420,
-                description: "Жареная лапша с курицей, овощами и соусом терияки",
-                image: "https://images.unsplash.com/photo-1555126634-323283e090fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
+                name: "Obazda mit Brezen",
+                category: "brotzeit",
+                price: 8.50,
+                description: "Bayerischer Obazda mit frischen Brezen und Radi",
+                image: "https://images.unsplash.com/photo-1554520735-0a6b8b6ce8b7?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
             },
             {
                 id: 7,
-                name: "Вок с морепродуктами",
-                category: "wok",
-                price: 550,
-                description: "Лапша с креветками, кальмарами, мидиями и овощами",
-                image: "https://images.unsplash.com/photo-1563245372-f21724e3856d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
+                name: "Wurstplatte",
+                category: "brotzeit",
+                price: 12.90,
+                description: "Auswahl deutscher Würste mit Senf, Brot und Gurken",
+                image: "https://images.unsplash.com/photo-1583623025817-d180a2221d0a?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
             },
             {
                 id: 8,
-                name: "Кола",
-                category: "drink",
-                price: 120,
-                description: "Освежающий газированный напиток",
-                image: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
+                name: "Berliner Pilsner",
+                category: "getrank",
+                price: 4.50,
+                description: "Frisch gezapftes Berliner Pilsner (0,5l)",
+                image: "https://images.unsplash.com/photo-1571613316887-6f8d5cbf7ef7?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
             },
             {
                 id: 9,
-                name: "Сок апельсиновый",
-                category: "drink",
-                price: 150,
-                description: "Свежевыжатый апельсиновый сок",
-                image: "https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
+                name: "Hefeweizen",
+                category: "getrank",
+                price: 4.80,
+                description: "Bayrisches Hefeweizen (0,5l)",
+                image: "https://images.unsplash.com/photo-1608270586620-248524c67de9?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
             }
         ];
 
-        // Cart state
+        // Warenkorb-Zustand
         let cart = JSON.parse(localStorage.getItem('cart')) || [];
         let currentSection = 'home';
         let isMobileMenuOpen = false;
 
-        // Initialize the page
+        // Seite initialisieren
         document.addEventListener('DOMContentLoaded', function() {
-            // Render featured items on home page
+            // Hervorgehobene Artikel auf der Startseite rendern
             renderFeaturedItems();
             
-            // Render menu items
+            // Menüartikel rendern
             renderMenuItems();
             
-            // Render cart
+            // Warenkorb rendern
             renderCart();
             
-            // Setup navigation
+            // Navigation einrichten
             setupNavigation();
             
-            // Setup mobile navigation
+            // Mobile Navigation einrichten
             setupMobileNavigation();
             
-            // Setup category filters
+            // Kategorie-Filter einrichten
             setupCategoryFilters();
             
-            // Setup payment form
+            // Zahlungsformular einrichten
             setupPaymentForm();
             
-            // Set active section based on URL or default
+            // Aktive Sektion basierend auf URL oder Standard setzen
             const urlParams = new URLSearchParams(window.location.search);
             const section = urlParams.get('section') || 'home';
             showSection(section);
             
-            // Update bottom nav active state
+            // Untere Navigation aktualisieren
             updateBottomNav(section);
         });
 
-        // Render featured items on home page
+        // Hervorgehobene Artikel auf der Startseite rendern
         function renderFeaturedItems() {
             const featuredContainer = document.querySelector('#featured-items');
-            const featuredItems = menuItems.slice(0, 4); // First 4 items as featured
+            const featuredItems = menuItems.slice(0, 4); // Erste 4 Artikel als hervorgehoben
             
             featuredContainer.innerHTML = featuredItems.map(item => `
                 <div class="menu-item">
@@ -1496,17 +1501,17 @@
                     <div class="menu-item-content">
                         <div class="menu-item-title">
                             <div class="menu-item-name">${item.name}</div>
-                            <div class="menu-item-price">${item.price} ₽</div>
+                            <div class="menu-item-price">${item.price.toFixed(2)} €</div>
                         </div>
                         <p class="menu-item-desc">${item.description}</p>
                         <button class="add-to-cart" data-id="${item.id}">
-                            <i class="fas fa-cart-plus"></i> Добавить
+                            <i class="fas fa-cart-plus"></i> Hinzufügen
                         </button>
                     </div>
                 </div>
             `).join('');
             
-            // Add event listeners to add-to-cart buttons
+            // Event-Listener zu den "In den Warenkorb"-Buttons hinzufügen
             featuredContainer.querySelectorAll('.add-to-cart').forEach(button => {
                 button.addEventListener('click', function() {
                     const id = parseInt(this.getAttribute('data-id'));
@@ -1515,7 +1520,7 @@
             });
         }
 
-        // Render menu items
+        // Menüartikel rendern
         function renderMenuItems(category = 'all') {
             const container = document.getElementById('menu-items-container');
             const filteredItems = category === 'all' 
@@ -1528,17 +1533,17 @@
                     <div class="menu-item-content">
                         <div class="menu-item-title">
                             <div class="menu-item-name">${item.name}</div>
-                            <div class="menu-item-price">${item.price} ₽</div>
+                            <div class="menu-item-price">${item.price.toFixed(2)} €</div>
                         </div>
                         <p class="menu-item-desc">${item.description}</p>
                         <button class="add-to-cart" data-id="${item.id}">
-                            <i class="fas fa-cart-plus"></i> Добавить
+                            <i class="fas fa-cart-plus"></i> Hinzufügen
                         </button>
                     </div>
                 </div>
             `).join('');
             
-            // Add event listeners to add-to-cart buttons
+            // Event-Listener zu den "In den Warenkorb"-Buttons hinzufügen
             container.querySelectorAll('.add-to-cart').forEach(button => {
                 button.addEventListener('click', function() {
                     const id = parseInt(this.getAttribute('data-id'));
@@ -1547,29 +1552,29 @@
             });
         }
 
-        // Setup category filters
+        // Kategorie-Filter einrichten
         function setupCategoryFilters() {
             const categoryButtons = document.querySelectorAll('.category-btn');
             
             categoryButtons.forEach(button => {
                 button.addEventListener('click', function() {
-                    // Update active button
+                    // Aktiven Button aktualisieren
                     categoryButtons.forEach(btn => btn.classList.remove('active'));
                     this.classList.add('active');
                     
-                    // Render filtered items
+                    // Gefilterte Artikel rendern
                     const category = this.getAttribute('data-category');
                     renderMenuItems(category);
                 });
             });
         }
 
-        // Add item to cart
+        // Artikel zum Warenkorb hinzufügen
         function addToCart(itemId) {
             const item = menuItems.find(item => item.id === itemId);
             if (!item) return;
             
-            // Check if item already in cart
+            // Prüfen, ob Artikel bereits im Warenkorb ist
             const existingItem = cart.find(cartItem => cartItem.id === itemId);
             
             if (existingItem) {
@@ -1581,34 +1586,34 @@
                 });
             }
             
-            // Update cart in localStorage
+            // Warenkorb in localStorage aktualisieren
             localStorage.setItem('cart', JSON.stringify(cart));
             
-            // Update cart UI
+            // Warenkorb-UI aktualisieren
             renderCart();
             
-            // Show notification
-            showNotification(`"${item.name}" добавлен в корзину!`);
+            // Benachrichtigung anzeigen
+            showNotification(`"${item.name}" wurde zum Warenkorb hinzugefügt!`);
             
-            // Vibrate on mobile (if supported)
+            // Bei Mobilgeräten vibrieren (falls unterstützt)
             if (navigator.vibrate) {
                 navigator.vibrate(50);
             }
         }
 
-        // Remove item from cart
+        // Artikel aus dem Warenkorb entfernen
         function removeFromCart(itemId) {
             cart = cart.filter(item => item.id !== itemId);
             localStorage.setItem('cart', JSON.stringify(cart));
             renderCart();
             
-            // Vibrate on mobile (if supported)
+            // Bei Mobilgeräten vibrieren (falls unterstützt)
             if (navigator.vibrate) {
                 navigator.vibrate([50, 30, 50]);
             }
         }
 
-        // Update item quantity
+        // Artikelmenge aktualisieren
         function updateQuantity(itemId, newQuantity) {
             if (newQuantity < 1) {
                 removeFromCart(itemId);
@@ -1623,7 +1628,7 @@
             }
         }
 
-        // Render cart
+        // Warenkorb rendern
         function renderCart() {
             const container = document.getElementById('cart-items-container');
             const emptyCartMessage = document.getElementById('empty-cart-message');
@@ -1635,47 +1640,47 @@
                 container.innerHTML = `
                     <div class="empty-cart-message" id="empty-cart-message">
                         <i class="fas fa-shopping-cart empty-cart-icon"></i>
-                        <p>Ваша корзина пуста</p>
-                        <p>Добавьте что-нибудь из меню</p>
+                        <p>Ihr Warenkorb ist leer</p>
+                        <p>Fügen Sie etwas von der Speisekarte hinzu</p>
                     </div>
                 `;
                 cartCount.textContent = '0';
-                subtotalElement.textContent = '0 ₽';
-                totalElement.textContent = '300 ₽';
+                subtotalElement.textContent = '0,00 €';
+                totalElement.textContent = '3,00 €';
                 return;
             }
             
-            // Calculate totals
+            // Summen berechnen
             const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            const delivery = 300;
+            const delivery = 3.00;
             const total = subtotal + delivery;
             
-            // Update UI
+            // UI aktualisieren
             cartCount.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
-            subtotalElement.textContent = `${subtotal} ₽`;
-            totalElement.textContent = `${total} ₽`;
+            subtotalElement.textContent = `${subtotal.toFixed(2)} €`;
+            totalElement.textContent = `${total.toFixed(2)} €`;
             
-            // Render cart items
+            // Warenkorbartikel rendern
             container.innerHTML = cart.map(item => `
                 <div class="cart-item">
                     <img src="${item.image}" alt="${item.name}" class="cart-item-img">
                     <div class="cart-item-details">
                         <div class="cart-item-title">
                             <div class="cart-item-name">${item.name}</div>
-                            <div class="cart-item-price">${item.price * item.quantity} ₽</div>
+                            <div class="cart-item-price">${(item.price * item.quantity).toFixed(2)} €</div>
                         </div>
                         <p class="menu-item-desc">${item.description}</p>
                         <div class="cart-item-controls">
                             <button class="quantity-btn minus" data-id="${item.id}">-</button>
                             <span class="quantity">${item.quantity}</span>
                             <button class="quantity-btn plus" data-id="${item.id}">+</button>
-                            <button class="remove-item" data-id="${item.id}">Удалить</button>
+                            <button class="remove-item" data-id="${item.id}">Entfernen</button>
                         </div>
                     </div>
                 </div>
             `).join('');
             
-            // Add event listeners
+            // Event-Listener hinzufügen
             container.querySelectorAll('.minus').forEach(button => {
                 button.addEventListener('click', function() {
                     const id = parseInt(this.getAttribute('data-id'));
@@ -1704,48 +1709,48 @@
             });
         }
 
-        // Setup navigation
+        // Navigation einrichten
         function setupNavigation() {
             const navLinks = document.querySelectorAll('.nav-link');
             const bottomNavItems = document.querySelectorAll('.bottom-nav-item');
             
-            // Desktop and mobile nav links
+            // Desktop- und Mobile-Nav-Links
             navLinks.forEach(link => {
                 link.addEventListener('click', function(e) {
                     e.preventDefault();
                     const section = this.getAttribute('data-section');
                     
-                    // Update active nav link
+                    // Aktiven Nav-Link aktualisieren
                     navLinks.forEach(link => link.classList.remove('nav-active'));
                     this.classList.add('nav-active');
                     
-                    // Show section
+                    // Sektion anzeigen
                     showSection(section);
                     
-                    // Update bottom nav
+                    // Untere Navigation aktualisieren
                     updateBottomNav(section);
                     
-                    // Close mobile menu if open
+                    // Mobiles Menü schließen, wenn geöffnet
                     closeMobileMenu();
                     
-                    // Update URL without reloading page
+                    // URL ohne Seitenneuladung aktualisieren
                     const url = new URL(window.location);
                     url.searchParams.set('section', section);
                     window.history.pushState({}, '', url);
                 });
             });
             
-            // Bottom nav items
+            // Untere Navigationspunkte
             bottomNavItems.forEach(item => {
                 item.addEventListener('click', function(e) {
                     e.preventDefault();
                     const section = this.getAttribute('data-section');
                     
-                    // Update active bottom nav item
+                    // Aktiven unteren Navigationspunkt aktualisieren
                     bottomNavItems.forEach(item => item.classList.remove('bottom-nav-active'));
                     this.classList.add('bottom-nav-active');
                     
-                    // Update desktop nav
+                    // Desktop-Navigation aktualisieren
                     navLinks.forEach(link => {
                         link.classList.remove('nav-active');
                         if (link.getAttribute('data-section') === section) {
@@ -1753,23 +1758,23 @@
                         }
                     });
                     
-                    // Show section
+                    // Sektion anzeigen
                     showSection(section);
                     
-                    // Update URL without reloading page
+                    // URL ohne Seitenneuladung aktualisieren
                     const url = new URL(window.location);
                     url.searchParams.set('section', section);
                     window.history.pushState({}, '', url);
                 });
             });
             
-            // Handle browser back/forward buttons
+            // Browser Zurück/Vorwärts-Buttons behandeln
             window.addEventListener('popstate', function() {
                 const urlParams = new URLSearchParams(window.location.search);
                 const section = urlParams.get('section') || 'home';
                 showSection(section);
                 
-                // Update active nav link
+                // Aktiven Nav-Link aktualisieren
                 navLinks.forEach(link => {
                     link.classList.remove('nav-active');
                     if (link.getAttribute('data-section') === section) {
@@ -1777,12 +1782,12 @@
                     }
                 });
                 
-                // Update bottom nav
+                // Untere Navigation aktualisieren
                 updateBottomNav(section);
             });
         }
 
-        // Setup mobile navigation
+        // Mobile Navigation einrichten
         function setupMobileNavigation() {
             const mobileNavToggle = document.getElementById('mobile-nav-toggle');
             const mainNav = document.getElementById('main-nav');
@@ -1796,7 +1801,7 @@
                 closeMobileMenu();
             });
             
-            // Close menu when clicking on a link
+            // Menü schließen, wenn auf einen Link geklickt wird
             document.querySelectorAll('#main-nav a').forEach(link => {
                 link.addEventListener('click', function() {
                     closeMobileMenu();
@@ -1817,7 +1822,7 @@
                 mobileNavToggle.innerHTML = '<i class="fas fa-times"></i>';
                 isMobileMenuOpen = true;
                 
-                // Prevent body scroll when menu is open
+                // Körper-Scrollen verhindern, wenn Menü geöffnet ist
                 document.body.style.overflow = 'hidden';
             }
         }
@@ -1832,11 +1837,11 @@
             mobileNavToggle.innerHTML = '<i class="fas fa-bars"></i>';
             isMobileMenuOpen = false;
             
-            // Restore body scroll
+            // Körper-Scrollen wiederherstellen
             document.body.style.overflow = '';
         }
 
-        // Update bottom nav active state
+        // Untere Navigation aktualisieren
         function updateBottomNav(sectionId) {
             const bottomNavItems = document.querySelectorAll('.bottom-nav-item');
             
@@ -1848,35 +1853,35 @@
             });
         }
 
-        // Show section
+        // Sektion anzeigen
         function showSection(sectionId) {
-            // Hide all sections
+            // Alle Sektionen ausblenden
             document.querySelectorAll('.content-section').forEach(section => {
                 section.classList.remove('active');
             });
             
-            // Show selected section
+            // Ausgewählte Sektion anzeigen
             const section = document.getElementById(sectionId);
             if (section) {
                 section.classList.add('active');
                 currentSection = sectionId;
                 
-                // If cart section is shown, update it
+                // Wenn Warenkorbsektion angezeigt wird, aktualisieren
                 if (sectionId === 'cart') {
                     renderCart();
                 }
                 
-                // Scroll to top of the section
+                // Zum Anfang der Sektion scrollen
                 window.scrollTo(0, 0);
             }
         }
 
-        // Setup payment form
+        // Zahlungsformular einrichten
         function setupPaymentForm() {
             const paymentForm = document.getElementById('payment-form');
             const paymentMethods = document.querySelectorAll('.payment-method');
             
-            // Handle payment method selection
+            // Zahlungsmethode-Auswahl behandeln
             paymentMethods.forEach(method => {
                 method.addEventListener('click', function() {
                     paymentMethods.forEach(m => m.classList.remove('active'));
@@ -1884,11 +1889,11 @@
                 });
             });
             
-            // Handle form submission
+            // Formularübermittlung behandeln
             paymentForm.addEventListener('submit', function(e) {
                 e.preventDefault();
                 
-                // Validate form
+                // Formular validieren
                 const cardName = document.getElementById('card-name').value;
                 const cardNumber = document.getElementById('card-number').value;
                 const cardExpiry = document.getElementById('card-expiry').value;
@@ -1896,30 +1901,30 @@
                 const address = document.getElementById('address').value;
                 
                 if (!cardName || !cardNumber || !cardExpiry || !cardCvc || !address) {
-                    showNotification('Пожалуйста, заполните все поля!', 'error');
+                    showNotification('Bitte füllen Sie alle Felder aus!', 'error');
                     return;
                 }
                 
-                // Simulate payment processing
-                showNotification('Обработка платежа...', 'info');
+                // Zahlungsverarbeitung simulieren
+                showNotification('Zahlung wird verarbeitet...', 'info');
                 
                 setTimeout(() => {
-                    // Clear cart after successful payment
+                    // Warenkorb nach erfolgreicher Zahlung leeren
                     cart = [];
                     localStorage.setItem('cart', JSON.stringify(cart));
                     renderCart();
                     
-                    // Show success message
-                    showNotification('Оплата прошла успешно! Ваш заказ готовится.', 'success');
+                    // Erfolgsmeldung anzeigen
+                    showNotification('Zahlung erfolgreich! Ihre Bestellung wird zubereitet.', 'success');
                     
-                    // Reset form
+                    // Formular zurücksetzen
                     paymentForm.reset();
                     
-                    // Redirect to profile
+                    // Zum Profil weiterleiten
                     showSection('profile');
                     updateBottomNav('profile');
                     
-                    // Update nav links
+                    // Nav-Links aktualisieren
                     document.querySelectorAll('.nav-link').forEach(link => {
                         link.classList.remove('nav-active');
                         if (link.getAttribute('data-section') === 'profile') {
@@ -1927,7 +1932,7 @@
                         }
                     });
                     
-                    // Vibrate on success (if supported)
+                    // Bei Erfolg vibrieren (falls unterstützt)
                     if (navigator.vibrate) {
                         navigator.vibrate([100, 50, 100]);
                     }
@@ -1935,19 +1940,19 @@
             });
         }
 
-        // Show notification
+        // Benachrichtigung anzeigen
         function showNotification(message, type = 'success') {
-            // Remove existing notification
+            // Vorhandene Benachrichtigung entfernen
             const existingNotification = document.querySelector('.notification');
             if (existingNotification) {
                 existingNotification.remove();
             }
             
-            // Create notification
+            // Benachrichtigung erstellen
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;
             
-            // Set icon based on type
+            // Symbol basierend auf Typ setzen
             let icon = 'fa-check-circle';
             let bgColor = 'var(--success-color)';
             
@@ -1966,10 +1971,10 @@
             
             notification.style.backgroundColor = bgColor;
             
-            // Add to page
+            // Zur Seite hinzufügen
             document.body.appendChild(notification);
             
-            // Remove after 3 seconds
+            // Nach 3 Sekunden entfernen
             setTimeout(() => {
                 notification.style.opacity = '0';
                 notification.style.transform = 'translate(-50%, -10px)';
