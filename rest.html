@@ -1,0 +1,1476 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pizza & Wok - Пицца, салаты и воки</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary-color: #e74c3c;
+            --secondary-color: #2c3e50;
+            --accent-color: #f39c12;
+            --light-color: #f9f9f9;
+            --dark-color: #333;
+            --gray-color: #ecf0f1;
+            --success-color: #27ae60;
+        }
+
+        body {
+            background-color: var(--light-color);
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* Header */
+        header {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo h1 {
+            font-size: 1.8rem;
+            color: var(--accent-color);
+        }
+
+        .logo i {
+            font-size: 2rem;
+            color: var(--primary-color);
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+
+        nav ul li {
+            margin-left: 25px;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        nav ul li a:hover {
+            color: var(--accent-color);
+        }
+
+        .nav-active {
+            color: var(--accent-color) !important;
+        }
+
+        .cart-icon {
+            position: relative;
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .content-section {
+            display: none;
+            width: 100%;
+            animation: fadeIn 0.5s;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 100px 0;
+            text-align: center;
+            border-radius: 10px;
+            margin-bottom: 40px;
+        }
+
+        .hero h2 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto 30px;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #c0392b;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Menu Section */
+        .section-title {
+            text-align: center;
+            margin-bottom: 40px;
+            color: var(--secondary-color);
+            font-size: 2.2rem;
+        }
+
+        .menu-categories {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .category-btn {
+            background-color: white;
+            border: 2px solid var(--gray-color);
+            padding: 10px 25px;
+            margin: 0 10px 10px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .category-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .menu-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .menu-item {
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s;
+        }
+
+        .menu-item:hover {
+            transform: translateY(-10px);
+        }
+
+        .menu-item-img {
+            height: 200px;
+            width: 100%;
+            object-fit: cover;
+        }
+
+        .menu-item-content {
+            padding: 20px;
+        }
+
+        .menu-item-title {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .menu-item-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .menu-item-price {
+            color: var(--primary-color);
+            font-weight: 700;
+            font-size: 1.3rem;
+        }
+
+        .menu-item-desc {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .add-to-cart {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .add-to-cart:hover {
+            background-color: #e67e22;
+        }
+
+        /* Cart Section */
+        .cart-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+
+        .cart-items {
+            flex: 2;
+            min-width: 300px;
+        }
+
+        .cart-summary {
+            flex: 1;
+            min-width: 300px;
+            background-color: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            align-self: flex-start;
+        }
+
+        .cart-item {
+            display: flex;
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .cart-item-img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-right: 20px;
+        }
+
+        .cart-item-details {
+            flex: 1;
+        }
+
+        .cart-item-title {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .cart-item-name {
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .cart-item-price {
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .cart-item-controls {
+            display: flex;
+            align-items: center;
+            margin-top: 15px;
+        }
+
+        .quantity-btn {
+            width: 30px;
+            height: 30px;
+            background-color: var(--gray-color);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .quantity {
+            margin: 0 15px;
+            font-weight: 700;
+        }
+
+        .remove-item {
+            margin-left: auto;
+            background-color: transparent;
+            border: none;
+            color: #e74c3c;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .cart-summary h3 {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--gray-color);
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .summary-total {
+            font-weight: 700;
+            font-size: 1.3rem;
+            border-top: 2px solid var(--gray-color);
+            padding-top: 15px;
+            margin-top: 15px;
+        }
+
+        .checkout-btn {
+            width: 100%;
+            margin-top: 20px;
+            padding: 15px;
+            font-size: 1.1rem;
+        }
+
+        /* Payment Section */
+        .payment-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+
+        .payment-form {
+            flex: 2;
+            min-width: 300px;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .payment-methods {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--gray-color);
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+
+        .card-icons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .card-icon {
+            width: 50px;
+            height: 35px;
+            border: 1px solid var(--gray-color);
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+        }
+
+        .payment-method {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .payment-method.active {
+            border-color: var(--primary-color);
+        }
+
+        .payment-method:hover {
+            transform: translateY(-5px);
+        }
+
+        .payment-method i {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            color: var(--secondary-color);
+        }
+
+        /* Profile Section */
+        .profile-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+
+        .profile-info {
+            flex: 1;
+            min-width: 300px;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .profile-avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 20px;
+            display: block;
+            border: 5px solid var(--accent-color);
+        }
+
+        .profile-details {
+            margin-top: 20px;
+        }
+
+        .profile-detail {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--gray-color);
+        }
+
+        .order-history {
+            flex: 2;
+            min-width: 300px;
+        }
+
+        .order-item {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .order-status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .status-delivered {
+            background-color: #d5f4e6;
+            color: var(--success-color);
+        }
+
+        .status-cooking {
+            background-color: #fff9e6;
+            color: #e67e22;
+        }
+
+        /* Contacts Section */
+        .contacts-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+
+        .contact-info {
+            flex: 1;
+            min-width: 300px;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .contact-detail {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .contact-detail i {
+            width: 50px;
+            height: 50px;
+            background-color: var(--gray-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            margin-right: 15px;
+            color: var(--secondary-color);
+        }
+
+        .contact-map {
+            flex: 2;
+            min-width: 300px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .contact-map iframe {
+            width: 100%;
+            height: 100%;
+            min-height: 400px;
+            border: none;
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 40px 0;
+            margin-top: 60px;
+        }
+
+        .footer-content {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 30px;
+        }
+
+        .footer-section {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .footer-section h3 {
+            color: var(--accent-color);
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent-color);
+        }
+
+        .social-icons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .social-icon {
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+
+        .social-icon:hover {
+            background-color: var(--primary-color);
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 30px;
+            margin-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            nav ul {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            nav ul li {
+                margin: 0 10px 10px;
+            }
+            
+            .hero h2 {
+                font-size: 2.2rem;
+            }
+            
+            .hero p {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container header-content">
+            <div class="logo">
+                <i class="fas fa-pizza-slice"></i>
+                <h1>Pizza & Wok</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#" class="nav-link active" data-section="home"><i class="fas fa-home"></i> Главная</a></li>
+                    <li><a href="#" class="nav-link" data-section="menu"><i class="fas fa-utensils"></i> Меню</a></li>
+                    <li><a href="#" class="nav-link" data-section="cart"><i class="fas fa-shopping-cart cart-icon"></i> Корзина <span class="cart-count">0</span></a></li>
+                    <li><a href="#" class="nav-link" data-section="payment"><i class="fas fa-credit-card"></i> Оплата</a></li>
+                    <li><a href="#" class="nav-link" data-section="profile"><i class="fas fa-user"></i> Профиль</a></li>
+                    <li><a href="#" class="nav-link" data-section="contacts"><i class="fas fa-address-book"></i> Контакты</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container main-content">
+        <!-- Home Section -->
+        <section id="home" class="content-section active">
+            <div class="hero">
+                <h2>Пицца, салаты и воки</h2>
+                <p>Добро пожаловать в наш ресторан! Мы предлагаем вкуснейшую пиццу, свежие салаты и ароматные воки. Готовим только из качественных продуктов с любовью!</p>
+                <a href="#" class="btn nav-link" data-section="menu">Посмотреть меню</a>
+            </div>
+            
+            <h2 class="section-title">Наши специальные предложения</h2>
+            <div class="menu-items">
+                <!-- Featured items will be added by JavaScript -->
+            </div>
+        </section>
+
+        <!-- Menu Section -->
+        <section id="menu" class="content-section">
+            <h2 class="section-title">Наше меню</h2>
+            <div class="menu-categories">
+                <button class="category-btn active" data-category="all">Все</button>
+                <button class="category-btn" data-category="pizza">Пицца</button>
+                <button class="category-btn" data-category="salad">Салаты</button>
+                <button class="category-btn" data-category="wok">Воки</button>
+                <button class="category-btn" data-category="drink">Напитки</button>
+            </div>
+            <div class="menu-items" id="menu-items-container">
+                <!-- Menu items will be added by JavaScript -->
+            </div>
+        </section>
+
+        <!-- Cart Section -->
+        <section id="cart" class="content-section">
+            <h2 class="section-title">Ваша корзина</h2>
+            <div class="cart-container">
+                <div class="cart-items" id="cart-items-container">
+                    <!-- Cart items will be added by JavaScript -->
+                    <p class="empty-cart-message" id="empty-cart-message">Ваша корзина пуста</p>
+                </div>
+                <div class="cart-summary">
+                    <h3>Сумма заказа</h3>
+                    <div class="summary-row">
+                        <span>Товары:</span>
+                        <span id="subtotal">0 ₽</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Доставка:</span>
+                        <span id="delivery">300 ₽</span>
+                    </div>
+                    <div class="summary-row summary-total">
+                        <span>Итого:</span>
+                        <span id="total">300 ₽</span>
+                    </div>
+                    <button class="btn checkout-btn nav-link" data-section="payment">Перейти к оплате</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Payment Section -->
+        <section id="payment" class="content-section">
+            <h2 class="section-title">Оплата заказа</h2>
+            <div class="payment-container">
+                <div class="payment-form">
+                    <h3>Данные для оплаты</h3>
+                    <form id="payment-form">
+                        <div class="form-group">
+                            <label for="card-name">Имя на карте</label>
+                            <input type="text" id="card-name" class="form-control" placeholder="Иван Иванов" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="card-number">Номер карты</label>
+                            <input type="text" id="card-number" class="form-control" placeholder="1234 5678 9012 3456" required>
+                            <div class="card-icons">
+                                <div class="card-icon"><i class="fab fa-cc-visa"></i></div>
+                                <div class="card-icon"><i class="fab fa-cc-mastercard"></i></div>
+                                <div class="card-icon"><i class="fab fa-cc-mir"></i></div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="form-row">
+                                <div style="display: flex; gap: 15px;">
+                                    <div style="flex: 1;">
+                                        <label for="card-expiry">Срок действия</label>
+                                        <input type="text" id="card-expiry" class="form-control" placeholder="ММ/ГГ" required>
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <label for="card-cvc">CVC</label>
+                                        <input type="text" id="card-cvc" class="form-control" placeholder="123" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="address">Адрес доставки</label>
+                            <input type="text" id="address" class="form-control" placeholder="ул. Примерная, д. 10, кв. 25" required>
+                        </div>
+                        <button type="submit" class="btn" style="width: 100%;">Оплатить заказ</button>
+                    </form>
+                </div>
+                <div class="payment-methods">
+                    <div class="payment-method active">
+                        <i class="fas fa-credit-card"></i>
+                        <h4>Банковская карта</h4>
+                        <p>Оплата Visa, Mastercard или МИР</p>
+                    </div>
+                    <div class="payment-method">
+                        <i class="fas fa-mobile-alt"></i>
+                        <h4>Электронные кошельки</h4>
+                        <p>Оплата через Яндекс.Деньги, Qiwi или WebMoney</p>
+                    </div>
+                    <div class="payment-method">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <h4>Наличными курьеру</h4>
+                        <p>Оплата при получении заказа</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Profile Section -->
+        <section id="profile" class="content-section">
+            <h2 class="section-title">Ваш профиль</h2>
+            <div class="profile-container">
+                <div class="profile-info">
+                    <img src="https://images.unsplash.com/photo-1494790108755-2616b786d4d9?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="Аватар пользователя" class="profile-avatar">
+                    <h3 style="text-align: center;">Алексей Петров</h3>
+                    <div class="profile-details">
+                        <div class="profile-detail">
+                            <strong>Email:</strong> alexey.petrov@example.com
+                        </div>
+                        <div class="profile-detail">
+                            <strong>Телефон:</strong> +7 (912) 345-67-89
+                        </div>
+                        <div class="profile-detail">
+                            <strong>Дата регистрации:</strong> 15.03.2022
+                        </div>
+                        <div class="profile-detail">
+                            <strong>Количество заказов:</strong> 12
+                        </div>
+                    </div>
+                </div>
+                <div class="order-history">
+                    <h3>История заказов</h3>
+                    <div class="order-item">
+                        <div class="order-header">
+                            <div>
+                                <h4>Заказ #12345</h4>
+                                <p>15 января 2023</p>
+                            </div>
+                            <div class="order-status status-delivered">Доставлен</div>
+                        </div>
+                        <p>Пицца "Маргарита", Салат "Цезарь", Вок с курицей</p>
+                        <p><strong>Сумма:</strong> 1 850 ₽</p>
+                    </div>
+                    <div class="order-item">
+                        <div class="order-header">
+                            <div>
+                                <h4>Заказ #12344</h4>
+                                <p>10 января 2023</p>
+                            </div>
+                            <div class="order-status status-delivered">Доставлен</div>
+                        </div>
+                        <p>Пицца "Пепперони", Салат "Греческий", 2x Кола</p>
+                        <p><strong>Сумма:</strong> 1 650 ₽</p>
+                    </div>
+                    <div class="order-item">
+                        <div class="order-header">
+                            <div>
+                                <h4>Заказ #12343</h4>
+                                <p>5 января 2023</p>
+                            </div>
+                            <div class="order-status status-cooking">Готовится</div>
+                        </div>
+                        <p>Пицца "4 сыра", Вок с морепродуктами</p>
+                        <p><strong>Сумма:</strong> 1 450 ₽</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contacts Section -->
+        <section id="contacts" class="content-section">
+            <h2 class="section-title">Контакты</h2>
+            <div class="contacts-container">
+                <div class="contact-info">
+                    <h3>Наши контакты</h3>
+                    <div class="contact-detail">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div>
+                            <h4>Адрес</h4>
+                            <p>г. Москва, ул. Пиццерийная, д. 15</p>
+                        </div>
+                    </div>
+                    <div class="contact-detail">
+                        <i class="fas fa-phone"></i>
+                        <div>
+                            <h4>Телефон</h4>
+                            <p>+7 (495) 123-45-67</p>
+                        </div>
+                    </div>
+                    <div class="contact-detail">
+                        <i class="fas fa-envelope"></i>
+                        <div>
+                            <h4>Email</h4>
+                            <p>info@pizza-wok.ru</p>
+                        </div>
+                    </div>
+                    <div class="contact-detail">
+                        <i class="fas fa-clock"></i>
+                        <div>
+                            <h4>Время работы</h4>
+                            <p>Пн-Чт: 10:00 - 23:00</p>
+                            <p>Пт-Вс: 10:00 - 00:00</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="contact-map">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2245.373789462183!2d37.61763331593049!3d55.75582628055313!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x46b54a50b315e573%3A0xa886bf5a3d9b2e68!2z0JzQvtGB0LrQvtCy0YHQutC40Lkg0L_RgC4sIDE1LCDQnNC-0YHQutCy0LAsIDExNTAzMQ!5e0!3m2!1sru!2sru!4v1678884577613!5m2!1sru!2sru" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container footer-content">
+            <div class="footer-section">
+                <h3>Pizza & Wok</h3>
+                <p>Лучшая пицца, салаты и воки в городе. Готовим с любовью с 2015 года.</p>
+                <div class="social-icons">
+                    <a href="#" class="social-icon"><i class="fab fa-vk"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-telegram"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
+            <div class="footer-section">
+                <h3>Навигация</h3>
+                <ul class="footer-links">
+                    <li><a href="#" class="nav-link" data-section="home">Главная</a></li>
+                    <li><a href="#" class="nav-link" data-section="menu">Меню</a></li>
+                    <li><a href="#" class="nav-link" data-section="cart">Корзина</a></li>
+                    <li><a href="#" class="nav-link" data-section="profile">Профиль</a></li>
+                    <li><a href="#" class="nav-link" data-section="contacts">Контакты</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Контактная информация</h3>
+                <ul class="footer-links">
+                    <li><i class="fas fa-map-marker-alt"></i> г. Москва, ул. Пиццерийная, д. 15</li>
+                    <li><i class="fas fa-phone"></i> +7 (495) 123-45-67</li>
+                    <li><i class="fas fa-envelope"></i> info@pizza-wok.ru</li>
+                </ul>
+            </div>
+        </div>
+        <div class="container copyright">
+            <p>&copy; 2023 Pizza & Wok. Все права защищены.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Menu data
+        const menuItems = [
+            {
+                id: 1,
+                name: "Пицца Маргарита",
+                category: "pizza",
+                price: 450,
+                description: "Классическая пицца с томатным соусом, моцареллой и базиликом",
+                image: "https://images.unsplash.com/photo-1604068549290-dea0e4a305ca?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
+            },
+            {
+                id: 2,
+                name: "Пицца Пепперони",
+                category: "pizza",
+                price: 550,
+                description: "Острая пицца с пепперони, моцареллой и томатным соусом",
+                image: "https://images.unsplash.com/photo-1628840042765-356cda07504e?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
+            },
+            {
+                id: 3,
+                name: "Пицца 4 сыра",
+                category: "pizza",
+                price: 600,
+                description: "Пицца с моцареллой, пармезаном, горгонзолой и фетой",
+                image: "https://images.unsplash.com/photo-1593246049226-ded77bf90326?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
+            },
+            {
+                id: 4,
+                name: "Салат Цезарь",
+                category: "salad",
+                price: 350,
+                description: "Классический салат с курицей, салатом айсберг, сухариками и соусом цезарь",
+                image: "https://images.unsplash.com/photo-1546793665-c74683f339c1?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
+            },
+            {
+                id: 5,
+                name: "Греческий салат",
+                category: "salad",
+                price: 320,
+                description: "Свежие овощи, фета, маслины и оливковое масло",
+                image: "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
+            },
+            {
+                id: 6,
+                name: "Вок с курицей",
+                category: "wok",
+                price: 420,
+                description: "Жареная лапша с курицей, овощами и соусом терияки",
+                image: "https://images.unsplash.com/photo-1555126634-323283e090fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
+            },
+            {
+                id: 7,
+                name: "Вок с морепродуктами",
+                category: "wok",
+                price: 550,
+                description: "Лапша с креветками, кальмарами, мидиями и овощами",
+                image: "https://images.unsplash.com/photo-1563245372-f21724e3856d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
+            },
+            {
+                id: 8,
+                name: "Кола",
+                category: "drink",
+                price: 120,
+                description: "Освежающий газированный напиток",
+                image: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
+            },
+            {
+                id: 9,
+                name: "Сок апельсиновый",
+                category: "drink",
+                price: 150,
+                description: "Свежевыжатый апельсиновый сок",
+                image: "https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
+            }
+        ];
+
+        // Cart state
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        let currentSection = 'home';
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Render featured items on home page
+            renderFeaturedItems();
+            
+            // Render menu items
+            renderMenuItems();
+            
+            // Render cart
+            renderCart();
+            
+            // Setup navigation
+            setupNavigation();
+            
+            // Setup category filters
+            setupCategoryFilters();
+            
+            // Setup payment form
+            setupPaymentForm();
+            
+            // Set active section based on URL or default
+            const urlParams = new URLSearchParams(window.location.search);
+            const section = urlParams.get('section') || 'home';
+            showSection(section);
+        });
+
+        // Render featured items on home page
+        function renderFeaturedItems() {
+            const featuredContainer = document.querySelector('#home .menu-items');
+            const featuredItems = menuItems.slice(0, 3); // First 3 items as featured
+            
+            featuredContainer.innerHTML = featuredItems.map(item => `
+                <div class="menu-item">
+                    <img src="${item.image}" alt="${item.name}" class="menu-item-img">
+                    <div class="menu-item-content">
+                        <div class="menu-item-title">
+                            <div class="menu-item-name">${item.name}</div>
+                            <div class="menu-item-price">${item.price} ₽</div>
+                        </div>
+                        <p class="menu-item-desc">${item.description}</p>
+                        <button class="add-to-cart" data-id="${item.id}">Добавить в корзину</button>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Add event listeners to add-to-cart buttons
+            featuredContainer.querySelectorAll('.add-to-cart').forEach(button => {
+                button.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    addToCart(id);
+                });
+            });
+        }
+
+        // Render menu items
+        function renderMenuItems(category = 'all') {
+            const container = document.getElementById('menu-items-container');
+            const filteredItems = category === 'all' 
+                ? menuItems 
+                : menuItems.filter(item => item.category === category);
+            
+            container.innerHTML = filteredItems.map(item => `
+                <div class="menu-item">
+                    <img src="${item.image}" alt="${item.name}" class="menu-item-img">
+                    <div class="menu-item-content">
+                        <div class="menu-item-title">
+                            <div class="menu-item-name">${item.name}</div>
+                            <div class="menu-item-price">${item.price} ₽</div>
+                        </div>
+                        <p class="menu-item-desc">${item.description}</p>
+                        <button class="add-to-cart" data-id="${item.id}">Добавить в корзину</button>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Add event listeners to add-to-cart buttons
+            container.querySelectorAll('.add-to-cart').forEach(button => {
+                button.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    addToCart(id);
+                });
+            });
+        }
+
+        // Setup category filters
+        function setupCategoryFilters() {
+            const categoryButtons = document.querySelectorAll('.category-btn');
+            
+            categoryButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Update active button
+                    categoryButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Render filtered items
+                    const category = this.getAttribute('data-category');
+                    renderMenuItems(category);
+                });
+            });
+        }
+
+        // Add item to cart
+        function addToCart(itemId) {
+            const item = menuItems.find(item => item.id === itemId);
+            if (!item) return;
+            
+            // Check if item already in cart
+            const existingItem = cart.find(cartItem => cartItem.id === itemId);
+            
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({
+                    ...item,
+                    quantity: 1
+                });
+            }
+            
+            // Update cart in localStorage
+            localStorage.setItem('cart', JSON.stringify(cart));
+            
+            // Update cart UI
+            renderCart();
+            
+            // Show notification
+            showNotification(`"${item.name}" добавлен в корзину!`);
+        }
+
+        // Remove item from cart
+        function removeFromCart(itemId) {
+            cart = cart.filter(item => item.id !== itemId);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            renderCart();
+        }
+
+        // Update item quantity
+        function updateQuantity(itemId, newQuantity) {
+            if (newQuantity < 1) {
+                removeFromCart(itemId);
+                return;
+            }
+            
+            const item = cart.find(item => item.id === itemId);
+            if (item) {
+                item.quantity = newQuantity;
+                localStorage.setItem('cart', JSON.stringify(cart));
+                renderCart();
+            }
+        }
+
+        // Render cart
+        function renderCart() {
+            const container = document.getElementById('cart-items-container');
+            const emptyCartMessage = document.getElementById('empty-cart-message');
+            const cartCount = document.querySelector('.cart-count');
+            const subtotalElement = document.getElementById('subtotal');
+            const totalElement = document.getElementById('total');
+            
+            if (cart.length === 0) {
+                container.innerHTML = '<p class="empty-cart-message" id="empty-cart-message">Ваша корзина пуста</p>';
+                cartCount.textContent = '0';
+                subtotalElement.textContent = '0 ₽';
+                totalElement.textContent = '300 ₽';
+                return;
+            }
+            
+            // Calculate totals
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const delivery = 300;
+            const total = subtotal + delivery;
+            
+            // Update UI
+            cartCount.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
+            subtotalElement.textContent = `${subtotal} ₽`;
+            totalElement.textContent = `${total} ₽`;
+            
+            // Render cart items
+            container.innerHTML = cart.map(item => `
+                <div class="cart-item">
+                    <img src="${item.image}" alt="${item.name}" class="cart-item-img">
+                    <div class="cart-item-details">
+                        <div class="cart-item-title">
+                            <div class="cart-item-name">${item.name}</div>
+                            <div class="cart-item-price">${item.price * item.quantity} ₽</div>
+                        </div>
+                        <p class="menu-item-desc">${item.description}</p>
+                        <div class="cart-item-controls">
+                            <button class="quantity-btn minus" data-id="${item.id}">-</button>
+                            <span class="quantity">${item.quantity}</span>
+                            <button class="quantity-btn plus" data-id="${item.id}">+</button>
+                            <button class="remove-item" data-id="${item.id}">Удалить</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Add event listeners
+            container.querySelectorAll('.minus').forEach(button => {
+                button.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    const item = cart.find(item => item.id === id);
+                    if (item) {
+                        updateQuantity(id, item.quantity - 1);
+                    }
+                });
+            });
+            
+            container.querySelectorAll('.plus').forEach(button => {
+                button.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    const item = cart.find(item => item.id === id);
+                    if (item) {
+                        updateQuantity(id, item.quantity + 1);
+                    }
+                });
+            });
+            
+            container.querySelectorAll('.remove-item').forEach(button => {
+                button.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    removeFromCart(id);
+                });
+            });
+        }
+
+        // Setup navigation
+        function setupNavigation() {
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const section = this.getAttribute('data-section');
+                    
+                    // Update active nav link
+                    navLinks.forEach(link => link.classList.remove('nav-active'));
+                    this.classList.add('nav-active');
+                    
+                    // Show section
+                    showSection(section);
+                    
+                    // Update URL without reloading page
+                    const url = new URL(window.location);
+                    url.searchParams.set('section', section);
+                    window.history.pushState({}, '', url);
+                });
+            });
+            
+            // Handle browser back/forward buttons
+            window.addEventListener('popstate', function() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const section = urlParams.get('section') || 'home';
+                showSection(section);
+                
+                // Update active nav link
+                navLinks.forEach(link => {
+                    link.classList.remove('nav-active');
+                    if (link.getAttribute('data-section') === section) {
+                        link.classList.add('nav-active');
+                    }
+                });
+            });
+        }
+
+        // Show section
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Show selected section
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.classList.add('active');
+                currentSection = sectionId;
+                
+                // If cart section is shown, update it
+                if (sectionId === 'cart') {
+                    renderCart();
+                }
+            }
+        }
+
+        // Setup payment form
+        function setupPaymentForm() {
+            const paymentForm = document.getElementById('payment-form');
+            const paymentMethods = document.querySelectorAll('.payment-method');
+            
+            // Handle payment method selection
+            paymentMethods.forEach(method => {
+                method.addEventListener('click', function() {
+                    paymentMethods.forEach(m => m.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+            
+            // Handle form submission
+            paymentForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Validate form
+                const cardName = document.getElementById('card-name').value;
+                const cardNumber = document.getElementById('card-number').value;
+                const cardExpiry = document.getElementById('card-expiry').value;
+                const cardCvc = document.getElementById('card-cvc').value;
+                const address = document.getElementById('address').value;
+                
+                if (!cardName || !cardNumber || !cardExpiry || !cardCvc || !address) {
+                    showNotification('Пожалуйста, заполните все поля!', 'error');
+                    return;
+                }
+                
+                // Simulate payment processing
+                showNotification('Обработка платежа...', 'info');
+                
+                setTimeout(() => {
+                    // Clear cart after successful payment
+                    cart = [];
+                    localStorage.setItem('cart', JSON.stringify(cart));
+                    renderCart();
+                    
+                    // Show success message
+                    showNotification('Оплата прошла успешно! Ваш заказ готовится.', 'success');
+                    
+                    // Reset form
+                    paymentForm.reset();
+                    
+                    // Redirect to profile
+                    showSection('profile');
+                    document.querySelectorAll('.nav-link').forEach(link => {
+                        link.classList.remove('nav-active');
+                        if (link.getAttribute('data-section') === 'profile') {
+                            link.classList.add('nav-active');
+                        }
+                    });
+                }, 2000);
+            });
+        }
+
+        // Show notification
+        function showNotification(message, type = 'success') {
+            // Remove existing notification
+            const existingNotification = document.querySelector('.notification');
+            if (existingNotification) {
+                existingNotification.remove();
+            }
+            
+            // Create notification
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <div class="notification-content">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            // Add styles
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background-color: ${type === 'success' ? '#27ae60' : type === 'error' ? '#e74c3c' : '#3498db'};
+                color: white;
+                padding: 15px 25px;
+                border-radius: 5px;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+                z-index: 10000;
+                animation: slideIn 0.3s ease;
+            `;
+            
+            // Add animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+                .notification-content {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // Add to page
+            document.body.appendChild(notification);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                notification.style.transform = 'translateX(100%)';
+                notification.style.opacity = '0';
+                
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
