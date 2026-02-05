@@ -3,15 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ИИ vs ИИ: Крестики-нолики</title>
+    <title>Обучение ИИ для крестиков-ноликов</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
             padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
         }
-        h1 {
+        h1, h2 {
             color: #333;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        .board-container {
+            flex: 1;
+            min-width: 300px;
+        }
+        .training-container {
+            flex: 2;
+            min-width: 300px;
         }
         .board {
             display: grid;
@@ -29,7 +45,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: default;
+            cursor: pointer;
         }
         .controls {
             margin: 20px;
@@ -37,63 +53,321 @@
         button {
             padding: 10px 20px;
             font-size: 16px;
-            background-color: #4CAF50;
-            color: white;
+            margin: 5px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
         }
-        button:hover {
+        .train-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .train-btn:hover {
             background-color: #45a049;
         }
-        button:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
+        .play-btn {
+            background-color: #2196F3;
+            color: white;
+        }
+        .play-btn:hover {
+            background-color: #0b7dda;
+        }
+        .reset-btn {
+            background-color: #ff9800;
+            color: white;
+        }
+        .reset-btn:hover {
+            background-color: #e68900;
         }
         .status {
             font-size: 18px;
             margin: 10px;
             min-height: 30px;
+            font-weight: bold;
         }
-        .x {
-            color: #ff4757;
+        .x { color: #ff4757; }
+        .o { color: #3742fa; }
+        .stats {
+            text-align: left;
+            margin: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            border: 1px solid #ddd;
         }
-        .o {
-            color: #3742fa;
+        .progress-container {
+            margin: 20px 0;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: #4CAF50;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .log {
+            height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+            font-family: monospace;
+            background-color: #f5f5f5;
+        }
+        .params {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .param-group {
+            text-align: left;
+        }
+        input[type="range"] {
+            width: 100%;
+        }
+        .explanation {
+            text-align: left;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #e8f4fd;
+            border-radius: 5px;
+            border-left: 4px solid #2196F3;
         }
     </style>
 </head>
 <body>
-    <h1>Две ИИ играют в крестики-нолики</h1>
-    <div class="status" id="status">Нажмите "Начать игру"</div>
-    <div class="board" id="board"></div>
-    <div class="controls">
-        <button id="startBtn">Начать игру</button>
-        <button id="pauseBtn" disabled>Пауза</button>
-        <button id="resetBtn">Сброс</button>
+    <h1>Обучение ИИ для игры в крестики-нолики (Q-learning)</h1>
+    
+    <div class="explanation">
+        <h3>Как работает обучение:</h3>
+        <p><strong>Q-learning</strong> - это метод обучения с подкреплением, где ИИ учится на собственных действиях:</p>
+        <ul>
+            <li><strong>Q-таблица</strong>: Хранит "ценность" каждого действия в каждом состоянии</li>
+            <li><strong>Эпсилон-жадная стратегия</strong>: Случайные действия для исследования или лучшие действия для использования знаний</li>
+            <li><strong>Награды</strong>: +1 за победу, -1 за поражение, 0 за ничью, -0.1 за каждый ход (чтобы учиться выигрывать быстрее)</li>
+            <li><strong>Обновление Q-значений</strong>: Q(s,a) = Q(s,a) + α * [R + γ * max(Q(s',a')) - Q(s,a)]</li>
+        </ul>
     </div>
-    <div>
-        <label>Скорость (мс): </label>
-        <input type="range" id="speed" min="100" max="1500" value="500">
-        <span id="speedValue">500</span>
+    
+    <div class="container">
+        <div class="board-container">
+            <h2>Игровое поле</h2>
+            <div class="status" id="status">Начните обучение или игру</div>
+            <div class="board" id="board"></div>
+            <div class="controls">
+                <button class="play-btn" id="playBtn">Играть (обученные ИИ)</button>
+                <button class="train-btn" id="trainBtn">Начать обучение</button>
+                <button class="reset-btn" id="resetBtn">Сбросить обучение</button>
+            </div>
+        </div>
+        
+        <div class="training-container">
+            <h2>Процесс обучения</h2>
+            
+            <div class="progress-container">
+                <div>Прогресс обучения: <span id="progressPercent">0%</span></div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+            
+            <div class="params">
+                <div class="param-group">
+                    <label>Эпизодов обучения: <span id="episodesValue">10000</span></label>
+                    <input type="range" id="episodes" min="1000" max="100000" value="10000" step="1000">
+                </div>
+                <div class="param-group">
+                    <label>Скорость обучения (α): <span id="alphaValue">0.1</span></label>
+                    <input type="range" id="alpha" min="0.01" max="1" value="0.1" step="0.01">
+                </div>
+                <div class="param-group">
+                    <label>Коэффициент дисконтирования (γ): <span id="gammaValue">0.9</span></label>
+                    <input type="range" id="gamma" min="0.1" max="0.99" value="0.9" step="0.01">
+                </div>
+                <div class="param-group">
+                    <label>Начальный epsilon (ε): <span id="epsilonValue">0.3</span></label>
+                    <input type="range" id="epsilon" min="0.1" max="1" value="0.3" step="0.05">
+                </div>
+            </div>
+            
+            <div class="stats">
+                <h3>Статистика обучения:</h3>
+                <div>Эпизодов: <span id="episodesCount">0</span></div>
+                <div>Побед X: <span id="winsX">0</span></div>
+                <div>Побед O: <span id="winsO">0</span></div>
+                <div>Ничьих: <span id="draws">0</span></div>
+                <div>Размер Q-таблицы: <span id="qTableSize">0</span> состояний</div>
+                <div>Текущий epsilon: <span id="currentEpsilon">0.3</span></div>
+                <div>Последняя награда: <span id="lastReward">0</span></div>
+            </div>
+            
+            <div class="log" id="log"></div>
+        </div>
     </div>
 
     <script>
+        class TicTacToeAI {
+            constructor() {
+                this.qTable = {}; // Хранилище Q-значений: state -> [значения для 9 действий]
+                this.alpha = 0.1; // Скорость обучения
+                this.gamma = 0.9; // Коэффициент дисконтирования
+                this.epsilon = 0.3; // Вероятность случайного действия (исследование)
+                this.epsilonDecay = 0.9999; // Уменьшение epsilon
+                this.minEpsilon = 0.01; // Минимальное значение epsilon
+            }
+            
+            // Получить строковое представление состояния
+            getState(board, player) {
+                return board.join('') + player;
+            }
+            
+            // Выбрать действие (ход)
+            chooseAction(board, player, training = true) {
+                const state = this.getState(board, player);
+                const availableActions = this.getAvailableActions(board);
+                
+                // Создаем запись в Q-таблице, если ее нет
+                if (!this.qTable[state]) {
+                    this.qTable[state] = Array(9).fill(0);
+                }
+                
+                // Epsilon-жадная стратегия: случайное действие с вероятностью epsilon
+                if (training && Math.random() < this.epsilon) {
+                    return availableActions[Math.floor(Math.random() * availableActions.length)];
+                }
+                
+                // Иначе выбираем действие с максимальным Q-значением
+                let bestAction = availableActions[0];
+                let bestValue = this.qTable[state][bestAction];
+                
+                for (const action of availableActions) {
+                    if (this.qTable[state][action] > bestValue) {
+                        bestValue = this.qTable[state][action];
+                        bestAction = action;
+                    }
+                }
+                
+                return bestAction;
+            }
+            
+            // Получить доступные действия
+            getAvailableActions(board) {
+                const actions = [];
+                for (let i = 0; i < 9; i++) {
+                    if (board[i] === '') {
+                        actions.push(i);
+                    }
+                }
+                return actions;
+            }
+            
+            // Обновить Q-значения
+            updateQValue(state, action, reward, nextState, nextAvailableActions) {
+                if (!this.qTable[state]) {
+                    this.qTable[state] = Array(9).fill(0);
+                }
+                
+                // Максимальное Q-значение для следующего состояния
+                let maxNextQ = 0;
+                if (nextState && this.qTable[nextState]) {
+                    const nextQValues = this.qTable[nextState];
+                    // Находим максимальное Q-значение среди доступных действий
+                    for (const action of nextAvailableActions) {
+                        if (nextQValues[action] > maxNextQ) {
+                            maxNextQ = nextQValues[action];
+                        }
+                    }
+                }
+                
+                // Формула Q-learning
+                const oldQ = this.qTable[state][action];
+                this.qTable[state][action] = oldQ + this.alpha * (reward + this.gamma * maxNextQ - oldQ);
+            }
+            
+            // Уменьшить epsilon (меньше исследований со временем)
+            decayEpsilon() {
+                this.epsilon = Math.max(this.minEpsilon, this.epsilon * this.epsilonDecay);
+            }
+            
+            // Сохранить обученную модель
+            saveModel() {
+                localStorage.setItem('ticTacToeAI_qTable', JSON.stringify(this.qTable));
+                localStorage.setItem('ticTacToeAI_params', JSON.stringify({
+                    alpha: this.alpha,
+                    gamma: this.gamma,
+                    epsilon: this.epsilon
+                }));
+            }
+            
+            // Загрузить обученную модель
+            loadModel() {
+                const savedQTable = localStorage.getItem('ticTacToeAI_qTable');
+                const savedParams = localStorage.getItem('ticTacToeAI_params');
+                
+                if (savedQTable) {
+                    this.qTable = JSON.parse(savedQTable);
+                }
+                
+                if (savedParams) {
+                    const params = JSON.parse(savedParams);
+                    this.alpha = params.alpha || this.alpha;
+                    this.gamma = params.gamma || this.gamma;
+                    this.epsilon = params.epsilon || this.epsilon;
+                }
+            }
+        }
+
+        // Игровые переменные
         const boardElement = document.getElementById('board');
         const statusElement = document.getElementById('status');
-        const startBtn = document.getElementById('startBtn');
-        const pauseBtn = document.getElementById('pauseBtn');
+        const playBtn = document.getElementById('playBtn');
+        const trainBtn = document.getElementById('trainBtn');
         const resetBtn = document.getElementById('resetBtn');
-        const speedSlider = document.getElementById('speed');
-        const speedValue = document.getElementById('speedValue');
-
+        const logElement = document.getElementById('log');
+        const progressFill = document.getElementById('progressFill');
+        const progressPercent = document.getElementById('progressPercent');
+        
+        // Элементы статистики
+        const episodesCountElement = document.getElementById('episodesCount');
+        const winsXElement = document.getElementById('winsX');
+        const winsOElement = document.getElementById('winsO');
+        const drawsElement = document.getElementById('draws');
+        const qTableSizeElement = document.getElementById('qTableSize');
+        const currentEpsilonElement = document.getElementById('currentEpsilon');
+        const lastRewardElement = document.getElementById('lastReward');
+        
+        // Параметры обучения
+        const episodesSlider = document.getElementById('episodes');
+        const alphaSlider = document.getElementById('alpha');
+        const gammaSlider = document.getElementById('gamma');
+        const epsilonSlider = document.getElementById('epsilon');
+        const episodesValue = document.getElementById('episodesValue');
+        const alphaValue = document.getElementById('alphaValue');
+        const gammaValue = document.getElementById('gammaValue');
+        const epsilonValue = document.getElementById('epsilonValue');
+        
         let board = Array(9).fill('');
         let currentPlayer = 'X';
         let gameActive = false;
-        let gamePaused = false;
-        let gameInterval;
-        let speed = 500;
-
+        let trainingActive = false;
+        let aiX = new TicTacToeAI();
+        let aiO = new TicTacToeAI();
+        
+        // Статистика
+        let stats = {
+            episodes: 0,
+            winsX: 0,
+            winsO: 0,
+            draws: 0
+        };
+        
         // Инициализация доски
         function initBoard() {
             boardElement.innerHTML = '';
@@ -103,136 +377,350 @@
                 cell.dataset.index = i;
                 boardElement.appendChild(cell);
             }
+            updateBoard();
         }
-
+        
         // Обновление отображения доски
         function updateBoard() {
             const cells = document.querySelectorAll('.cell');
             cells.forEach((cell, index) => {
                 cell.textContent = board[index];
+                cell.className = 'cell';
                 if (board[index] === 'X') {
                     cell.classList.add('x');
-                    cell.classList.remove('o');
                 } else if (board[index] === 'O') {
                     cell.classList.add('o');
-                    cell.classList.remove('x');
-                } else {
-                    cell.classList.remove('x', 'o');
                 }
             });
         }
-
+        
         // Проверка на победу
         function checkWinner() {
             const winPatterns = [
-                [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
-                [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
-                [0, 4, 8], [2, 4, 6]             // diagonals
+                [0, 1, 2], [3, 4, 5], [6, 7, 8], // строки
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], // столбцы
+                [0, 4, 8], [2, 4, 6]             // диагонали
             ];
-
+            
             for (const pattern of winPatterns) {
                 const [a, b, c] = pattern;
                 if (board[a] && board[a] === board[b] && board[a] === board[c]) {
                     return board[a];
                 }
             }
-
+            
             if (!board.includes('')) {
                 return 'draw';
             }
-
+            
             return null;
         }
-
-        // Ход ИИ (случайный выбор)
-        function makeAIMove() {
-            if (!gameActive || gamePaused) return;
-
-            const emptyCells = board
-                .map((val, index) => val === '' ? index : null)
-                .filter(val => val !== null);
-
-            if (emptyCells.length === 0) return;
-
-            const randomIndex = emptyCells[Math.floor(Math.random() * emptyCells.length)];
-            board[randomIndex] = currentPlayer;
+        
+        // Сделать ход
+        function makeMove(action) {
+            if (board[action] !== '' || !gameActive) return false;
+            
+            board[action] = currentPlayer;
             updateBoard();
-
-            const winner = checkWinner();
-            if (winner) {
-                gameActive = false;
-                clearInterval(gameInterval);
-                if (winner === 'draw') {
-                    statusElement.textContent = 'Ничья!';
-                } else {
-                    statusElement.textContent = `Победитель: ${winner}`;
-                }
-                startBtn.disabled = false;
-                pauseBtn.disabled = true;
-            } else {
-                currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
-                statusElement.textContent = `Текущий игрок: ${currentPlayer}`;
-            }
+            
+            return true;
         }
-
-        // Начать игру
-        function startGame() {
-            if (gameActive) return;
-            board = Array(9).fill('');
-            currentPlayer = Math.random() > 0.5 ? 'X' : 'O';
-            gameActive = true;
-            gamePaused = false;
-            updateBoard();
-            statusElement.textContent = `Текущий игрок: ${currentPlayer}`;
-            startBtn.disabled = true;
-            pauseBtn.disabled = false;
-            pauseBtn.textContent = 'Пауза';
-            gameInterval = setInterval(makeAIMove, speed);
+        
+        // Добавить запись в лог
+        function addLog(message) {
+            const now = new Date();
+            const time = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+            logElement.innerHTML = `[${time}] ${message}<br>` + logElement.innerHTML;
         }
-
-        // Пауза/продолжить
-        function togglePause() {
-            if (!gameActive) return;
-            gamePaused = !gamePaused;
-            pauseBtn.textContent = gamePaused ? 'Продолжить' : 'Пауза';
-            statusElement.textContent = gamePaused 
-                ? 'Игра на паузе' 
-                : `Текущий игрок: ${currentPlayer}`;
+        
+        // Обновить статистику
+        function updateStats() {
+            episodesCountElement.textContent = stats.episodes;
+            winsXElement.textContent = stats.winsX;
+            winsOElement.textContent = stats.winsO;
+            drawsElement.textContent = stats.draws;
+            qTableSizeElement.textContent = Object.keys(aiX.qTable).length + Object.keys(aiO.qTable).length;
+            currentEpsilonElement.textContent = aiX.epsilon.toFixed(4);
         }
-
-        // Сброс игры
-        function resetGame() {
+        
+        // Один эпизод обучения
+        async function trainEpisode() {
             board = Array(9).fill('');
             currentPlayer = 'X';
-            gameActive = false;
-            gamePaused = false;
-            clearInterval(gameInterval);
-            updateBoard();
-            statusElement.textContent = 'Нажмите "Начать игру"';
-            startBtn.disabled = false;
-            pauseBtn.disabled = true;
-            pauseBtn.textContent = 'Пауза';
-        }
-
-        // Обновление скорости
-        function updateSpeed() {
-            speed = parseInt(speedSlider.value);
-            speedValue.textContent = speed;
-            if (gameActive && !gamePaused) {
-                clearInterval(gameInterval);
-                gameInterval = setInterval(makeAIMove, speed);
+            let gameHistory = [];
+            let winner = null;
+            
+            // Играем до конца игры
+            while (!winner) {
+                const ai = currentPlayer === 'X' ? aiX : aiO;
+                const action = ai.chooseAction(board, currentPlayer, true);
+                
+                // Сохраняем состояние до хода
+                const prevState = ai.getState(board, currentPlayer);
+                const prevBoard = [...board];
+                
+                // Делаем ход
+                board[action] = currentPlayer;
+                
+                // Получаем новое состояние
+                const newState = ai.getState(board, currentPlayer);
+                const availableActions = ai.getAvailableActions(board);
+                
+                // Сохраняем историю для обновления Q-значений
+                gameHistory.push({
+                    ai: ai,
+                    player: currentPlayer,
+                    state: prevState,
+                    action: action,
+                    nextState: newState,
+                    nextActions: availableActions,
+                    boardBefore: [...prevBoard]
+                });
+                
+                // Проверяем победителя
+                winner = checkWinner();
+                
+                // Если игра не окончена, переключаем игрока
+                if (!winner) {
+                    currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                }
             }
+            
+            // Определяем награды
+            let rewardX = 0;
+            let rewardO = 0;
+            
+            if (winner === 'X') {
+                rewardX = 1;  // Победа X
+                rewardO = -1; // Поражение O
+                stats.winsX++;
+            } else if (winner === 'O') {
+                rewardX = -1; // Поражение X
+                rewardO = 1;  // Победа O
+                stats.winsO++;
+            } else {
+                rewardX = 0; // Ничья
+                rewardO = 0;
+                stats.draws++;
+            }
+            
+            // Штраф за длинную игру (чтобы учиться выигрывать быстрее)
+            const movePenalty = -0.1;
+            const totalMoves = gameHistory.length;
+            
+            // Обновляем Q-значения с конца игры к началу
+            for (let i = gameHistory.length - 1; i >= 0; i--) {
+                const move = gameHistory[i];
+                const isX = move.player === 'X';
+                
+                // Базовая награда
+                let reward = isX ? rewardX : rewardO;
+                
+                // Добавляем штраф за каждый ход (кроме последнего)
+                if (i < gameHistory.length - 1) {
+                    reward += movePenalty;
+                }
+                
+                // Обновляем Q-значение
+                move.ai.updateQValue(
+                    move.state,
+                    move.action,
+                    reward,
+                    move.nextState,
+                    move.nextActions
+                );
+                
+                // Для следующих ходов используем обновленные Q-значения
+                if (isX) {
+                    rewardX = 0; // После обновления дальше награда 0
+                } else {
+                    rewardO = 0;
+                }
+            }
+            
+            // Уменьшаем epsilon
+            aiX.decayEpsilon();
+            aiO.decayEpsilon();
+            
+            stats.episodes++;
+            lastRewardElement.textContent = `${rewardX.toFixed(2)} / ${rewardO.toFixed(2)}`;
+            
+            return winner;
         }
-
+        
+        // Процесс обучения
+        async function startTraining() {
+            if (trainingActive) return;
+            
+            trainingActive = true;
+            trainBtn.disabled = true;
+            playBtn.disabled = true;
+            resetBtn.disabled = true;
+            
+            const totalEpisodes = parseInt(episodesSlider.value);
+            const updateInterval = Math.max(1, Math.floor(totalEpisodes / 100));
+            
+            addLog(`Начало обучения на ${totalEpisodes} эпизодов...`);
+            
+            for (let i = 0; i < totalEpisodes; i++) {
+                if (!trainingActive) break;
+                
+                await trainEpisode();
+                
+                // Обновляем прогресс каждые updateInterval эпизодов
+                if (i % updateInterval === 0 || i === totalEpisodes - 1) {
+                    const progress = ((i + 1) / totalEpisodes) * 100;
+                    progressFill.style.width = `${progress}%`;
+                    progressPercent.textContent = `${Math.round(progress)}%`;
+                    
+                    updateStats();
+                    
+                    // Обновляем статус
+                    statusElement.textContent = `Обучение: ${i + 1}/${totalEpisodes} эпизодов`;
+                    
+                    // Делаем небольшую паузу, чтобы не блокировать UI
+                    await new Promise(resolve => setTimeout(resolve, 0));
+                }
+            }
+            
+            trainingActive = false;
+            trainBtn.disabled = false;
+            playBtn.disabled = false;
+            resetBtn.disabled = false;
+            
+            // Сохраняем обученную модель
+            aiX.saveModel();
+            aiO.saveModel();
+            
+            addLog(`Обучение завершено! Эпизодов: ${stats.episodes}`);
+            addLog(`Побед X: ${stats.winsX}, Побед O: ${stats.winsO}, Ничьих: ${stats.draws}`);
+            addLog(`Размер Q-таблицы: ${Object.keys(aiX.qTable).length + Object.keys(aiO.qTable).length} состояний`);
+            
+            statusElement.textContent = 'Обучение завершено! Нажмите "Играть"';
+        }
+        
+        // Игра обученными ИИ
+        async function playTrainedGame() {
+            if (trainingActive) return;
+            
+            gameActive = true;
+            board = Array(9).fill('');
+            currentPlayer = 'X';
+            updateBoard();
+            
+            statusElement.textContent = 'Игра обученных ИИ...';
+            addLog('Начало игры обученными ИИ');
+            
+            let winner = null;
+            let moveCount = 0;
+            
+            // Играем до конца игры
+            while (!winner && moveCount < 9) {
+                const ai = currentPlayer === 'X' ? aiX : aiO;
+                const action = ai.chooseAction(board, currentPlayer, false); // false - не тренируемся
+                
+                if (!makeMove(action)) break;
+                
+                winner = checkWinner();
+                moveCount++;
+                
+                if (!winner) {
+                    currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                }
+                
+                // Пауза между ходами для наглядности
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            
+            if (winner === 'X') {
+                statusElement.textContent = 'Победил X!';
+                addLog('Победил ИИ X');
+            } else if (winner === 'O') {
+                statusElement.textContent = 'Победил O!';
+                addLog('Победил ИИ O');
+            } else {
+                statusElement.textContent = 'Ничья!';
+                addLog('Ничья между ИИ');
+            }
+            
+            gameActive = false;
+        }
+        
+        // Сброс обучения
+        function resetTraining() {
+            if (trainingActive) {
+                trainingActive = false;
+                addLog('Обучение прервано');
+            }
+            
+            aiX = new TicTacToeAI();
+            aiO = new TicTacToeAI();
+            
+            // Загружаем параметры из слайдеров
+            aiX.alpha = aiO.alpha = parseFloat(alphaSlider.value);
+            aiX.gamma = aiO.gamma = parseFloat(gammaSlider.value);
+            aiX.epsilon = aiO.epsilon = parseFloat(epsilonSlider.value);
+            
+            stats = {
+                episodes: 0,
+                winsX: 0,
+                winsO: 0,
+                draws: 0
+            };
+            
+            progressFill.style.width = '0%';
+            progressPercent.textContent = '0%';
+            
+            updateStats();
+            addLog('Обучение сброшено');
+            statusElement.textContent = 'Обучение сброшено';
+        }
+        
+        // Обновление значений параметров
+        function updateParamValues() {
+            episodesValue.textContent = episodesSlider.value;
+            alphaValue.textContent = alphaSlider.value;
+            gammaValue.textContent = gammaSlider.value;
+            epsilonValue.textContent = epsilonSlider.value;
+            
+            // Обновляем параметры ИИ
+            aiX.alpha = aiO.alpha = parseFloat(alphaSlider.value);
+            aiX.gamma = aiO.gamma = parseFloat(gammaSlider.value);
+            aiX.epsilon = aiO.epsilon = parseFloat(epsilonSlider.value);
+        }
+        
         // Инициализация
-        initBoard();
-        updateBoard();
-
+        function init() {
+            initBoard();
+            
+            // Загружаем сохраненную модель, если есть
+            aiX.loadModel();
+            aiO.loadModel();
+            
+            // Обновляем статистику
+            updateStats();
+            qTableSizeElement.textContent = Object.keys(aiX.qTable).length + Object.keys(aiO.qTable).length;
+            
+            if (Object.keys(aiX.qTable).length > 0) {
+                addLog('Загружена ранее обученная модель');
+                statusElement.textContent = 'Модель загружена. Можно играть или продолжить обучение';
+            }
+            
+            updateParamValues();
+        }
+        
         // События
-        startBtn.addEventListener('click', startGame);
-        pauseBtn.addEventListener('click', togglePause);
-        resetBtn.addEventListener('click', resetGame);
-        speedSlider.addEventListener('input', updateSpeed);
+        trainBtn.addEventListener('click', startTraining);
+        playBtn.addEventListener('click', playTrainedGame);
+        resetBtn.addEventListener('click', resetTraining);
+        
+        episodesSlider.addEventListener('input', updateParamValues);
+        alphaSlider.addEventListener('input', updateParamValues);
+        gammaSlider.addEventListener('input', updateParamValues);
+        epsilonSlider.addEventListener('input', updateParamValues);
+        
+        // Запуск инициализации
+        init();
     </script>
 </body>
 </html>
