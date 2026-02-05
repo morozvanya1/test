@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ИИ vs ИИ: Крестики-нолики</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-gap: 5px;
+            justify-content: center;
+            margin: 20px auto;
+        }
+        .cell {
+            width: 100px;
+            height: 100px;
+            background-color: #f0f0f0;
+            border: 2px solid #333;
+            font-size: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: default;
+        }
+        .controls {
+            margin: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .status {
+            font-size: 18px;
+            margin: 10px;
+            min-height: 30px;
+        }
+        .x {
+            color: #ff4757;
+        }
+        .o {
+            color: #3742fa;
+        }
+    </style>
+</head>
+<body>
+    <h1>Две ИИ играют в крестики-нолики</h1>
+    <div class="status" id="status">Нажмите "Начать игру"</div>
+    <div class="board" id="board"></div>
+    <div class="controls">
+        <button id="startBtn">Начать игру</button>
+        <button id="pauseBtn" disabled>Пауза</button>
+        <button id="resetBtn">Сброс</button>
+    </div>
+    <div>
+        <label>Скорость (мс): </label>
+        <input type="range" id="speed" min="100" max="1500" value="500">
+        <span id="speedValue">500</span>
+    </div>
+
+    <script>
+        const boardElement = document.getElementById('board');
+        const statusElement = document.getElementById('status');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const speedSlider = document.getElementById('speed');
+        const speedValue = document.getElementById('speedValue');
+
+        let board = Array(9).fill('');
+        let currentPlayer = 'X';
+        let gameActive = false;
+        let gamePaused = false;
+        let gameInterval;
+        let speed = 500;
+
+        // Инициализация доски
+        function initBoard() {
+            boardElement.innerHTML = '';
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.dataset.index = i;
+                boardElement.appendChild(cell);
+            }
+        }
+
+        // Обновление отображения доски
+        function updateBoard() {
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach((cell, index) => {
+                cell.textContent = board[index];
+                if (board[index] === 'X') {
+                    cell.classList.add('x');
+                    cell.classList.remove('o');
+                } else if (board[index] === 'O') {
+                    cell.classList.add('o');
+                    cell.classList.remove('x');
+                } else {
+                    cell.classList.remove('x', 'o');
+                }
+            });
+        }
+
+        // Проверка на победу
+        function checkWinner() {
+            const winPatterns = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
+                [0, 4, 8], [2, 4, 6]             // diagonals
+            ];
+
+            for (const pattern of winPatterns) {
+                const [a, b, c] = pattern;
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                    return board[a];
+                }
+            }
+
+            if (!board.includes('')) {
+                return 'draw';
+            }
+
+            return null;
+        }
+
+        // Ход ИИ (случайный выбор)
+        function makeAIMove() {
+            if (!gameActive || gamePaused) return;
+
+            const emptyCells = board
+                .map((val, index) => val === '' ? index : null)
+                .filter(val => val !== null);
+
+            if (emptyCells.length === 0) return;
+
+            const randomIndex = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+            board[randomIndex] = currentPlayer;
+            updateBoard();
+
+            const winner = checkWinner();
+            if (winner) {
+                gameActive = false;
+                clearInterval(gameInterval);
+                if (winner === 'draw') {
+                    statusElement.textContent = 'Ничья!';
+                } else {
+                    statusElement.textContent = `Победитель: ${winner}`;
+                }
+                startBtn.disabled = false;
+                pauseBtn.disabled = true;
+            } else {
+                currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                statusElement.textContent = `Текущий игрок: ${currentPlayer}`;
+            }
+        }
+
+        // Начать игру
+        function startGame() {
+            if (gameActive) return;
+            board = Array(9).fill('');
+            currentPlayer = Math.random() > 0.5 ? 'X' : 'O';
+            gameActive = true;
+            gamePaused = false;
+            updateBoard();
+            statusElement.textContent = `Текущий игрок: ${currentPlayer}`;
+            startBtn.disabled = true;
+            pauseBtn.disabled = false;
+            pauseBtn.textContent = 'Пауза';
+            gameInterval = setInterval(makeAIMove, speed);
+        }
+
+        // Пауза/продолжить
+        function togglePause() {
+            if (!gameActive) return;
+            gamePaused = !gamePaused;
+            pauseBtn.textContent = gamePaused ? 'Продолжить' : 'Пауза';
+            statusElement.textContent = gamePaused 
+                ? 'Игра на паузе' 
+                : `Текущий игрок: ${currentPlayer}`;
+        }
+
+        // Сброс игры
+        function resetGame() {
+            board = Array(9).fill('');
+            currentPlayer = 'X';
+            gameActive = false;
+            gamePaused = false;
+            clearInterval(gameInterval);
+            updateBoard();
+            statusElement.textContent = 'Нажмите "Начать игру"';
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+            pauseBtn.textContent = 'Пауза';
+        }
+
+        // Обновление скорости
+        function updateSpeed() {
+            speed = parseInt(speedSlider.value);
+            speedValue.textContent = speed;
+            if (gameActive && !gamePaused) {
+                clearInterval(gameInterval);
+                gameInterval = setInterval(makeAIMove, speed);
+            }
+        }
+
+        // Инициализация
+        initBoard();
+        updateBoard();
+
+        // События
+        startBtn.addEventListener('click', startGame);
+        pauseBtn.addEventListener('click', togglePause);
+        resetBtn.addEventListener('click', resetGame);
+        speedSlider.addEventListener('input', updateSpeed);
+    </script>
+</body>
+</html>
