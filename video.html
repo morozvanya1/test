@@ -3,214 +3,186 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube PiP Viewer</title>
+    <title>PiP Viewer: локальные видео + YouTube</title>
     <style>
-        * {
-            box-sizing: border-box;
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-        }
+        * { box-sizing: border-box; font-family: system-ui, sans-serif; }
         body {
             background: linear-gradient(145deg, #f5f7fa 0%, #e9ecf2 100%);
-            min-height: 100vh;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 16px;
+            min-height: 100vh; margin: 0; display: flex; justify-content: center; align-items: center; padding: 16px;
         }
         .card {
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(8px);
-            border-radius: 32px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            width: 100%;
-            max-width: 900px;
-            padding: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px); border-radius: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); width: 100%; max-width: 1000px; padding: 24px;
         }
-        h1 {
-            font-size: 2rem;
-            font-weight: 600;
-            margin: 0 0 8px 0;
-            background: linear-gradient(135deg, #1e293b, #3b82f6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        h1 { font-size: 2rem; font-weight: 600; margin: 0 0 8px; background: linear-gradient(135deg, #1e293b, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .tabs {
+            display: flex; gap: 12px; margin: 20px 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px;
         }
-        .subtitle {
-            color: #475569;
-            margin-bottom: 24px;
-            font-size: 1rem;
+        .tab {
+            padding: 10px 24px; border-radius: 40px; font-weight: 600; cursor: pointer; transition: 0.2s; background: #e2e8f0; color: #334155;
+        }
+        .tab.active {
+            background: #1e293b; color: white; box-shadow: 0 8px 16px -6px #1e293b;
+        }
+        .tab-content {
+            display: none; margin-top: 24px;
+        }
+        .tab-content.active {
+            display: block;
         }
         .input-group {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 24px;
-            flex-wrap: wrap;
+            display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;
         }
-        .input-group input {
-            flex: 1;
-            min-width: 240px;
-            padding: 14px 20px;
-            border: 2px solid #e2e8f0;
-            border-radius: 40px;
-            font-size: 1rem;
-            outline: none;
-            transition: all 0.2s;
-            background: white;
-        }
-        .input-group input:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+        .input-group input, .input-group input[type="file"] {
+            flex: 1; min-width: 240px; padding: 14px 20px; border: 2px solid #e2e8f0; border-radius: 40px; font-size: 1rem; background: white;
         }
         .input-group button {
-            background: #1e293b;
-            color: white;
-            border: none;
-            padding: 14px 32px;
-            border-radius: 40px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
-            box-shadow: 0 8px 20px -6px #1e293b80;
-            border: 1px solid #ffffff20;
+            background: #1e293b; color: white; border: none; padding: 14px 32px; border-radius: 40px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: 0.2s; box-shadow: 0 8px 20px -6px #1e293b80;
         }
-        .input-group button:hover {
-            background: #0f172a;
-        }
-        .input-group button:active {
-            transform: scale(0.97);
-        }
+        .input-group button:hover { background: #0f172a; }
         .video-container {
-            position: relative;
-            width: 100%;
-            aspect-ratio: 16 / 9;
-            background: #0b0f19;
-            border-radius: 24px;
-            overflow: hidden;
-            box-shadow: 0 20px 30px -10px black;
-            margin-bottom: 24px;
-            border: 3px solid white;
+            position: relative; width: 100%; aspect-ratio: 16 / 9; background: #0b0f19; border-radius: 24px; overflow: hidden; box-shadow: 0 20px 30px -10px black; margin-bottom: 24px; border: 3px solid white;
         }
-        .video-container iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
+        .video-container video, .video-container iframe {
+            width: 100%; height: 100%; border: none; display: block;
         }
-        .pip-control {
-            display: flex;
-            justify-content: center;
-            margin-top: 16px;
-        }
+        .pip-control { display: flex; justify-content: center; margin-top: 16px; }
         .pip-button {
-            background: #3b82f6;
-            color: white;
-            border: none;
-            padding: 16px 40px;
-            border-radius: 60px;
-            font-size: 1.2rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
-            box-shadow: 0 12px 24px -8px #3b82f6;
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-            border: 1px solid #ffffff40;
+            background: #3b82f6; color: white; border: none; padding: 16px 40px; border-radius: 60px; font-size: 1.2rem; font-weight: 600; cursor: pointer; transition: 0.2s; box-shadow: 0 12px 24px -8px #3b82f6; display: inline-flex; align-items: center; gap: 12px;
         }
-        .pip-button:hover {
-            background: #2563eb;
-        }
-        .pip-button:active {
-            transform: scale(0.96);
-        }
-        .pip-button:disabled {
-            background: #94a3b8;
-            box-shadow: none;
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
+        .pip-button:hover { background: #2563eb; }
+        .pip-button:disabled { background: #94a3b8; box-shadow: none; cursor: not-allowed; opacity: 0.7; }
         .info-message {
-            background: #f8fafc;
-            border-left: 6px solid #3b82f6;
-            padding: 16px 20px;
-            border-radius: 20px;
-            margin-top: 24px;
-            font-size: 0.95rem;
-            color: #1e293b;
-            box-shadow: inset 0 2px 5px #00000008;
+            background: #f8fafc; border-left: 6px solid #3b82f6; padding: 16px 20px; border-radius: 20px; margin-top: 24px; font-size: 0.95rem; color: #1e293b; box-shadow: inset 0 2px 5px #00000008;
         }
-        .info-message strong {
-            color: #0f172a;
-        }
-        .note {
-            text-align: center;
-            color: #64748b;
-            font-size: 0.9rem;
-            margin-top: 24px;
-            border-top: 1px dashed #cbd5e1;
-            padding-top: 20px;
-        }
+        .note { text-align: center; color: #64748b; font-size: 0.9rem; margin-top: 24px; border-top: 1px dashed #cbd5e1; padding-top: 20px; }
     </style>
 </head>
 <body>
     <div class="card">
-        <h1>🎬 YouTube PiP</h1>
-        <div class="subtitle">Смотрите видео в режиме «картинка в картинке»</div>
-
-        <div class="input-group">
-            <input type="text" id="videoInput" placeholder="Вставьте ссылку на YouTube или ID видео (например, dQw4w9WgXcQ)" value="dQw4w9WgXcQ">
-            <button id="loadBtn">Загрузить</button>
+        <h1>🎬 Картинка в картинке (PiP)</h1>
+        <div class="tabs">
+            <div class="tab active" data-tab="local">📁 Локальное видео</div>
+            <div class="tab" data-tab="youtube">📺 YouTube</div>
         </div>
 
-        <!-- Контейнер для iframe -->
-        <div class="video-container" id="playerContainer">
-            <!-- iframe будет вставлен сюда -->
+        <!-- Вкладка Локальное видео -->
+        <div class="tab-content active" id="tab-local">
+            <div class="input-group">
+                <input type="file" id="localFileInput" accept="video/*">
+                <button id="loadLocalBtn">Загрузить</button>
+            </div>
+            <div class="video-container" id="localVideoContainer">
+                <video id="localVideo" controls></video>
+            </div>
+            <div class="pip-control">
+                <button class="pip-button" id="localPipBtn">🖼️ Включить PiP (локальное)</button>
+            </div>
         </div>
 
-        <div class="pip-control">
-            <button class="pip-button" id="pipBtn">
-                <span>🖼️</span> Включить картинку в картинке
-            </button>
+        <!-- Вкладка YouTube -->
+        <div class="tab-content" id="tab-youtube">
+            <div class="input-group">
+                <input type="text" id="youtubeInput" placeholder="Ссылка или ID видео (например, dQw4w9WgXcQ)" value="dQw4w9WgXcQ">
+                <button id="loadYoutubeBtn">Загрузить</button>
+            </div>
+            <div class="video-container" id="youtubeContainer">
+                <!-- iframe будет вставлен сюда -->
+            </div>
+            <div class="pip-control">
+                <button class="pip-button" id="youtubePipBtn">🖼️ Включить PiP (инструкция)</button>
+            </div>
         </div>
 
+        <!-- Единое информационное сообщение -->
         <div class="info-message" id="infoMessage">
-            <strong>ℹ️ Как это работает</strong><br>
-            Из-за ограничений безопасности браузера мы не можем программно управлять видео внутри YouTube iframe.  
-            Нажмите кнопку выше — если браузер поддерживает PiP для iframe, видео переключится в режим PiP.  
-            В противном случае вы увидите инструкцию для ручного включения.
+            Выберите вкладку и загрузите видео.
         </div>
-
         <div class="note">
-            💡 Совет: если кнопка не сработала, кликните <strong>правой кнопкой мыши</strong> по видео и выберите <strong>«Картинка в картинке»</strong> (или аналогичный пункт в контекстном меню).
+            💡 PiP для локального видео работает автоматически. Для YouTube используйте контекстное меню (правый клик по видео → «Картинка в картинке»).
         </div>
     </div>
 
     <script>
         (function() {
-            // Константы
-            const playerContainer = document.getElementById('playerContainer');
-            const videoInput = document.getElementById('videoInput');
-            const loadBtn = document.getElementById('loadBtn');
-            const pipBtn = document.getElementById('pipBtn');
-            const infoMessage = document.getElementById('infoMessage');
+            // Элементы
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+            const infoDiv = document.getElementById('infoMessage');
 
-            let currentIframe = null;
+            // Локальное видео
+            const localFileInput = document.getElementById('localFileInput');
+            const loadLocalBtn = document.getElementById('loadLocalBtn');
+            const localVideo = document.getElementById('localVideo');
+            const localPipBtn = document.getElementById('localPipBtn');
 
-            // Проверка поддержки Picture-in-Picture в браузере
+            // YouTube
+            const youtubeInput = document.getElementById('youtubeInput');
+            const loadYoutubeBtn = document.getElementById('loadYoutubeBtn');
+            const youtubeContainer = document.getElementById('youtubeContainer');
+            const youtubePipBtn = document.getElementById('youtubePipBtn');
+
+            let currentIframe = null; // для YouTube
+
+            // --- Переключение вкладок ---
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    const target = tab.dataset.tab;
+                    tabContents.forEach(content => {
+                        content.classList.toggle('active', content.id === `tab-${target}`);
+                    });
+                    infoDiv.innerHTML = 'Вкладка переключена. Загрузите видео.';
+                });
+            });
+
+            // --- Проверка поддержки PiP ---
             const isPiPSupported = 'pictureInPictureEnabled' in document && document.pictureInPictureEnabled;
             if (!isPiPSupported) {
-                infoMessage.innerHTML = '<strong>❌ Ваш браузер не поддерживает Picture-in-Picture.</strong> Обновите браузер или используйте Chrome, Edge, Safari.';
-                pipBtn.disabled = true;
+                infoDiv.innerHTML = '❌ Ваш браузер не поддерживает Picture-in-Picture. Обновите браузер.';
+                localPipBtn.disabled = true;
+                youtubePipBtn.disabled = true;
             }
 
-            // Функция извлечения YouTube ID из ссылки
+            // --- Локальное видео: загрузка файла ---
+            loadLocalBtn.addEventListener('click', () => {
+                const file = localFileInput.files[0];
+                if (!file) {
+                    infoDiv.innerHTML = '⚠️ Выберите видеофайл.';
+                    return;
+                }
+                const url = URL.createObjectURL(file);
+                localVideo.src = url;
+                localVideo.load();
+                infoDiv.innerHTML = '✅ Локальное видео загружено. Теперь кнопка PiP должна сработать.';
+            });
+
+            // --- Локальное видео: PiP ---
+            localPipBtn.addEventListener('click', async () => {
+                if (!localVideo.src) {
+                    infoDiv.innerHTML = '⚠️ Сначала загрузите локальное видео.';
+                    return;
+                }
+                if (!isPiPSupported) return;
+
+                try {
+                    if (localVideo.requestPictureInPicture) {
+                        await localVideo.requestPictureInPicture();
+                        infoDiv.innerHTML = '🎉 Видео в режиме «картинка в картинке»!';
+                    } else {
+                        throw new Error('requestPictureInPicture не поддерживается для этого элемента');
+                    }
+                } catch (err) {
+                    console.warn(err);
+                    infoDiv.innerHTML = '❌ Не удалось включить PiP. Попробуйте другой браузер или формат видео.';
+                }
+            });
+
+            // --- YouTube: извлечение ID ---
             function extractVideoId(url) {
                 if (!url) return '';
-                // Если это уже ID (11 символов, буквы/цифры/знаки)
                 if (/^[a-zA-Z0-9_-]{11}$/.test(url)) return url;
-
-                // Пытаемся распарсить ссылку
                 const patterns = [
                     /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?#]+)/,
                     /youtube\.com\/embed\/([^/?]+)/,
@@ -223,83 +195,61 @@
                 return null;
             }
 
-            // Загрузка видео (вставка iframe)
-            function loadVideo(videoId) {
+            // --- YouTube: загрузка iframe ---
+            function loadYoutube(videoId) {
                 if (!videoId) {
-                    infoMessage.innerHTML = '<strong>⚠️ Неверный ID видео или ссылка.</strong> Пожалуйста, проверьте ввод.';
+                    infoDiv.innerHTML = '⚠️ Неверный ID или ссылка YouTube.';
                     return;
                 }
-
-                // Очищаем контейнер
-                playerContainer.innerHTML = '';
-
-                // Создаём iframe с атрибутом allow="picture-in-picture"
+                youtubeContainer.innerHTML = '';
                 const iframe = document.createElement('iframe');
-                iframe.src = `https://www.youtube.com/embed/${videoId}?enablejsapi=1`; // enablejsapi для возможных расширений
+                iframe.src = `https://www.youtube.com/embed/${videoId}?enablejsapi=1`;
                 iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
                 iframe.allowFullscreen = true;
-                iframe.referrerPolicy = 'strict-origin-when-cross-origin';
                 iframe.title = 'YouTube video player';
-
-                // Сохраняем ссылку на текущий iframe
                 currentIframe = iframe;
-                playerContainer.appendChild(iframe);
-
-                infoMessage.innerHTML = '<strong>✅ Видео загружено.</strong> Нажмите кнопку PiP или используйте контекстное меню видео.';
+                youtubeContainer.appendChild(iframe);
+                infoDiv.innerHTML = '✅ YouTube видео загружено. Нажмите кнопку PiP для инструкции.';
             }
 
-            // Обработчик кнопки "Загрузить"
-            loadBtn.addEventListener('click', () => {
-                const input = videoInput.value.trim();
+            loadYoutubeBtn.addEventListener('click', () => {
+                const input = youtubeInput.value.trim();
                 const videoId = extractVideoId(input);
-                if (videoId) {
-                    loadVideo(videoId);
-                } else {
-                    infoMessage.innerHTML = '<strong>❌ Не удалось распознать видео.</strong> Введите корректную ссылку или ID.';
-                }
+                loadYoutube(videoId);
             });
 
-            // Загружаем демо-видео при старте (по умолчанию)
+            // Загружаем демо при старте
             window.addEventListener('load', () => {
-                loadVideo('dQw4w9WgXcQ'); // Never Gonna Give You Up — классика для теста
+                loadYoutube('dQw4w9WgXcQ');
             });
 
-            // Обработчик кнопки PiP
-            pipBtn.addEventListener('click', async () => {
+            // --- YouTube: кнопка PiP (инструкция) ---
+            youtubePipBtn.addEventListener('click', () => {
                 if (!currentIframe) {
-                    infoMessage.innerHTML = '<strong>⚠️ Сначала загрузите видео.</strong>';
+                    infoDiv.innerHTML = '⚠️ Сначала загрузите YouTube видео.';
                     return;
                 }
+                if (!isPiPSupported) return;
 
-                if (!isPiPSupported) {
-                    infoMessage.innerHTML = '<strong>❌ Picture-in-Picture не поддерживается вашим браузером.</strong>';
-                    return;
-                }
-
-                try {
-                    // Пробуем вызвать requestPictureInPicture на iframe (экспериментально, скорее всего не сработает)
-                    // В спецификации这个方法 доступен только для HTMLVideoElement, но некоторые браузеры могут расширять.
-                    // Мы обернём в try..catch и в случае ошибки предложим ручной способ.
-                    if (currentIframe.requestPictureInPicture) {
-                        await currentIframe.requestPictureInPicture();
-                        infoMessage.innerHTML = '<strong>🎉 Видео переключено в режим картинка в картинке!</strong> (Если этого не произошло, используйте контекстное меню.)';
-                    } else {
-                        // Если метод не определён — показываем инструкцию
-                        throw new Error('Метод requestPictureInPicture не поддерживается для iframe');
-                    }
-                } catch (error) {
-                    console.warn('PiP request failed:', error);
-                    infoMessage.innerHTML = `
-                        <strong>🖱️ Программный вызов PiP не сработал.</strong><br>
-                        Попробуйте вручную: кликните <strong>правой кнопкой мыши</strong> по видео и выберите 
-                        <strong>«Картинка в картинке»</strong> (или аналогичный пункт). 
-                        В некоторых браузерах также работает двойной клик по видео.
-                    `;
+                // Пытаемся вызвать, но знаем, что не сработает. Показываем инструкцию.
+                if (currentIframe.requestPictureInPicture) {
+                    // На всякий случай пробуем, но скорее всего нет.
+                    currentIframe.requestPictureInPicture().catch(() => {
+                        showYoutubePipInstruction();
+                    });
+                } else {
+                    showYoutubePipInstruction();
                 }
             });
 
-            // Дополнительно: при изменении iframe (например, после загрузки нового видео) можно сбросить сообщение
-            // Но это не обязательно.
+            function showYoutubePipInstruction() {
+                infoDiv.innerHTML = `
+                    <strong>🖱️ YouTube: включение вручную</strong><br>
+                    • Кликните <strong>правой кнопкой мыши</strong> по видео.<br>
+                    • В контекстном меню выберите <strong>«Картинка в картинке»</strong> (или аналогичный пункт).<br>
+                    • В некоторых браузерах есть кнопка PiP прямо в плеере при наведении.
+                `;
+            }
         })();
     </script>
 </body>
