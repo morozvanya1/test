@@ -197,7 +197,7 @@
         <div class="results" id="results">
             <div class="level-block">
                 <div class="level-number" id="maxLevelsBadge">0</div>
-                <div class="level-label">уровней</div>
+                <div class="level-label">уровней замка</div>
             </div>
 
             <div class="exchange-grid">
@@ -274,7 +274,7 @@
             // --- Логика расчёта (без изменений, но убран лишний вывод) ---
             function calculateMaxLevels(stone, wood, metal) {
                 let bestResult = null;
-                for (let levels = 1; levels <= 100; levels++) {
+                for (let levels = 1; levels <= 10000; levels++) {
                     const result = simulateExchanges(stone, wood, metal, levels);
                     if (result.success) {
                         bestResult = result;
