@@ -11,826 +11,410 @@
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
         }
-        
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            color: #f8fafc;
+            background: #1e1e2f;  /* тёмный, но спокойный фон */
+            color: #e0e0e0;
             min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
             padding: 10px;
         }
-        
+
         .container {
-            max-width: 800px;
+            width: 100%;
+            max-width: 400px; /* удобно для одной руки */
             margin: 0 auto;
-            padding: 15px;
         }
-        
-        header {
+
+        /* Поля ввода — сразу видимые, без лишних обёрток */
+        .inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            background: #2a2a3a;
+            border-radius: 16px;
+            padding: 4px 16px;
+            border: 1px solid #3a3a4e;
+        }
+
+        .input-icon {
+            font-size: 1.8rem;
+            width: 48px;
             text-align: center;
-            margin-bottom: 20px;
-            padding: 15px;
-            background: rgba(30, 41, 59, 0.7);
-            border-radius: 12px;
-            border: 1px solid #334155;
+            opacity: 0.9;
         }
-        
-        h1 {
-            color: #60a5fa;
-            margin-bottom: 5px;
-            font-size: 1.5rem;
+
+        .input-row input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 1.4rem;
+            padding: 16px 0;
+            outline: none;
+            text-align: right;
+            font-weight: 500;
         }
-        
-        .subtitle {
-            color: #94a3b8;
-            font-size: 0.9rem;
+
+        .input-row input::placeholder {
+            color: #5a5a70;
         }
-        
-        .input-section {
-            background: rgba(30, 41, 59, 0.7);
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 15px;
-            border: 1px solid #334155;
+
+        /* Блок результатов — только цифры */
+        .results {
+            background: #2a2a3a;
+            border-radius: 24px;
+            padding: 20px;
+            border: 1px solid #3a3a4e;
+            display: none;
         }
-        
-        .input-section h2 {
-            color: #60a5fa;
-            margin-bottom: 15px;
-            font-size: 1.1rem;
+
+        .results.active {
+            display: block;
+        }
+
+        .level-block {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .level-number {
+            font-size: 4rem;
+            font-weight: 800;
+            line-height: 1;
+            color: #b0ffb0;  /* мягкий зелёный */
+            text-shadow: 0 0 8px rgba(176, 255, 176, 0.3);
+        }
+
+        .level-label {
+            font-size: 1rem;
+            color: #aaa;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+        }
+
+        .exchange-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .exchange-item {
+            background: #1e1e2f;
+            border-radius: 18px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid #3a3a50;
+        }
+
+        .exchange-label {
+            font-size: 1rem;
+            color: #b0b0d0;
             display: flex;
             align-items: center;
             gap: 8px;
         }
-        
-        .resource-inputs {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 12px;
-            margin-bottom: 15px;
-        }
-        
-        @media (min-width: 481px) {
-            .resource-inputs {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
-        
-        .resource-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 15px 12px;
-            background: rgba(15, 23, 42, 0.8);
-            border-radius: 8px;
-            border: 1px solid #475569;
-        }
-        
-        .resource-icon {
-            font-size: 2.5rem;
-            margin-bottom: 12px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .stone-icon { color: #94a3b8; }
-        .wood-icon { color: #b45309; }
-        .metal-icon { color: #d1d5db; }
-        
-        .resource-name {
-            font-size: 0.9rem;
-            margin-bottom: 12px;
-            color: #cbd5e1;
-            font-weight: 500;
-        }
-        
-        input {
-            width: 100%;
-            padding: 14px 12px;
-            border: 2px solid #475569;
-            border-radius: 8px;
-            background: rgba(30, 41, 59, 0.9);
-            color: white;
-            font-size: 1.1rem;
-            text-align: center;
-            transition: all 0.2s;
-        }
-        
-        input:focus {
-            outline: none;
-            border-color: #60a5fa;
-            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
-        }
-        
-        .exchange-rates {
-            background: rgba(15, 23, 42, 0.8);
-            padding: 12px;
-            border-radius: 8px;
-            margin-top: 15px;
-            border: 1px solid #475569;
-            text-align: center;
-        }
-        
-        .rate-item {
-            font-size: 0.9rem;
-            color: #cbd5e1;
-            margin-bottom: 5px;
-            line-height: 1.4;
-        }
-        
-        .rate-item:last-child {
-            margin-bottom: 0;
-        }
-        
-        .results {
-            background: rgba(30, 41, 59, 0.7);
-            padding: 20px;
-            border-radius: 12px;
-            margin-top: 15px;
-            border: 1px solid #334155;
-            display: none;
-        }
-        
-        .results.active {
-            display: block;
-            animation: fadeIn 0.3s ease;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        .results h2 {
-            color: #60a5fa;
-            margin-bottom: 20px;
-            font-size: 1.1rem;
-            text-align: center;
-        }
-        
-        .level-result {
-            background: rgba(15, 23, 42, 0.8);
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            text-align: center;
-            border: 2px solid #10b981;
-        }
-        
-        .level-badge {
-            font-size: 2.2rem;
-            font-weight: bold;
-            color: #10b981;
-            margin-bottom: 5px;
-        }
-        
-        .level-text {
-            color: #94a3b8;
-            font-size: 0.95rem;
-        }
-        
-        .exchange-result {
-            background: rgba(15, 23, 42, 0.8);
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            border-left: 4px solid #f59e0b;
-        }
-        
-        .exchange-result h3 {
-            color: #f59e0b;
-            margin-bottom: 12px;
-            font-size: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .exchange-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #334155;
-        }
-        
-        .exchange-label {
-            color: #cbd5e1;
-            font-size: 0.9rem;
-        }
-        
+
         .exchange-value {
-            color: #60a5fa;
-            font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #ffd966;  /* мягкий жёлтый для акцента */
+            cursor: pointer;
+            transition: opacity 0.2s;
+            padding: 5px 10px;
+            border-radius: 12px;
+            background: #2a2a40;
+            user-select: all; /* легко выделить весь текст */
         }
-        
-        .resource-result {
-            background: rgba(15, 23, 42, 0.8);
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            border-left: 4px solid #60a5fa;
+
+        .exchange-value:active {
+            opacity: 0.6;
+            background: #3a3a55;
         }
-        
-        .resource-result h3 {
-            color: #60a5fa;
-            margin-bottom: 12px;
+
+        /* Всплывающее уведомление о копировании */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #4caf99;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 40px;
             font-size: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            font-weight: 500;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+            z-index: 1000;
         }
-        
-        .resource-row {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
+
+        .toast.show {
+            opacity: 1;
         }
-        
-        .resource-cell {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 12px;
-            background: rgba(30, 41, 59, 0.9);
-            border-radius: 8px;
-        }
-        
-        .resource-amount {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: #f8fafc;
-            margin-top: 8px;
-        }
-        
-        .resource-label {
+
+        /* Мини-подпись курса, не навязчиво */
+        .hint {
+            color: #6a6a8b;
             font-size: 0.8rem;
-            color: #94a3b8;
-            margin-top: 4px;
-        }
-        
-        .message {
-            background: rgba(96, 165, 250, 0.1);
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 15px;
-            border: 1px solid #60a5fa;
             text-align: center;
-            font-size: 0.9rem;
-            line-height: 1.4;
-        }
-        
-        .message.success {
-            background: rgba(34, 197, 94, 0.1);
-            border-color: #10b981;
-            color: #a7f3d0;
-        }
-        
-        .message.error {
-            background: rgba(239, 68, 68, 0.1);
-            border-color: #ef4444;
-            color: #fca5a5;
-        }
-        
-        footer {
-            margin-top: 20px;
-            text-align: center;
-            color: #64748b;
-            font-size: 0.75rem;
-            padding: 10px;
-            line-height: 1.4;
+            margin-top: 16px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>⚔️ Калькулятор прокачки замка</h1>
-            <p class="subtitle">Введите свои ресурсы - расчет произойдет автоматически</p>
-        </header>
-        
-        <div class="input-section">
-            <h2>📦 Ваши ресурсы</h2>
-            <div class="resource-inputs">
-                <div class="resource-item">
-                    <div class="resource-icon stone-icon">⛰️</div>
-                    <div class="resource-name">Камень</div>
-                    <input 
-                        type="number" 
-                        id="stoneInput" 
-                        placeholder="0" 
-                        min="0" 
-                        inputmode="decimal"
-                        autocomplete="off"
-                    >
-                </div>
-                <div class="resource-item">
-                    <div class="resource-icon wood-icon">🌲</div>
-                    <div class="resource-name">Дерево</div>
-                    <input 
-                        type="number" 
-                        id="woodInput" 
-                        placeholder="0" 
-                        min="0" 
-                        inputmode="decimal"
-                        autocomplete="off"
-                    >
-                </div>
-                <div class="resource-item">
-                    <div class="resource-icon metal-icon">⚙️</div>
-                    <div class="resource-name">Металл</div>
-                    <input 
-                        type="number" 
-                        id="metalInput" 
-                        placeholder="0" 
-                        min="0" 
-                        inputmode="decimal"
-                        autocomplete="off"
-                    >
-                </div>
+        <!-- Только поля ввода, без лишних заголовков -->
+        <div class="inputs">
+            <div class="input-row">
+                <span class="input-icon">🪨</span>
+                <input type="number" id="stoneInput" placeholder="0" min="0" inputmode="decimal" autocomplete="off">
             </div>
-            
-            <div class="exchange-rates">
-                <div class="rate-item">📊 <strong>Курсы обмена:</strong> 1 🌲 = 5 ⛰️ (1 дерево = 5 камня)</div>
-                <div class="rate-item">📊 <strong>Курсы обмена:</strong> 1 ⚙️ = 4 🌲 (1 металл = 4 дерева)</div>
-                <div class="rate-item">📊 <strong>Требования на уровень:</strong> 1260⛰️ 340🌲 130⚙️</div>
+            <div class="input-row">
+                <span class="input-icon">🌲</span>
+                <input type="number" id="woodInput" placeholder="0" min="0" inputmode="decimal" autocomplete="off">
+            </div>
+            <div class="input-row">
+                <span class="input-icon">⚙️</span>
+                <input type="number" id="metalInput" placeholder="0" min="0" inputmode="decimal" autocomplete="off">
             </div>
         </div>
-        
+
+        <!-- Результаты: только уровни и необходимые обмены -->
         <div class="results" id="results">
-            <h2>📊 Результаты расчета</h2>
-            
-            <div class="level-result">
-                <div class="level-badge" id="maxLevelsBadge">0</div>
-                <div class="level-text">уровней замка можно улучшить</div>
+            <div class="level-block">
+                <div class="level-number" id="maxLevelsBadge">0</div>
+                <div class="level-label">уровней</div>
             </div>
-            
-            <div class="exchange-result">
-                <h3>🔄 Необходимые обмены</h3>
-                <div class="exchange-row">
-                    <span class="exchange-label">Камень → Дерево:</span>
-                    <span class="exchange-value" id="stoneToWood">0</span>
+
+            <div class="exchange-grid">
+                <div class="exchange-item">
+                    <span class="exchange-label">🪨→🌲</span>
+                    <span class="exchange-value" id="stoneToWood" data-copy>0</span>
                 </div>
-                <div class="exchange-row">
-                    <span class="exchange-label">Дерево → Металл:</span>
-                    <span class="exchange-value" id="woodToMetal">0</span>
-                </div>
-                <div class="exchange-row">
-                    <span class="exchange-label">Всего камня на обмены:</span>
-                    <span class="exchange-value" id="totalStoneCost">0</span>
+                <div class="exchange-item">
+                    <span class="exchange-label">🌲→⚙️</span>
+                    <span class="exchange-value" id="woodToMetal" data-copy>0</span>
                 </div>
             </div>
-            
-            <div class="resource-result">
-                <h3>📈 Ресурсы после улучшения</h3>
-                <div class="resource-row">
-                    <div class="resource-cell">
-                        <div class="resource-icon stone-icon">⛰️</div>
-                        <div class="resource-amount" id="stoneAfter">0</div>
-                        <div class="resource-label">Камня</div>
-                    </div>
-                    <div class="resource-cell">
-                        <div class="resource-icon wood-icon">🌲</div>
-                        <div class="resource-amount" id="woodAfter">0</div>
-                        <div class="resource-label">Дерева</div>
-                    </div>
-                    <div class="resource-cell">
-                        <div class="resource-icon metal-icon">⚙️</div>
-                        <div class="resource-amount" id="metalAfter">0</div>
-                        <div class="resource-label">Металла</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div id="message" class="message"></div>
+            <div class="hint">нажми на число, чтобы скопировать</div>
         </div>
-        
-        <footer>
-            <p>Калькулятор автоматически рассчитывает максимальное количество уровней</p>
-            <p>Обмен только в одну сторону: камень → дерево → металл</p>
-        </footer>
     </div>
 
+    <!-- Тост для уведомления о копировании -->
+    <div id="toast" class="toast">Скопировано</div>
+
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Элементы DOM
+        (function() {
+            // --- Элементы DOM ---
             const stoneInput = document.getElementById('stoneInput');
             const woodInput = document.getElementById('woodInput');
             const metalInput = document.getElementById('metalInput');
             const resultsDiv = document.getElementById('results');
-            
-            // Требуемые ресурсы на 1 уровень
+
+            // Элементы для вывода
+            const maxLevelsSpan = document.getElementById('maxLevelsBadge');
+            const stoneToWoodSpan = document.getElementById('stoneToWood');
+            const woodToMetalSpan = document.getElementById('woodToMetal');
+
+            // Константы
             const STONE_PER_LEVEL = 1260;
             const WOOD_PER_LEVEL = 340;
             const METAL_PER_LEVEL = 130;
-            
-            // Курсы обмена
-            const STONE_TO_WOOD = 5; // 1 дерево = 5 камня
-            const WOOD_TO_METAL = 4; // 1 металл = 4 дерева
-            
-            // Флаг для предотвращения множественных расчетов
-            let isCalculating = false;
+            const STONE_TO_WOOD_RATE = 5;   // 1 дерево = 5 камня
+            const WOOD_TO_METAL_RATE = 4;   // 1 металл = 4 дерева
+
+            // Для debounce
+            let calcTimeout = null;
             let lastStone = 0, lastWood = 0, lastMetal = 0;
-            
-            // Обработчики событий для полей ввода
-            function setupInputHandlers() {
-                const inputs = [stoneInput, woodInput, metalInput];
-                
-                inputs.forEach(input => {
-                    // Событие при вводе
-                    input.addEventListener('input', function() {
-                        // Преобразуем пустую строку в 0
-                        if (this.value === '') {
-                            this.value = '';
-                        } else {
-                            // Убираем лишние нули в начале
-                            let value = this.value.replace(/^0+/, '');
-                            if (value === '') value = '0';
-                            this.value = value;
-                            
-                            // Проверяем, что введено положительное число
-                            const numValue = parseInt(value) || 0;
-                            if (numValue < 0) {
-                                this.value = '0';
-                            }
-                        }
-                        
-                        // Запускаем расчет
-                        requestCalculation();
-                    });
-                    
-                    // Событие при потере фокуса
-                    input.addEventListener('blur', function() {
-                        const value = parseInt(this.value) || 0;
-                        this.value = value;
-                        requestCalculation();
-                    });
-                    
-                    // Событие при получении фокуса
-                    input.addEventListener('focus', function() {
-                        // Сохраняем значение для сравнения
-                        lastStone = parseInt(stoneInput.value) || 0;
-                        lastWood = parseInt(woodInput.value) || 0;
-                        lastMetal = parseInt(metalInput.value) || 0;
-                    });
-                });
+
+            // --- Утилита копирования ---
+            const toast = document.getElementById('toast');
+            function showToast(text) {
+                toast.textContent = text || 'Скопировано';
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 1500);
             }
-            
-            // Функция для запроса расчета с задержкой
-            let calculationTimeout = null;
-            function requestCalculation() {
-                // Отменяем предыдущий запрос
-                if (calculationTimeout) {
-                    clearTimeout(calculationTimeout);
-                }
-                
-                // Получаем текущие значения
-                const currentStone = parseInt(stoneInput.value) || 0;
-                const currentWood = parseInt(woodInput.value) || 0;
-                const currentMetal = parseInt(metalInput.value) || 0;
-                
-                // Проверяем, изменились ли значения
-                if (currentStone === lastStone && 
-                    currentWood === lastWood && 
-                    currentMetal === lastMetal) {
-                    return; // Значения не изменились
-                }
-                
-                // Обновляем последние значения
-                lastStone = currentStone;
-                lastWood = currentWood;
-                lastMetal = currentMetal;
-                
-                // Запускаем расчет через 100мс (дебаунс)
-                calculationTimeout = setTimeout(() => {
-                    calculate();
-                }, 100);
-            }
-            
-            // Функция расчета максимального количества уровней
-            function calculate() {
-                if (isCalculating) return;
-                isCalculating = true;
-                
-                try {
-                    // Получаем значения ресурсов
-                    const stone = parseInt(stoneInput.value) || 0;
-                    const wood = parseInt(woodInput.value) || 0;
-                    const metal = parseInt(metalInput.value) || 0;
-                    
-                    // Если все поля пустые или нулевые, скрываем результаты
-                    if (stone === 0 && wood === 0 && metal === 0) {
-                        resultsDiv.classList.remove('active');
-                        isCalculating = false;
-                        return;
+
+            // Обработчик клика на числах (копирование)
+            document.querySelectorAll('[data-copy]').forEach(el => {
+                el.addEventListener('click', (e) => {
+                    const text = e.target.innerText;
+                    if (text && text !== '0') {
+                        navigator.clipboard?.writeText(text).then(() => {
+                            showToast(`📋 ${text}`);
+                        }).catch(() => {
+                            // fallback
+                            const range = document.createRange();
+                            range.selectNode(e.target);
+                            window.getSelection().removeAllRanges();
+                            window.getSelection().addRange(range);
+                            document.execCommand('copy');
+                            showToast(`📋 ${text}`);
+                        });
+                    } else {
+                        showToast('0');
                     }
-                    
-                    // Показываем результаты
-                    resultsDiv.classList.add('active');
-                    
-                    // Рассчитываем максимальное количество уровней
-                    const result = calculateMaxLevels(stone, wood, metal);
-                    
-                    // Отображаем результаты
-                    displayResults(result);
-                } catch (error) {
-                    console.error('Ошибка расчета:', error);
-                    showMessage('Ошибка расчета', 'error');
-                }
-                
-                isCalculating = false;
-            }
-            
-            // Алгоритм расчета максимального количества уровней
+                });
+            });
+
+            // --- Логика расчёта (без изменений, но убран лишний вывод) ---
             function calculateMaxLevels(stone, wood, metal) {
-                // Рассчитываем сколько уровней можно получить без обменов
-                let maxLevels = 0;
                 let bestResult = null;
-                
-                // Проверяем уровни от 1 до 100 (или пока хватает ресурсов)
                 for (let levels = 1; levels <= 100; levels++) {
                     const result = simulateExchanges(stone, wood, metal, levels);
-                    
                     if (result.success) {
-                        maxLevels = levels;
                         bestResult = result;
                     } else {
-                        break; // Если на этом уровне не получилось, дальше тоже не получится
+                        break;
                     }
                 }
-                
-                // Возвращаем лучший результат или результат для 0 уровней
                 return bestResult || {
                     levels: 0,
-                    success: false,
                     stoneToWood: 0,
                     woodToMetal: 0,
-                    totalStoneCost: 0,
                     remainingStone: stone,
                     remainingWood: wood,
-                    remainingMetal: metal,
-                    requiredStone: 0,
-                    requiredWood: 0,
-                    requiredMetal: 0
+                    remainingMetal: metal
                 };
             }
-            
-            // Симуляция обменов для конкретного количества уровней
+
             function simulateExchanges(stone, wood, metal, levels) {
-                // Требуемые ресурсы для levels уровней
                 const requiredStone = STONE_PER_LEVEL * levels;
                 const requiredWood = WOOD_PER_LEVEL * levels;
                 const requiredMetal = METAL_PER_LEVEL * levels;
-                
-                // Создаем копии ресурсов для симуляции
-                let currentStone = stone;
-                let currentWood = wood;
-                let currentMetal = metal;
-                
-                // Переменные для отслеживания обменов
-                let stoneToWood = 0;
-                let woodToMetal = 0;
-                let totalStoneCost = 0;
-                
-                // 1. Проверяем металл
-                if (currentMetal < requiredMetal) {
-                    const missingMetal = requiredMetal - currentMetal;
-                    const woodForMetal = missingMetal * WOOD_TO_METAL;
-                    
-                    // Проверяем, хватает ли дерева для получения металла
-                    if (currentWood >= woodForMetal) {
-                        // Хватает дерева
-                        currentWood -= woodForMetal;
-                        currentMetal += missingMetal;
+
+                let curStone = stone, curWood = wood, curMetal = metal;
+                let stoneToWood = 0, woodToMetal = 0;
+
+                // 1. Металл
+                if (curMetal < requiredMetal) {
+                    const missingMetal = requiredMetal - curMetal;
+                    const woodForMetal = missingMetal * WOOD_TO_METAL_RATE;
+                    if (curWood >= woodForMetal) {
+                        curWood -= woodForMetal;
+                        curMetal += missingMetal;
                         woodToMetal += missingMetal;
                     } else {
-                        // Не хватает дерева, получаем дерево из камня
-                        const missingWood = woodForMetal - currentWood;
-                        const stoneForWood = missingWood * STONE_TO_WOOD;
-                        
-                        if (currentStone >= stoneForWood) {
-                            // Хватает камня для получения дерева
-                            currentStone -= stoneForWood;
-                            currentWood += missingWood; // Получаем дерево
-                            currentWood -= woodForMetal; // Тратим дерево на металл
-                            currentMetal += missingMetal; // Получаем металл
-                            
+                        const missingWood = woodForMetal - curWood;
+                        const stoneForWood = missingWood * STONE_TO_WOOD_RATE;
+                        if (curStone >= stoneForWood) {
+                            curStone -= stoneForWood;
+                            curWood += missingWood;
+                            curWood -= woodForMetal;
+                            curMetal += missingMetal;
                             stoneToWood += missingWood;
                             woodToMetal += missingMetal;
-                            totalStoneCost += stoneForWood;
                         } else {
-                            // Не хватает камня
                             return { success: false };
                         }
                     }
                 }
-                
-                // 2. Проверяем дерево
-                if (currentWood < requiredWood) {
-                    const missingWood = requiredWood - currentWood;
-                    const stoneForWood = missingWood * STONE_TO_WOOD;
-                    
-                    if (currentStone >= stoneForWood) {
-                        // Хватает камня для получения дерева
-                        currentStone -= stoneForWood;
-                        currentWood += missingWood;
+
+                // 2. Дерево
+                if (curWood < requiredWood) {
+                    const missingWood = requiredWood - curWood;
+                    const stoneForWood = missingWood * STONE_TO_WOOD_RATE;
+                    if (curStone >= stoneForWood) {
+                        curStone -= stoneForWood;
+                        curWood += missingWood;
                         stoneToWood += missingWood;
-                        totalStoneCost += stoneForWood;
                     } else {
-                        // Не хватает камня
                         return { success: false };
                     }
                 }
-                
-                // 3. Проверяем камень
-                if (currentStone < requiredStone) {
-                    // Не хватает камня
+
+                // 3. Камень
+                if (curStone < requiredStone) {
                     return { success: false };
                 }
-                
-                // 4. Вычитаем затраты на улучшение
-                currentStone -= requiredStone;
-                currentWood -= requiredWood;
-                currentMetal -= requiredMetal;
-                
-                // 5. Убеждаемся, что остатки не отрицательные
-                currentStone = Math.max(0, currentStone);
-                currentWood = Math.max(0, currentWood);
-                currentMetal = Math.max(0, currentMetal);
-                
-                // Возвращаем успешный результат
+
+                // Вычитаем затраты
+                curStone -= requiredStone;
+                curWood -= requiredWood;
+                curMetal -= requiredMetal;
+
                 return {
                     success: true,
-                    levels: levels,
-                    stoneToWood: stoneToWood,
-                    woodToMetal: woodToMetal,
-                    totalStoneCost: totalStoneCost,
-                    remainingStone: currentStone,
-                    remainingWood: currentWood,
-                    remainingMetal: currentMetal,
-                    requiredStone: requiredStone,
-                    requiredWood: requiredWood,
-                    requiredMetal: requiredMetal
+                    levels,
+                    stoneToWood,
+                    woodToMetal,
                 };
             }
-            
-            // Функция отображения результатов
-            function displayResults(result) {
-                // Обновляем бейдж с уровнями
-                const maxLevelsBadge = document.getElementById('maxLevelsBadge');
-                maxLevelsBadge.textContent = result.levels;
-                
-                if (result.levels > 0) {
-                    maxLevelsBadge.style.color = '#10b981';
-                } else {
-                    maxLevelsBadge.style.color = '#ef4444';
+
+            function updateResults() {
+                const stone = parseInt(stoneInput.value) || 0;
+                const wood = parseInt(woodInput.value) || 0;
+                const metal = parseInt(metalInput.value) || 0;
+
+                if (stone === 0 && wood === 0 && metal === 0) {
+                    resultsDiv.classList.remove('active');
+                    return;
                 }
-                
-                // Обновляем информацию об обменах
-                document.getElementById('stoneToWood').textContent = 
-                    `${result.stoneToWood} дерева (${result.stoneToWood * STONE_TO_WOOD} камня)`;
-                
-                document.getElementById('woodToMetal').textContent = 
-                    `${result.woodToMetal} металла (${result.woodToMetal * WOOD_TO_METAL} дерева)`;
-                
-                document.getElementById('totalStoneCost').textContent = 
-                    `${result.totalStoneCost} камня`;
-                
-                // Обновляем остатки ресурсов
-                document.getElementById('stoneAfter').textContent = result.remainingStone;
-                document.getElementById('woodAfter').textContent = result.remainingWood;
-                document.getElementById('metalAfter').textContent = result.remainingMetal;
-                
-                // Показываем сообщение
-                const messageElement = document.getElementById('message');
-                messageElement.innerHTML = '';
-                
-                if (result.levels === 0) {
-                    messageElement.className = 'message error';
-                    
-                    const stone = parseInt(stoneInput.value) || 0;
-                    const wood = parseInt(woodInput.value) || 0;
-                    const metal = parseInt(metalInput.value) || 0;
-                    
-                    // Рассчитываем, чего не хватает для 1 уровня
-                    let missingStone = Math.max(0, STONE_PER_LEVEL - stone);
-                    let missingWood = Math.max(0, WOOD_PER_LEVEL - wood);
-                    let missingMetal = Math.max(0, METAL_PER_LEVEL - metal);
-                    
-                    // Проверяем возможность получить ресурсы через обмен
-                    let needWoodForMetal = 0;
-                    let needStoneForWood = 0;
-                    
-                    if (missingMetal > 0) {
-                        needWoodForMetal = missingMetal * WOOD_TO_METAL;
-                        if (wood >= needWoodForMetal) {
-                            missingMetal = 0;
-                        } else {
-                            // Нужно получить дерево из камня
-                            const missingWoodForMetal = needWoodForMetal - wood;
-                            needStoneForWood += missingWoodForMetal * STONE_TO_WOOD;
-                        }
-                    }
-                    
-                    if (missingWood > 0) {
-                        needStoneForWood += missingWood * STONE_TO_WOOD;
-                    }
-                    
-                    if (stone >= needStoneForWood) {
-                        // Можем получить все через обмен
-                        missingWood = 0;
-                        missingMetal = 0;
-                    }
-                    
-                    let message = '❌ Ресурсов недостаточно даже для 1 уровня.<br><br>';
-                    
-                    if (missingStone > 0 || missingWood > 0 || missingMetal > 0) {
-                        message += '<strong>Не хватает:</strong><br>';
-                        if (missingStone > 0) message += `• ${missingStone} камня<br>`;
-                        if (missingWood > 0) message += `• ${missingWood} дерева<br>`;
-                        if (missingMetal > 0) message += `• ${missingMetal} металла<br>`;
-                    } else {
-                        message += 'Не удалось рассчитать недостающие ресурсы.';
-                    }
-                    
-                    messageElement.innerHTML = message;
-                } else {
-                    messageElement.className = 'message success';
-                    
-                    let message = `✅ Можно улучшить замок на <strong>${result.levels} ${getLevelWord(result.levels)}</strong>.<br><br>`;
-                    
-                    message += `<strong>Общие потребности на ${result.levels} ${getLevelWord(result.levels)}:</strong><br>`;
-                    message += `• Камень: ${result.requiredStone}<br>`;
-                    message += `• Дерево: ${result.requiredWood}<br>`;
-                    message += `• Металл: ${result.requiredMetal}<br>`;
-                    
-                    if (result.stoneToWood > 0 || result.woodToMetal > 0) {
-                        message += '<br><strong>Необходимые обмены:</strong><br>';
-                        if (result.stoneToWood > 0) {
-                            message += `• ${result.stoneToWood * STONE_TO_WOOD} камня → ${result.stoneToWood} дерева<br>`;
-                        }
-                        if (result.woodToMetal > 0) {
-                            message += `• ${result.woodToMetal * WOOD_TO_METAL} дерева → ${result.woodToMetal} металла<br>`;
-                        }
-                    }
-                    
-                    messageElement.innerHTML = message;
-                }
+
+                resultsDiv.classList.add('active');
+
+                const result = calculateMaxLevels(stone, wood, metal);
+
+                // Отображаем только нужные числа
+                maxLevelsSpan.textContent = result.levels;
+                stoneToWoodSpan.textContent = result.stoneToWood;
+                woodToMetalSpan.textContent = result.woodToMetal;
             }
-            
-            // Функция для правильного склонения слова "уровень"
-            function getLevelWord(level) {
-                if (level % 10 === 1 && level % 100 !== 11) return 'уровень';
-                if ([2, 3, 4].includes(level % 10) && ![12, 13, 14].includes(level % 100)) return 'уровня';
-                return 'уровней';
+
+            // Debounce и обработчики
+            function requestUpdate() {
+                const stone = parseInt(stoneInput.value) || 0;
+                const wood = parseInt(woodInput.value) || 0;
+                const metal = parseInt(metalInput.value) || 0;
+
+                if (stone === lastStone && wood === lastWood && metal === lastMetal) return;
+
+                lastStone = stone;
+                lastWood = wood;
+                lastMetal = metal;
+
+                if (calcTimeout) clearTimeout(calcTimeout);
+                calcTimeout = setTimeout(updateResults, 120);
             }
-            
-            // Функция показа сообщения
-            function showMessage(text, type = 'info') {
-                const messageElement = document.getElementById('message');
-                messageElement.className = `message ${type}`;
-                messageElement.innerHTML = text;
-            }
-            
-            // Инициализация
-            function init() {
-                setupInputHandlers();
-                
-                // Убираем автоматическую прокрутку при фокусе на поле ввода
-                const inputs = [stoneInput, woodInput, metalInput];
-                inputs.forEach(input => {
-                    input.addEventListener('focus', function() {
-                        // Сохраняем позицию скролла
-                        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                        
-                        // Через небольшой таймер возвращаем позицию скролла
-                        setTimeout(() => {
-                            window.scrollTo(0, scrollTop);
-                        }, 10);
-                    });
+
+            stoneInput.addEventListener('input', requestUpdate);
+            woodInput.addEventListener('input', requestUpdate);
+            metalInput.addEventListener('input', requestUpdate);
+
+            // При потере фокуса приводим к числу
+            [stoneInput, woodInput, metalInput].forEach(inp => {
+                inp.addEventListener('blur', function() {
+                    const val = parseInt(this.value) || 0;
+                    this.value = val;
+                    requestUpdate();
                 });
-                
-                // Запускаем первоначальный расчет, если в полях есть значения
-                setTimeout(() => {
-                    const stone = parseInt(stoneInput.value) || 0;
-                    const wood = parseInt(woodInput.value) || 0;
-                    const metal = parseInt(metalInput.value) || 0;
-                    
-                    if (stone > 0 || wood > 0 || metal > 0) {
-                        lastStone = stone;
-                        lastWood = wood;
-                        lastMetal = metal;
-                        calculate();
-                    }
-                }, 100);
-            }
-            
-            // Запускаем инициализацию
-            init();
-        });
+            });
+
+            // Начальная проверка (если были значения)
+            setTimeout(() => {
+                const s = parseInt(stoneInput.value) || 0;
+                const w = parseInt(woodInput.value) || 0;
+                const m = parseInt(metalInput.value) || 0;
+                if (s || w || m) {
+                    lastStone = s; lastWood = w; lastMetal = m;
+                    updateResults();
+                }
+            }, 100);
+        })();
     </script>
 </body>
 </html>
