@@ -6,1471 +6,843 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>FitTrack Pro</title>
+  <!-- BUG FIX: Chart.js was used but never imported -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Bebas+Neue&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-color: #000000;
-      --card-bg: #1c1c1e;
-      --input-bg: #2c2c2e;
-      --primary: #0A84FF;
-      --primary-dark: #0056b3;
-      --danger: #FF453A;
-      --success: #32D74B;
-      --warning: #FFD60A;
-      --text: #FFFFFF;
-      --text-secondary: #8E8E93;
-      --separator: #38383A;
-      --radius: 14px;
-      --safe-top: env(safe-area-inset-top);
+      --bg:          #070B14;
+      --surface:     #0D1421;
+      --card:        #111827;
+      --card-hover:  #161f32;
+      --input-bg:    #1a2540;
+      --border:      rgba(255,255,255,0.07);
+      --border-focus:rgba(0,212,255,0.5);
+      --primary:     #00D4FF;
+      --primary-dim: rgba(0,212,255,0.12);
+      --primary-glow:rgba(0,212,255,0.25);
+      --danger:      #FF4D6D;
+      --danger-dim:  rgba(255,77,109,0.12);
+      --success:     #00FF88;
+      --success-dim: rgba(0,255,136,0.12);
+      --warning:     #FFB800;
+      --warning-dim: rgba(255,184,0,0.12);
+      --text:        #E8EDF5;
+      --text-sub:    #6B7A99;
+      --text-muted:  #3D4F6E;
+      --radius:      16px;
+      --radius-sm:   10px;
+      --safe-top:    env(safe-area-inset-top);
       --safe-bottom: env(safe-area-inset-bottom);
-      --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-      --transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
-      --gradient-primary: linear-gradient(135deg, var(--primary), #5AC8FA);
-      --gradient-success: linear-gradient(135deg, var(--success), #30D158);
-      --gradient-danger: linear-gradient(135deg, var(--danger), #FF375F);
-      --gradient-warning: linear-gradient(135deg, var(--warning), #FF9F0A);
+      --shadow:      0 8px 32px rgba(0,0,0,0.4);
+      --tr:          all 0.2s cubic-bezier(0.4,0,0.2,1);
+      --grad-primary:linear-gradient(135deg,#00D4FF,#0070E0);
+      --grad-danger: linear-gradient(135deg,#FF4D6D,#C73652);
+      --grad-success:linear-gradient(135deg,#00FF88,#00C25A);
+      --grad-warn:   linear-gradient(135deg,#FFB800,#FF7A00);
     }
 
-    * { 
-      box-sizing: border-box; 
-      -webkit-tap-highlight-color: transparent;
-      margin: 0;
-      padding: 0;
-    }
-    
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
-      background: var(--bg-color); 
-      color: var(--text);
-      padding-top: var(--safe-top);
-      padding-bottom: calc(90px + var(--safe-bottom));
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      line-height: 1.4;
-      min-height: -webkit-fill-available;
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+
+    body{
+      font-family:'Plus Jakarta Sans',sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      padding-top:var(--safe-top);
+      padding-bottom:calc(96px + var(--safe-bottom));
+      -webkit-font-smoothing:antialiased;
+      line-height:1.5;
+      min-height:-webkit-fill-available;
+      /* Subtle noise texture */
+      background-image:
+        radial-gradient(ellipse 80% 50% at 50% -10%,rgba(0,100,255,0.08) 0%,transparent 60%),
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
     }
 
-    /* Enhanced Header Design */
-    .header-sticky {
-      position: sticky; 
-      top: 0; 
-      z-index: 100;
-      background: rgba(28, 28, 30, 0.98);
-      backdrop-filter: saturate(180%) blur(30px); 
-      -webkit-backdrop-filter: saturate(180%) blur(30px);
-      padding: 12px 16px;
-      border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center;
-      transition: var(--transition);
-      padding-top: max(12px, var(--safe-top));
-      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.2);
-    }
-    
-    .header-left, .header-right {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-    
-    .app-logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    
-    .app-icon {
-      width: 36px;
-      height: 36px;
-      background: var(--gradient-primary);
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-size: 18px;
-      color: white;
-      box-shadow: 0 4px 12px rgba(10, 132, 255, 0.3);
-      transition: var(--transition);
-    }
-    
-    .app-icon:hover {
-      transform: scale(1.05);
-      box-shadow: 0 6px 16px rgba(10, 132, 255, 0.4);
-    }
-    
-    .app-title {
-      font-size: 22px;
-      font-weight: 800;
-      background: var(--gradient-primary);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      letter-spacing: -0.5px;
-    }
-    
-    .user-selector {
-      position: relative;
-      margin-left: 8px;
-    }
-    
-    .user-selector select {
-      background: rgba(118, 118, 128, 0.24);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      color: var(--text);
-      font-size: 14px;
-      font-weight: 500;
-      padding: 8px 16px 8px 40px;
-      -webkit-appearance: none;
-      appearance: none;
-      min-width: 140px;
-      transition: var(--transition);
-      backdrop-filter: blur(10px);
-      height: 36px;
-    }
-    
-    .user-selector select:hover {
-      background: rgba(118, 118, 128, 0.32);
-    }
-    
-    .user-selector select:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.2);
-    }
-    
-    .user-icon {
-      position: absolute;
-      left: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--primary);
-      font-size: 16px;
-      pointer-events: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 20px;
-      height: 20px;
-    }
-    
-    .header-actions {
-      display: flex;
-      gap: 12px;
-    }
-    
-    .header-btn {
-      width: 44px;
-      height: 44px;
-      background: rgba(118, 118, 128, 0.24);
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: none;
-      color: var(--text);
-      font-size: 20px;
-      cursor: pointer;
-      transition: var(--transition);
-      position: relative;
-      overflow: hidden;
-      backdrop-filter: blur(10px);
-    }
-    
-    .header-btn:hover {
-      background: rgba(118, 118, 128, 0.32);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    }
-    
-    .header-btn:active {
-      transform: scale(0.95);
-    }
-    
-    .header-btn.active {
-      background: var(--gradient-primary);
-      color: white;
-      box-shadow: 0 4px 12px rgba(10, 132, 255, 0.3);
-    }
-    
-    /* Badge for notifications/count */
-    .header-badge {
-      position: absolute;
-      top: -2px;
-      right: -2px;
-      background: var(--danger);
-      color: white;
-      font-size: 10px;
-      font-weight: 700;
-      width: 18px;
-      height: 18px;
-      border-radius: 9px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 2px solid var(--card-bg);
+    /* ─── HEADER ─────────────────────────────── */
+    .header {
+      position:sticky;top:0;z-index:100;
+      background:rgba(7,11,20,0.92);
+      backdrop-filter:saturate(180%) blur(24px);
+      -webkit-backdrop-filter:saturate(180%) blur(24px);
+      border-bottom:1px solid var(--border);
+      padding:0 16px;
+      padding-top:max(12px,var(--safe-top));
+      height:calc(60px + max(12px,var(--safe-top)));
+      display:flex;align-items:flex-end;padding-bottom:10px;
+      justify-content:space-between;
     }
 
-    .container { 
-      padding: 20px; 
-      max-width: 500px; 
-      margin: 0 auto; 
-      animation: fadeIn 0.3s ease-out;
+    .header-left{display:flex;align-items:center;gap:14px}
+    .header-right{display:flex;align-items:center;gap:8px}
+
+    .logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+    .logo-mark{
+      width:34px;height:34px;
+      background:var(--grad-primary);
+      border-radius:10px;
+      display:flex;align-items:center;justify-content:center;
+      font-family:'Bebas Neue',sans-serif;
+      font-size:20px;color:#fff;letter-spacing:0;
+      box-shadow:0 0 20px var(--primary-glow);
+    }
+    .logo-text{
+      font-family:'Bebas Neue',sans-serif;
+      font-size:22px;letter-spacing:2px;
+      background:var(--grad-primary);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+    .user-pill{
+      position:relative;display:flex;align-items:center;
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:40px;
+      padding:4px 10px 4px 8px;
+      gap:6px;
+      transition:var(--tr);
+    }
+    .user-pill:hover{border-color:var(--border-focus)}
+    .user-pill-avatar{
+      width:24px;height:24px;border-radius:50%;
+      background:var(--grad-primary);
+      display:flex;align-items:center;justify-content:center;
+      font-size:12px;font-weight:700;color:#000;
+      flex-shrink:0;
+    }
+    .user-pill select{
+      background:transparent;border:none;
+      color:var(--text);font-size:13px;font-weight:600;
+      -webkit-appearance:none;appearance:none;
+      cursor:pointer;padding-right:14px;
+      font-family:inherit;
+    }
+    .user-pill select:focus{outline:none}
+    .user-pill::after{
+      content:'⌄';position:absolute;right:10px;top:50%;
+      transform:translateY(-52%);font-size:12px;
+      color:var(--text-sub);pointer-events:none;
     }
 
-    h3 { 
-      color: var(--text-secondary); 
-      font-size: 13px; 
-      text-transform: uppercase; 
-      margin: 20px 0 10px 0; 
-      letter-spacing: 0.5px; 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center;
-      font-weight: 600;
-      padding: 0 4px;
+    .hbtn{
+      width:36px;height:36px;
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:10px;
+      display:flex;align-items:center;justify-content:center;
+      font-size:16px;cursor:pointer;
+      transition:var(--tr);position:relative;
+      color:var(--text);
+    }
+    .hbtn:hover{background:var(--card-hover);border-color:var(--border-focus);transform:translateY(-1px)}
+    .hbtn:active{transform:scale(0.93)}
+    .hbtn.on{background:var(--primary-dim);border-color:var(--primary);box-shadow:0 0 12px var(--primary-glow)}
+
+    /* ─── CONTAINER ──────────────────────────── */
+    .container{padding:20px 16px;max-width:520px;margin:0 auto}
+
+    /* ─── SECTION LABEL ──────────────────────── */
+    .label{
+      font-size:11px;font-weight:700;letter-spacing:1.5px;
+      text-transform:uppercase;color:var(--text-sub);
+      margin:24px 0 10px;
+      display:flex;justify-content:space-between;align-items:center;
+      padding:0 2px;
     }
 
-    .section-title {
-      font-size: 24px;
-      font-weight: 700;
-      margin: 20px 0 10px 0;
-      background: linear-gradient(90deg, var(--primary), #5AC8FA);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      letter-spacing: -0.5px;
+    /* ─── WORKOUT STATS BAR ──────────────────── */
+    .stats-bar{
+      display:grid;grid-template-columns:repeat(4,1fr);gap:8px;
+      margin-bottom:20px;
+      animation:fadeUp .4s ease both;
+    }
+    .stat-card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius-sm);
+      padding:12px 8px;text-align:center;
+      transition:var(--tr);
+    }
+    .stat-card:hover{border-color:var(--border-focus);transform:translateY(-2px)}
+    .stat-val{
+      font-family:'Bebas Neue',sans-serif;
+      font-size:26px;letter-spacing:1px;
+      color:var(--primary);
+      line-height:1;margin-bottom:4px;
+    }
+    .stat-lbl{font-size:10px;color:var(--text-sub);font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+
+    /* ─── CARD ───────────────────────────────── */
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      overflow:hidden;
+      margin-bottom:12px;
+      transition:var(--tr);
     }
 
-    .card { 
-      background: var(--card-bg); 
-      border-radius: var(--radius); 
-      overflow: hidden; 
-      margin-bottom: 16px;
-      box-shadow: var(--shadow);
-      transition: var(--transition);
-      border: 1px solid rgba(255, 255, 255, 0.05);
+    /* ─── INPUTS ─────────────────────────────── */
+    .input-row{
+      padding:14px 16px;
+      border-bottom:1px solid var(--border);
+      transition:var(--tr);
+    }
+    .input-row:last-child{border-bottom:none}
+    .input-row:focus-within{background:rgba(0,212,255,0.03)}
+
+    .sel-wrap{position:relative}
+    .sel-wrap::after{
+      content:'▾';font-size:13px;color:var(--text-sub);
+      position:absolute;right:14px;top:50%;transform:translateY(-50%);
+      pointer-events:none;transition:var(--tr);
     }
 
-    .card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    select,input{
+      width:100%;
+      background:var(--input-bg);
+      border:1px solid var(--border);
+      border-radius:var(--radius-sm);
+      color:var(--text);
+      font-size:15px;font-weight:500;
+      padding:12px 14px;
+      -webkit-appearance:none;appearance:none;
+      transition:var(--tr);
+      font-family:inherit;
     }
-
-    .input-row {
-      padding: 16px;
-      background: var(--card-bg);
-      border-bottom: 0.5px solid var(--separator);
-      transition: var(--transition);
+    select:focus,input:focus{
+      outline:none;
+      border-color:var(--primary);
+      box-shadow:0 0 0 3px var(--primary-dim);
     }
-    
-    .input-row:focus-within {
-      background: rgba(44, 44, 46, 0.8);
-    }
-    
-    .input-row:last-child { border-bottom: none; }
-
-    select, input {
-      width: 100%;
-      background: var(--input-bg);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      color: var(--text);
-      font-size: 16px;
-      font-weight: 500;
-      padding: 14px;
-      -webkit-appearance: none;
-      appearance: none;
-      transition: var(--transition);
-      font-family: inherit;
-    }
-    
-    select:focus, input:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.15);
-      background: rgba(44, 44, 46, 0.9);
-    }
-    
-    .select-wrapper { 
-      position: relative; 
-    }
-    
-    .select-wrapper::after {
-      content: '▼';
-      font-size: 12px; 
-      color: var(--text-secondary);
-      position: absolute; 
-      right: 16px; 
-      top: 50%; 
-      transform: translateY(-50%);
-      pointer-events: none;
-      transition: var(--transition);
-    }
-    
-    select:focus + .select-wrapper::after {
-      color: var(--primary);
-    }
-
-    input::placeholder { 
-      color: var(--text-secondary); 
-      opacity: 0.7;
-    }
-
+    input::placeholder{color:var(--text-muted)}
     input[type="number"]::-webkit-inner-spin-button,
-    input[type="number"]::-webkit-outer-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
+    input[type="number"]::-webkit-outer-spin-button{-webkit-appearance:none}
+
+    /* ─── HINT ───────────────────────────────── */
+    .hint-row{
+      padding:10px 16px;
+      background:var(--primary-dim);
+      border-bottom:1px solid rgba(0,212,255,0.15);
+      display:flex;justify-content:space-between;align-items:center;
+      font-size:13px;color:var(--primary);gap:8px;
     }
 
-    /* Enhanced Buttons */
-    button {
-      background: var(--gradient-primary); 
-      color: white; 
-      border: none;
-      font-size: 16px; 
-      font-weight: 600; 
-      padding: 16px 24px;
-      border-radius: var(--radius); 
-      cursor: pointer;
-      transition: var(--transition);
-      position: relative;
-      overflow: hidden;
-      font-family: inherit;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      box-shadow: 0 4px 15px rgba(10, 132, 255, 0.2);
+    /* ─── SET ROWS ───────────────────────────── */
+    .set-row{
+      display:flex;align-items:center;gap:10px;
+      padding:12px 14px;
+      border-bottom:1px solid var(--border);
+      animation:slideX .25s ease both;
+      transition:background .15s;
     }
-    
-    button::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 5px;
-      height: 5px;
-      background: rgba(255, 255, 255, 0.5);
-      opacity: 0;
-      border-radius: 100%;
-      transform: scale(1, 1) translate(-50%);
-      transform-origin: 50% 50%;
+    .set-row:last-child{border-bottom:none}
+    .set-row:hover{background:rgba(255,255,255,0.02)}
+
+    .set-num{
+      width:28px;text-align:center;
+      font-family:'Bebas Neue',sans-serif;font-size:20px;
+      color:var(--text-muted);flex-shrink:0;
     }
-    
-    button:focus:not(:active)::after {
-      animation: ripple 1s ease-out;
+    .set-inputs{display:flex;gap:8px;flex:1}
+    .set-inputs input{
+      text-align:center;font-weight:700;font-size:17px;
+      padding:10px 6px;
     }
-    
-    @keyframes ripple {
-      0% {
-        transform: scale(0, 0);
-        opacity: 0.5;
-      }
-      100% {
-        transform: scale(40, 40);
-        opacity: 0;
-      }
+    .set-unit{
+      font-size:11px;color:var(--text-sub);
+      text-align:center;margin-top:3px;
+      font-weight:600;letter-spacing:.5px;
     }
-    
-    button:hover { 
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(10, 132, 255, 0.3);
+    .set-field{flex:1}
+
+    .del-btn{
+      width:32px;height:32px;flex-shrink:0;
+      background:var(--danger-dim);
+      border:1px solid rgba(255,77,109,0.2);
+      border-radius:8px;
+      display:flex;align-items:center;justify-content:center;
+      cursor:pointer;transition:var(--tr);color:var(--danger);font-size:14px;
     }
-    
-    button:active { 
-      transform: scale(0.98); 
+    .del-btn:hover{background:var(--danger);color:#fff;transform:scale(1.1)}
+    .del-btn:active{transform:scale(.9)}
+
+    /* ─── PROGRESS BAR ───────────────────────── */
+    .prog-wrap{margin:12px 0 20px;padding:0 2px}
+    .prog-header{
+      display:flex;justify-content:space-between;margin-bottom:6px;
+      font-size:12px;color:var(--text-sub);font-weight:600;
     }
-    
-    button.secondary { 
-      background: rgba(118, 118, 128, 0.24); 
-      color: var(--primary); 
-      box-shadow: none;
+    .prog-track{
+      height:4px;background:var(--input-bg);border-radius:2px;overflow:hidden;
     }
-    
-    button.secondary:hover {
-      background: rgba(118, 118, 128, 0.32);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    }
-    
-    .btn-export {
-      background: rgba(118, 118, 128, 0.24);
-      color: var(--primary);
-      font-size: 13px;
-      font-weight: 500;
-      padding: 8px 14px;
-      border-radius: 10px;
-      text-transform: none;
-      width: auto;
-      letter-spacing: 0;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      cursor: pointer;
-      transition: var(--transition);
-    }
-    
-    .btn-export:hover {
-      background: rgba(118, 118, 128, 0.32);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    .prog-fill{
+      height:100%;background:var(--grad-primary);border-radius:2px;
+      transition:width .4s cubic-bezier(0.4,0,0.2,1);
     }
 
-    /* Enhanced Sets Layout */
-    .set-row {
-      display: flex; 
-      align-items: center; 
-      padding: 16px;
-      border-bottom: 0.5px solid var(--separator);
-      transition: var(--transition);
-      animation: slideIn 0.3s ease-out;
+    /* ─── BUTTONS ────────────────────────────── */
+    button{
+      background:var(--grad-primary);color:#000;
+      border:none;font-size:15px;font-weight:700;
+      padding:14px 20px;border-radius:var(--radius);
+      cursor:pointer;transition:var(--tr);
+      font-family:inherit;
+      display:flex;align-items:center;justify-content:center;gap:8px;
+      box-shadow:0 4px 16px var(--primary-glow);
     }
-    
-    @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateX(-10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateX(0);
-      }
+    button:hover{transform:translateY(-2px);box-shadow:0 8px 24px var(--primary-glow)}
+    button:active{transform:scale(.97)}
+
+    button.ghost{
+      background:var(--card);color:var(--primary);
+      border:1px solid var(--border);box-shadow:none;
     }
-    
-    .set-row:hover {
-      background: rgba(44, 44, 46, 0.3);
+    button.ghost:hover{border-color:var(--primary);background:var(--primary-dim);box-shadow:none}
+
+    button.danger-ghost{
+      background:transparent;color:var(--danger);
+      border:1px solid rgba(255,77,109,.25);box-shadow:none;
     }
-    
-    .set-index { 
-      width: 36px; 
-      color: var(--text-secondary); 
-      font-size: 16px; 
-      font-weight: 600;
-      text-align: center;
+    button.danger-ghost:hover{background:var(--danger-dim);border-color:var(--danger)}
+
+    .chip-btn{
+      background:var(--card);color:var(--primary);
+      border:1px solid var(--border);
+      font-size:12px;font-weight:700;
+      padding:7px 14px;border-radius:40px;
+      white-space:nowrap;cursor:pointer;transition:var(--tr);
+      font-family:inherit;box-shadow:none;
+      display:inline-flex;align-items:center;gap:5px;
     }
-    
-    .set-inputs { 
-      display: flex; 
-      gap: 12px; 
-      flex: 1; 
+    .chip-btn:hover{background:var(--primary-dim);border-color:var(--primary);transform:translateY(-1px);box-shadow:none}
+    .chip-btn.red{color:var(--danger);border-color:rgba(255,77,109,.25)}
+    .chip-btn.red:hover{background:var(--danger-dim);border-color:var(--danger)}
+    .chip-btn.green{color:var(--success);border-color:rgba(0,255,136,.25)}
+    .chip-btn.green:hover{background:var(--success-dim);border-color:var(--success)}
+
+    /* ─── QUICK WEIGHT ───────────────────────── */
+    .qw-strip{
+      display:flex;gap:8px;overflow-x:auto;
+      padding:4px 0 16px;
+      -webkit-overflow-scrolling:touch;
+      scrollbar-width:none;
     }
-    
-    .set-inputs input {
-      background: var(--input-bg);
-      text-align: center;
-      font-weight: 600;
-      padding: 12px;
-      font-size: 17px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 10px;
+    .qw-strip::-webkit-scrollbar{display:none}
+    .qw-btn{
+      flex-shrink:0;
+      background:var(--card);
+      border:1px solid var(--border);
+      color:var(--primary);font-size:13px;font-weight:700;
+      padding:9px 16px;border-radius:40px;
+      cursor:pointer;transition:var(--tr);font-family:inherit;
+      box-shadow:none;
     }
-    
-    .set-inputs input:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.1);
+    .qw-btn:hover{background:var(--primary-dim);border-color:var(--primary);transform:translateY(-1px);box-shadow:none}
+    .qw-btn.reset{color:var(--danger);border-color:rgba(255,77,109,.25)}
+    .qw-btn.reset:hover{background:var(--danger-dim);border-color:var(--danger)}
+
+    /* ─── HISTORY ────────────────────────────── */
+    .hist-group{margin-bottom:24px}
+    .hist-date{
+      font-size:12px;font-weight:700;letter-spacing:1px;
+      text-transform:uppercase;color:var(--text-sub);
+      margin-bottom:10px;padding-left:2px;
+      display:flex;align-items:center;gap:8px;
     }
-    
-    .btn-delete {
-      width: 36px; 
-      height: 36px; 
-      background: var(--gradient-danger); 
-      border-radius: 10px;
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      margin-left: 10px; 
-      padding: 0;
-      transition: var(--transition);
-      box-shadow: 0 2px 8px rgba(255, 69, 58, 0.2);
-    }
-    
-    .btn-delete:hover {
-      transform: scale(1.1);
-      box-shadow: 0 4px 12px rgba(255, 69, 58, 0.3);
-    }
-    
-    .btn-delete:active {
-      transform: scale(0.9);
-    }
-    
-    .btn-delete svg { 
-      width: 16px; 
-      height: 16px; 
-      fill: white; 
+    .hist-date::before{
+      content:'';width:3px;height:14px;
+      background:var(--grad-primary);border-radius:2px;
     }
 
-    /* Enhanced Stats */
-    .stats-row {
-      display: flex;
-      gap: 12px;
-      padding: 16px;
-      background: rgba(10, 132, 255, 0.1);
-      border-radius: var(--radius);
-      margin: 15px 0 25px 0;
-      animation: fadeIn 0.5s ease-out;
-      border: 1px solid rgba(10, 132, 255, 0.2);
-      backdrop-filter: blur(10px);
+    .hist-item{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      padding:16px;margin-bottom:8px;
+      transition:var(--tr);
+      animation:fadeUp .3s ease both;
     }
-    
-    .stat-item {
-      flex: 1;
-      text-align: center;
-      padding: 12px 8px;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 10px;
-      transition: var(--transition);
-    }
-    
-    .stat-item:hover {
-      background: rgba(255, 255, 255, 0.08);
-      transform: translateY(-2px);
-    }
-    
-    .stat-value {
-      font-size: 22px;
-      font-weight: 800;
-      color: var(--primary);
-      margin-bottom: 4px;
-    }
-    
-    .stat-label {
-      font-size: 11px;
-      color: var(--text-secondary);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      font-weight: 600;
+    .hist-item:hover{background:var(--card-hover);border-color:var(--border-focus);transform:translateY(-2px);box-shadow:var(--shadow)}
+
+    .hist-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+    .hist-name{font-size:15px;font-weight:700;color:var(--text)}
+    .hist-meta{font-size:11px;color:var(--text-sub);margin-top:3px}
+    .hist-vol{
+      font-family:'Bebas Neue',sans-serif;
+      font-size:22px;color:var(--primary);letter-spacing:1px;
     }
 
-    /* Enhanced History */
-    .history-group { 
-      margin-bottom: 24px; 
+    .tags{display:flex;flex-wrap:wrap;gap:6px}
+    .tag{
+      font-size:12px;font-weight:700;
+      background:var(--primary-dim);color:var(--primary);
+      border:1px solid rgba(0,212,255,.15);
+      padding:5px 10px;border-radius:6px;
+      transition:var(--tr);
     }
-    
-    .history-date { 
-      font-size: 20px; 
-      font-weight: 800; 
-      margin: 0 0 12px 0; 
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      color: var(--text);
-    }
-    
-    .history-date::before {
-      content: '';
-      width: 4px;
-      height: 20px;
-      background: var(--gradient-primary);
-      border-radius: 2px;
-    }
-    
-    .history-item { 
-      background: var(--card-bg); 
-      padding: 18px; 
-      margin-bottom: 8px; 
-      transition: var(--transition);
-      animation: slideIn 0.3s ease-out;
-      border-radius: var(--radius);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-    }
-    
-    .history-item:hover {
-      background: rgba(44, 44, 46, 0.8);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-    }
-    
-    .tag { 
-      font-size: 14px; 
-      background: rgba(10, 132, 255, 0.15); 
-      color: var(--primary); 
-      padding: 6px 12px; 
-      border-radius: 8px; 
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-weight: 600;
-      transition: var(--transition);
-      border: 1px solid rgba(10, 132, 255, 0.1);
-    }
-    
-    .tag:hover {
-      background: rgba(10, 132, 255, 0.25);
-      transform: translateY(-1px);
+    .tag:hover{background:rgba(0,212,255,.2)}
+
+    .hist-actions{
+      display:flex;gap:8px;justify-content:flex-end;margin-top:12px;
+      padding-top:12px;border-top:1px solid var(--border);
     }
 
-    /* Enhanced FAB */
-    .fab-container {
-      position: fixed; 
-      bottom: calc(24px + var(--safe-bottom));
-      left: 20px; 
-      right: 20px; 
-      max-width: 500px; 
-      margin: 0 auto; 
-      z-index: 90;
-      animation: fadeInUp 0.3s ease-out;
-      bottom: max(24px, calc(24px + var(--safe-bottom)));
+    /* ─── FAB ────────────────────────────────── */
+    .fab{
+      position:fixed;
+      bottom:max(20px,calc(20px + var(--safe-bottom)));
+      left:50%;transform:translateX(-50%);
+      width:calc(100% - 32px);max-width:488px;
+      z-index:90;
+      animation:fadeUp .4s ease both;
     }
-    
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    .fab button{
+      width:100%;
+      padding:17px;
+      font-size:16px;
+      border-radius:var(--radius);
+      box-shadow:0 8px 32px var(--primary-glow),0 2px 8px rgba(0,0,0,.4);
+      background:var(--grad-primary);color:#000;
+    }
+    .fab button:hover{box-shadow:0 12px 40px var(--primary-glow)}
+
+    /* ─── LOADER ─────────────────────────────── */
+    .spin{
+      display:inline-block;width:18px;height:18px;
+      border:2px solid rgba(0,0,0,.3);border-radius:50%;
+      border-top-color:#000;animation:spin 1s linear infinite;
     }
 
-    /* Enhanced Modal */
-    .modal {
-      position: fixed; 
-      inset: 0; 
-      background: rgba(0,0,0,0.8); 
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      z-index: 1000; 
-      display: none; 
-      align-items: flex-end;
-      animation: fadeIn 0.2s ease-out;
+    /* ─── MODAL ──────────────────────────────── */
+    .modal{
+      position:fixed;inset:0;
+      background:rgba(0,0,0,.75);
+      backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+      z-index:1000;display:none;align-items:flex-end;
     }
-    
-    .modal.active { 
-      display: flex; 
-      animation: fadeIn 0.2s ease-out;
+    .modal.active{display:flex;animation:fadeIn .2s ease}
+    .modal-sheet{
+      background:var(--surface);
+      width:100%;
+      border-radius:24px 24px 0 0;
+      padding:24px 20px;
+      padding-bottom:calc(24px + var(--safe-bottom));
+      max-height:90vh;display:flex;flex-direction:column;
+      border:1px solid var(--border);border-bottom:none;
+      animation:slideUp .3s cubic-bezier(0.2,.8,.2,1);
+      box-shadow:0 -20px 60px rgba(0,0,0,.5);
     }
-    
-    .modal-card {
-      background: var(--card-bg); 
-      width: 100%; 
-      border-radius: 24px 24px 0 0;
-      padding: 24px; 
-      padding-bottom: calc(24px + var(--safe-bottom));
-      max-height: 90vh; 
-      display: flex; 
-      flex-direction: column;
-      animation: slideUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-      box-shadow: 0 -20px 50px rgba(0, 0, 0, 0.5);
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    .modal-drag{
+      width:36px;height:4px;background:var(--text-muted);
+      border-radius:2px;margin:-10px auto 20px;cursor:grab;
     }
-    
-    @keyframes slideUp { 
-      from { transform: translateY(100%); } 
-      to { transform: translateY(0); } 
+    .modal-title{font-size:18px;font-weight:800;margin-bottom:20px}
+    .modal-close{
+      background:var(--card);color:var(--primary);
+      border:1px solid var(--border);
+      font-size:13px;font-weight:600;
+      padding:7px 14px;border-radius:8px;
+      cursor:pointer;transition:var(--tr);font-family:inherit;
+      box-shadow:none;white-space:nowrap;
     }
-    
-    .modal-handle {
-      width: 40px; 
-      height: 5px; 
-      background: var(--separator); 
-      border-radius: 100px; 
-      margin: -10px auto 20px auto;
-      cursor: grab;
+    .modal-close:hover{border-color:var(--primary);background:var(--primary-dim);box-shadow:none}
+
+    /* ─── TABS ───────────────────────────────── */
+    .tabs{
+      display:flex;gap:4px;
+      background:var(--input-bg);
+      padding:4px;border-radius:12px;
+      margin-bottom:20px;
     }
-    
-    .modal-handle:active {
-      cursor: grabbing;
+    .tab{
+      flex:1;text-align:center;padding:10px;
+      background:transparent;border:none;
+      color:var(--text-sub);font-size:13px;font-weight:700;
+      border-radius:9px;cursor:pointer;transition:var(--tr);
+      font-family:inherit;
+    }
+    .tab:hover{color:var(--text);transform:none;box-shadow:none}
+    .tab.on{background:var(--card);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.3)}
+    .tab-pane{display:none}
+    .tab-pane.on{display:block}
+
+    /* ─── PROFILE STATS ──────────────────────── */
+    .profile-grid{
+      display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0;
+    }
+    .pstat{
+      background:var(--input-bg);border:1px solid var(--border);
+      border-radius:var(--radius-sm);padding:16px;text-align:center;
+      transition:var(--tr);
+    }
+    .pstat:hover{border-color:var(--border-focus)}
+    .pstat-val{
+      font-family:'Bebas Neue',sans-serif;font-size:32px;
+      color:var(--primary);letter-spacing:1px;line-height:1;margin-bottom:4px;
+    }
+    .pstat-lbl{font-size:11px;color:var(--text-sub);font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+
+    /* ─── COMPARISON TABLE ───────────────────── */
+    .cmp-table{width:100%;border-collapse:collapse}
+    .cmp-table th{
+      padding:12px;background:rgba(255,255,255,.03);
+      border-bottom:1px solid var(--border);
+      font-size:10px;color:var(--text-sub);
+      text-transform:uppercase;letter-spacing:1px;font-weight:700;
+      text-align:left;
+    }
+    .cmp-table td{padding:12px;border-bottom:1px solid var(--border)}
+    .cmp-table tr:last-child td{border-bottom:none}
+    .cmp-table tr:hover td{background:rgba(255,255,255,.02)}
+    .cmp-val{font-weight:700;color:var(--primary);text-align:right}
+
+    /* ─── EMPTY STATE ────────────────────────── */
+    .empty{
+      text-align:center;padding:48px 20px;
+      color:var(--text-muted);
+    }
+    .empty-icon{font-size:48px;margin-bottom:12px;opacity:.4}
+    .empty-title{font-size:15px;color:var(--text-sub);font-weight:600;margin-bottom:6px}
+    .empty-sub{font-size:13px}
+
+    /* ─── TOAST ──────────────────────────────── */
+    .toast{
+      position:fixed;top:calc(16px + var(--safe-top));
+      left:50%;transform:translateX(-50%) translateY(-120px);
+      background:var(--card);
+      padding:12px 18px;border-radius:var(--radius-sm);
+      box-shadow:var(--shadow);z-index:2000;
+      transition:transform .3s cubic-bezier(0.2,.8,.2,1);
+      display:flex;align-items:center;gap:10px;
+      border:1px solid var(--border);
+      backdrop-filter:blur(20px);
+      font-size:14px;font-weight:600;
+      max-width:calc(100vw - 32px);white-space:pre-line;
+      border-left:3px solid var(--primary);
+    }
+    .toast.show{transform:translateX(-50%) translateY(0)}
+    .toast.success{border-left-color:var(--success)}
+    .toast.error{border-left-color:var(--danger)}
+    .toast.warning{border-left-color:var(--warning)}
+
+    /* ─── CHART ──────────────────────────────── */
+    .chart-wrap{width:100%;height:220px;position:relative;margin:12px 0}
+    canvas{width:100%!important;height:100%!important}
+
+    /* ─── IMPORT/EXPORT ROW ──────────────────── */
+    .action-strip{
+      display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;
     }
 
-    /* Enhanced Empty State */
-    .empty-state {
-      text-align: center;
-      padding: 60px 20px;
-      color: var(--text-secondary);
+    .file-wrap{position:relative;display:inline-flex}
+    .file-wrap input[type="file"]{
+      position:absolute;inset:0;opacity:0;cursor:pointer;
+      padding:0;border:none;background:none;border-radius:0;
+      box-shadow:none;font-size:0;
     }
-    
-    .empty-state svg {
-      width: 80px;
-      height: 80px;
-      fill: var(--text-secondary);
-      opacity: 0.2;
-      margin-bottom: 20px;
-    }
+    .file-wrap input[type="file"]:focus{box-shadow:none}
 
-    /* Enhanced Toast */
-    .toast {
-      position: fixed;
-      top: 30px;
-      left: 50%;
-      transform: translateX(-50%) translateY(-100px);
-      background: var(--card-bg);
-      padding: 14px 22px;
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      z-index: 1000;
-      transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      border-left: 4px solid var(--primary);
-      max-width: 90%;
-      word-break: break-word;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(20px);
-    }
-    
-    .toast.show {
-      transform: translateX(-50%) translateY(0);
-    }
-    
-    .toast.success { 
-      border-color: var(--success); 
-      background: rgba(28, 28, 30, 0.95);
-    }
-    .toast.error { 
-      border-color: var(--danger); 
-      background: rgba(28, 28, 30, 0.95);
-    }
-    .toast.warning { 
-      border-color: var(--warning); 
-      background: rgba(28, 28, 30, 0.95);
-    }
+    /* ─── KEYFRAMES ──────────────────────────── */
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+    @keyframes slideX{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
 
-    /* Enhanced Loader */
-    .loader {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      border: 2px solid var(--text-secondary);
-      border-radius: 50%;
-      border-top-color: var(--primary);
-      animation: spin 1s linear infinite;
-    }
-    
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
+    /* ─── SCROLLBAR ──────────────────────────── */
+    ::-webkit-scrollbar{width:4px;height:4px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:var(--text-muted);border-radius:2px}
 
-    /* Enhanced Quick weight buttons */
-    .quick-weight-container {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-      overflow-x: auto;
-      padding: 10px 0;
-      -webkit-overflow-scrolling: touch;
+    /* ─── RESPONSIVE ─────────────────────────── */
+    @media(max-width:400px){
+      .set-inputs{flex-direction:column;gap:8px}
+      .stats-bar{grid-template-columns:repeat(2,1fr)}
+      .logo-text{display:none}
     }
-    
-    .quick-weight-container::-webkit-scrollbar {
-      display: none;
-    }
-    
-    .quick-weight-btn {
-      background: rgba(118, 118, 128, 0.24);
-      color: var(--primary);
-      padding: 10px 16px;
-      border-radius: 12px;
-      font-size: 15px;
-      font-weight: 600;
-      white-space: nowrap;
-      border: none;
-      cursor: pointer;
-      transition: var(--transition);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      min-width: 70px;
-    }
-    
-    .quick-weight-btn:hover {
-      background: rgba(118, 118, 128, 0.32);
-      transform: translateY(-1px);
-    }
-    
-    .quick-weight-btn.reset {
-      color: var(--danger);
-      background: rgba(255, 69, 58, 0.1);
-    }
-
-    /* Import/Export buttons */
-    .import-export-buttons {
-      display: flex;
-      gap: 10px;
-      margin-top: 15px;
-      flex-wrap: wrap;
-    }
-
-    /* File input styling */
-    .file-input-wrapper {
-      position: relative;
-      overflow: hidden;
-      display: inline-block;
-      flex: 1;
-      min-width: 140px;
-    }
-    
-    .file-input {
-      position: absolute;
-      left: 0;
-      top: 0;
-      opacity: 0;
-      width: 100%;
-      height: 100%;
-      cursor: pointer;
-    }
-
-    /* Enhanced Tabs */
-    .tabs {
-      display: flex;
-      gap: 6px;
-      background: rgba(118, 118, 128, 0.12);
-      padding: 6px;
-      border-radius: 14px;
-      margin-bottom: 24px;
-      backdrop-filter: blur(10px);
-    }
-    
-    .tab {
-      flex: 1;
-      text-align: center;
-      padding: 12px;
-      background: transparent;
-      border: none;
-      color: var(--text-secondary);
-      font-size: 15px;
-      font-weight: 600;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: var(--transition);
-    }
-    
-    .tab.active {
-      background: var(--card-bg);
-      color: var(--text);
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    }
-    
-    .tab-content {
-      display: none;
-    }
-    
-    .tab-content.active {
-      display: block;
-    }
-
-    /* Charts */
-    .chart-container {
-      width: 100%;
-      height: 250px;
-      position: relative;
-      margin: 15px 0;
-    }
-    
-    canvas {
-      width: 100% !important;
-      height: 100% !important;
-    }
-
-    /* User comparison */
-    .comparison-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
-    }
-    
-    .comparison-table th {
-      text-align: left;
-      padding: 14px;
-      background: rgba(255, 255, 255, 0.05);
-      border-bottom: 1px solid var(--separator);
-      font-size: 12px;
-      color: var(--text-secondary);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      font-weight: 600;
-    }
-    
-    .comparison-table td {
-      padding: 14px;
-      border-bottom: 1px solid var(--separator);
-    }
-    
-    .comparison-table tr:last-child td {
-      border-bottom: none;
-    }
-    
-    .comparison-table tr:hover {
-      background: rgba(255, 255, 255, 0.03);
-    }
-    
-    .comparison-value {
-      font-weight: 700;
-      color: var(--primary);
-      text-align: right;
-    }
-
-    /* Enhanced User profile */
-    .profile-stats {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin: 20px 0;
-    }
-    
-    .profile-stat {
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 14px;
-      padding: 20px;
-      text-align: center;
-      transition: var(--transition);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-    }
-    
-    .profile-stat:hover {
-      background: rgba(255, 255, 255, 0.08);
-      transform: translateY(-2px);
-    }
-    
-    .profile-stat-value {
-      font-size: 28px;
-      font-weight: 800;
-      color: var(--primary);
-      margin-bottom: 6px;
-    }
-    
-    .profile-stat-label {
-      font-size: 13px;
-      color: var(--text-secondary);
-      font-weight: 600;
-    }
-    
-    .profile-input-group {
-      display: flex;
-      gap: 12px;
-      margin: 20px 0;
-    }
-    
-    .profile-input-group input {
-      flex: 1;
-    }
-
-    /* Progress bar for sets */
-    .progress-container {
-      margin: 15px 0;
-    }
-    
-    .progress-bar {
-      height: 6px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 3px;
-      overflow: hidden;
-    }
-    
-    .progress-fill {
-      height: 100%;
-      background: var(--gradient-primary);
-      border-radius: 3px;
-      transition: width 0.3s ease;
-    }
-
-    /* Responsive */
-    @media (max-width: 480px) {
-      .container { padding: 16px; }
-      .header-sticky { 
-        padding: 10px 14px; 
-        gap: 12px;
+    @media(prefers-color-scheme:light){
+      :root{
+        --bg:#F0F4FC;--surface:#fff;--card:#fff;--card-hover:#F7FAFF;
+        --input-bg:#EBF0FA;--border:rgba(0,0,0,.08);--border-focus:rgba(0,133,255,.4);
+        --text:#0B0F1A;--text-sub:#5A6480;--text-muted:#A0ADCC;
+        --primary:#005FD4;--primary-dim:rgba(0,95,212,.1);--primary-glow:rgba(0,95,212,.2);
       }
-      .header-left, .header-right {
-        gap: 12px;
-      }
-      .header-btn {
-        width: 40px;
-        height: 40px;
-        font-size: 18px;
-      }
-      .app-icon {
-        width: 32px;
-        height: 32px;
-        font-size: 16px;
-      }
-      .app-title { 
-        font-size: 19px; 
-        display: none; /* Скрываем текст на очень маленьких экранах */
-      }
-      .user-selector select {
-        min-width: 120px;
-        padding: 6px 12px 6px 36px;
-        font-size: 13px;
-      }
-      .set-inputs { 
-        flex-direction: column; 
-        gap: 10px; 
-      }
-      .stats-row { 
-        flex-wrap: wrap; 
-        gap: 10px;
-        padding: 14px;
-      }
-      .stat-item { 
-        min-width: calc(50% - 5px); 
-        padding: 10px 6px;
-      }
-      .stat-value {
-        font-size: 20px;
-      }
-      button { 
-        padding: 14px 20px; 
-        font-size: 15px; 
-      }
-      .profile-stats { 
-        grid-template-columns: 1fr; 
-        gap: 10px;
-      }
-      .profile-stat {
-        padding: 16px;
-      }
-      .profile-stat-value {
-        font-size: 24px;
-      }
-      .history-item {
-        padding: 16px;
-      }
-      .import-export-buttons {
-        flex-direction: column;
-      }
-      .file-input-wrapper {
-        width: 100%;
-      }
-    }
-
-    /* Для экранов где можно показать заголовок */
-    @media (min-width: 380px) {
-      .app-title { 
-        display: block; 
-        font-size: 20px;
-      }
-    }
-
-    /* iPhone 13 Pro Max specific */
-    @media only screen and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) {
-      .container { padding: 20px; }
-      .header-sticky { padding: 14px 20px; }
-      .fab-container { left: 20px; right: 20px; }
-    }
-
-    /* Dark mode preference */
-    @media (prefers-color-scheme: light) {
-      :root {
-        --bg-color: #f2f2f7;
-        --card-bg: #ffffff;
-        --input-bg: #e5e5ea;
-        --text: #000000;
-        --text-secondary: #8e8e93;
-        --separator: #c6c6c8;
-      }
-      
-      .header-sticky {
-        background: rgba(242, 242, 247, 0.98);
-        border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
-      }
-      
-      .header-btn {
-        background: rgba(118, 118, 128, 0.12);
-      }
-      
-      .header-btn:hover {
-        background: rgba(118, 118, 128, 0.18);
-      }
-      
-      .card {
-        border: 1px solid rgba(0, 0, 0, 0.05);
-      }
-      
-      .history-item:hover {
-        background: rgba(229, 229, 234, 0.8);
-      }
-      
-      .modal {
-        background: rgba(242, 242, 247, 0.8);
-      }
-      
-      .toast {
-        background: rgba(255, 255, 255, 0.95);
-        border: 1px solid rgba(0, 0, 0, 0.1);
-      }
-    }
-
-    /* Smooth scroll */
-    html {
-      scroll-behavior: smooth;
-    }
-
-    /* Custom scrollbar */
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    
-    ::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.1);
-      border-radius: 3px;
-    }
-    
-    ::-webkit-scrollbar-thumb {
-      background: rgba(118, 118, 128, 0.5);
-      border-radius: 3px;
-    }
-    
-    ::-webkit-scrollbar-thumb:hover {
-      background: rgba(118, 118, 128, 0.7);
-    }
-
-    /* Pulse animation for important elements */
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-      100% { transform: scale(1); }
-    }
-    
-    .pulse {
-      animation: pulse 2s infinite;
-    }
-
-    /* Gradient text */
-    .gradient-text {
-      background: var(--gradient-primary);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    /* Glass morphism effect */
-    .glass {
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      body{background-image:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(0,95,212,.06) 0%,transparent 60%)}
+      .header{background:rgba(240,244,252,.94)}
+      .stat-val,.hist-vol,.pstat-val,.set-num,.logo-mark,.logo-text,.logo-mark{color:#005FD4}
     }
   </style>
 </head>
 <body>
 
-<div class="header-sticky">
+<!-- ── HEADER ─────────────────────────────────────── -->
+<header class="header">
   <div class="header-left">
-    <div class="app-logo">
-      <div class="app-icon">F</div>
-      <div class="app-title">FitTrack</div>
+    <div class="logo">
+      <div class="logo-mark">F</div>
+      <span class="logo-text">FitTrack</span>
     </div>
-    <div class="user-selector">
-      <span class="user-icon">👤</span>
+    <div class="user-pill">
+      <div class="user-pill-avatar" id="userAvatar">?</div>
       <select id="userSelect" onchange="switchUser()"></select>
     </div>
   </div>
-  
   <div class="header-right">
-    <button class="header-btn" onclick="openExerciseManager()" title="Управление упражнениями">
-      🏋️
-    </button>
-    <button class="header-btn" onclick="openUserProfile()" title="Профиль пользователя">
-      📊
-    </button>
-    <button class="header-btn" id="lockBtn" onclick="toggleEditMode()" title="Режим редактирования">
-      ✏️
-    </button>
+    <button class="hbtn" onclick="openExerciseManager()" title="Упражнения">🏋️</button>
+    <button class="hbtn" onclick="openUserProfile()" title="Профиль">📊</button>
+    <button class="hbtn" id="lockBtn" onclick="toggleEditMode()" title="Редактировать">✏️</button>
   </div>
-</div>
+</header>
 
+<!-- ── MAIN ───────────────────────────────────────── -->
 <div class="container">
-  
-  <!-- Статистика текущей тренировки -->
-  <div id="workoutStats" class="stats-row" style="display: none;">
-    <div class="stat-item">
-      <div class="stat-value" id="totalVolume">0</div>
-      <div class="stat-label">Объем (кг)</div>
+
+  <!-- Workout stats -->
+  <div id="workoutStats" class="stats-bar" style="display:none">
+    <div class="stat-card">
+      <div class="stat-val" id="totalVolume">0</div>
+      <div class="stat-lbl">Объём кг</div>
     </div>
-    <div class="stat-item">
-      <div class="stat-value" id="totalSets">0</div>
-      <div class="stat-label">Подходы</div>
+    <div class="stat-card">
+      <div class="stat-val" id="totalSets">0</div>
+      <div class="stat-lbl">Подходы</div>
     </div>
-    <div class="stat-item">
-      <div class="stat-value" id="bestSet">-</div>
-      <div class="stat-label">Лучший</div>
+    <div class="stat-card">
+      <div class="stat-val" id="bestSet">—</div>
+      <div class="stat-lbl">Лучший</div>
     </div>
-    <div class="stat-item">
-      <div class="stat-value" id="avgWeight">0</div>
-      <div class="stat-label">Ср. вес</div>
+    <div class="stat-card">
+      <div class="stat-val" id="avgWeight">0</div>
+      <div class="stat-lbl">Ср. вес</div>
     </div>
   </div>
 
-  <h3>Тренировка</h3>
+  <!-- Exercise select -->
+  <div class="label">Упражнение</div>
   <div class="card">
     <div class="input-row">
-      <div class="select-wrapper">
+      <div class="sel-wrap">
         <select id="exerciseSelect" onchange="loadLastSessionHint()"></select>
       </div>
     </div>
-    <div class="input-row" id="lastSessionHint" style="display:none; padding-top:8px;">
-      <div id="hintText" style="font-size:13px; color:var(--primary); display: flex; justify-content: space-between; align-items: center;"></div>
+    <div id="lastSessionHint" class="hint-row" style="display:none">
+      <span id="hintText"></span>
     </div>
   </div>
 
-  <h3>
+  <!-- Sets -->
+  <div class="label">
     Подходы
-    <span style="font-size: 12px; color: var(--text-secondary); font-weight: normal;">
+    <span style="font-size:12px;color:var(--text-sub);font-weight:600">
       <span id="completedSets">0</span>/<span id="totalSetsCount">0</span>
     </span>
-  </h3>
-  <div class="card" id="setsContainer"></div>
-  
-  <button class="secondary" onclick="addSet()" style="margin-bottom: 20px;">+ Добавить подход</button>
-
-  <!-- Быстрые кнопки веса (только для последнего подхода) -->
-  <div class="quick-weight-container">
-    <button class="quick-weight-btn" onclick="quickWeight(20)">20 кг</button>
-    <button class="quick-weight-btn" onclick="quickWeight(40)">40 кг</button>
-    <button class="quick-weight-btn" onclick="quickWeight(60)">60 кг</button>
-    <button class="quick-weight-btn" onclick="quickWeight(80)">80 кг</button>
-    <button class="quick-weight-btn" onclick="quickWeight(100)">100 кг</button>
-    <button class="quick-weight-btn reset" onclick="resetLastSet()">Сброс</button>
   </div>
 
-  <h3>
-    История
-    <div style="display: flex; gap: 8px;">
-      <button class="btn-export" onclick="exportToCSV()">📤 CSV</button>
-      <button class="btn-export" onclick="clearHistory()" style="color: var(--danger);">🗑️</button>
+  <!-- Progress bar -->
+  <div class="prog-wrap" id="progWrap">
+    <div class="prog-header">
+      <span>Прогресс</span>
+      <span id="progLabel">0%</span>
     </div>
-  </h3>
-  
-  <div class="card" style="padding:16px; background: transparent; border: none;">
-     <div style="margin-bottom: 12px;">
-        <div class="select-wrapper">
-           <select id="filterExercise" onchange="renderHistory()">
-             <option value="">Все упражнения</option>
-           </select>
-        </div>
-     </div>
-     <div class="import-export-buttons">
-       <div class="file-input-wrapper">
-         <button class="btn-export" onclick="triggerFileInput()" style="background: rgba(50, 215, 75, 0.1); color: var(--success);">
-           📥 Импорт CSV
-         </button>
-         <input type="file" id="csvImport" accept=".csv" class="file-input" onchange="importFromCSV(event)">
-       </div>
-       <button class="btn-export" onclick="showStats()">📊 Статистика</button>
-       <button class="btn-export" onclick="openUsersComparison()">👥 Сравнение</button>
-     </div>
-     <div id="historyList">
-       <div class="empty-state" id="emptyHistory">
-         <svg viewBox="0 0 24 24">
-           <path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
-         </svg>
-         <p>История тренировок пуста</p>
-         <p style="font-size: 14px; margin-top: 8px;">Начните добавлять тренировки!</p>
-       </div>
-     </div>
+    <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
   </div>
 
-  <br><br><br>
+  <div class="card" id="setsContainer"></div>
+
+  <button class="ghost" onclick="addSet()" style="width:100%;margin-bottom:16px">
+    ＋ Добавить подход
+  </button>
+
+  <!-- Quick weight -->
+  <div class="qw-strip">
+    <button class="qw-btn" onclick="quickWeight(20)">20 кг</button>
+    <button class="qw-btn" onclick="quickWeight(40)">40 кг</button>
+    <button class="qw-btn" onclick="quickWeight(60)">60 кг</button>
+    <button class="qw-btn" onclick="quickWeight(80)">80 кг</button>
+    <button class="qw-btn" onclick="quickWeight(100)">100 кг</button>
+    <button class="qw-btn" onclick="quickWeight(120)">120 кг</button>
+    <button class="qw-btn reset" onclick="resetLastSet()">Сброс</button>
+  </div>
+
+  <!-- History -->
+  <div class="label">
+    История
+    <div style="display:flex;gap:6px">
+      <button class="chip-btn" onclick="exportToCSV()">📤 CSV</button>
+      <button class="chip-btn red" onclick="clearHistory()">🗑️</button>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
+    <div class="sel-wrap">
+      <select id="filterExercise" onchange="renderHistory()">
+        <option value="">Все упражнения</option>
+      </select>
+    </div>
+    <div class="action-strip">
+      <div class="file-wrap">
+        <button class="chip-btn green">📥 Импорт CSV</button>
+        <input type="file" id="csvImport" accept=".csv" onchange="importFromCSV(event)">
+      </div>
+      <button class="chip-btn" onclick="showStats()">📊 Статистика</button>
+      <button class="chip-btn" onclick="openUsersComparison()">👥 Сравнение</button>
+    </div>
+  </div>
+
+  <div id="historyList"></div>
+  <br><br>
 </div>
 
-<div class="fab-container">
-  <button onclick="saveWorkout()" id="saveBtn" style="box-shadow: var(--shadow); background: linear-gradient(135deg, var(--primary), #5AC8FA);">
+<!-- ── FAB ────────────────────────────────────────── -->
+<div class="fab">
+  <button onclick="saveWorkout()" id="saveBtn">
     <span id="saveBtnText">💾 Сохранить тренировку</span>
-    <span id="saveBtnLoader" class="loader" style="display: none; margin-left: 8px;"></span>
+    <span id="saveBtnLoader" class="spin" style="display:none"></span>
   </button>
 </div>
 
-<!-- Toast уведомления -->
+<!-- ── TOAST ──────────────────────────────────────── -->
 <div id="toast" class="toast"></div>
 
-<!-- Модальное окно упражнений -->
+<!-- ── MODAL: EXERCISES ───────────────────────────── -->
 <div class="modal" id="exerciseModal">
-  <div class="modal-card">
-    <div class="modal-handle"></div>
-    <div style="display:flex; justify-content:space-between; margin-bottom:20px; align-items: center;">
-      <h2 style="margin:0; font-size:20px;">🏋️ Управление упражнениями</h2>
-      <button class="secondary" style="width:auto; padding:6px 12px;" onclick="closeExerciseManager()">Готово</button>
+  <div class="modal-sheet">
+    <div class="modal-drag"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div class="modal-title" style="margin:0">🏋️ Упражнения</div>
+      <button class="modal-close" onclick="closeExerciseManager()">Готово</button>
     </div>
-    <input 
-      type="text" 
-      id="searchExercise" 
-      placeholder="🔍 Поиск упражнений..." 
-      style="margin-bottom: 15px;"
-      oninput="filterExercises()"
-    >
-    <div style="overflow-y:auto; flex:1; margin-bottom:15px; min-height: 200px;" id="exerciseManagerList"></div>
-    <div style="display:flex; gap:10px;">
-      <input id="newExerciseInput" placeholder="Новое упражнение" onkeypress="if(event.key === 'Enter') addExercise()">
-      <button onclick="addExercise()" style="width:auto; min-width: 60px;">➕</button>
+    <input type="text" id="searchExercise" placeholder="🔍 Поиск..." style="margin-bottom:12px" oninput="filterExercises()">
+    <div style="overflow-y:auto;flex:1;min-height:200px;margin-bottom:12px" id="exerciseManagerList"></div>
+    <div style="display:flex;gap:8px">
+      <input id="newExerciseInput" placeholder="Новое упражнение" onkeypress="if(event.key==='Enter')addExercise()">
+      <button onclick="addExercise()" style="width:auto;padding:12px 16px;flex-shrink:0">➕</button>
     </div>
   </div>
 </div>
 
-<!-- Модальное окно управления пользователями -->
+<!-- ── MODAL: USERS ───────────────────────────────── -->
 <div class="modal" id="usersModal">
-  <div class="modal-card">
-    <div class="modal-handle"></div>
-    <div style="display:flex; justify-content:space-between; margin-bottom:20px; align-items: center;">
-      <h2 style="margin:0; font-size:20px;">👥 Управление пользователями</h2>
-      <button class="secondary" style="width:auto; padding:6px 12px;" onclick="closeUsersManager()">Готово</button>
+  <div class="modal-sheet">
+    <div class="modal-drag"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div class="modal-title" style="margin:0">👥 Пользователи</div>
+      <button class="modal-close" onclick="closeUsersManager()">Готово</button>
     </div>
-    <div style="overflow-y:auto; flex:1; margin-bottom:15px; min-height: 200px;" id="usersManagerList"></div>
-    <div style="display:flex; gap:10px;">
-      <input id="newUserName" placeholder="Имя нового пользователя" onkeypress="if(event.key === 'Enter') addUser()">
-      <button onclick="addUser()" style="width:auto; min-width: 60px;">➕</button>
+    <div style="overflow-y:auto;flex:1;min-height:200px;margin-bottom:12px" id="usersManagerList"></div>
+    <div style="display:flex;gap:8px">
+      <input id="newUserName" placeholder="Новый пользователь" onkeypress="if(event.key==='Enter')addUser()">
+      <button onclick="addUser()" style="width:auto;padding:12px 16px;flex-shrink:0">➕</button>
     </div>
   </div>
 </div>
 
-<!-- Модальное окно статистики -->
+<!-- ── MODAL: STATS ───────────────────────────────── -->
 <div class="modal" id="statsModal">
-  <div class="modal-card">
-    <div class="modal-handle"></div>
-    <div style="display:flex; justify-content:space-between; margin-bottom:20px; align-items: center;">
-      <h2 style="margin:0; font-size:20px;">📊 Статистика</h2>
-      <button class="secondary" style="width:auto; padding:6px 12px;" onclick="closeStats()">Закрыть</button>
+  <div class="modal-sheet">
+    <div class="modal-drag"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div class="modal-title" style="margin:0">📊 Статистика</div>
+      <button class="modal-close" onclick="closeStats()">Закрыть</button>
     </div>
-    <div style="overflow-y:auto; flex:1; padding: 10px;" id="statsContent">
-      <!-- Статистика будет загружена динамически -->
-    </div>
+    <div style="overflow-y:auto;flex:1;padding-right:4px" id="statsContent"></div>
   </div>
 </div>
 
-<!-- Модальное окно профиля пользователя -->
+<!-- ── MODAL: PROFILE ─────────────────────────────── -->
 <div class="modal" id="profileModal">
-  <div class="modal-card">
-    <div class="modal-handle"></div>
-    <div style="display:flex; justify-content:space-between; margin-bottom:20px; align-items: center;">
-      <h2 style="margin:0; font-size:20px;">👤 Профиль</h2>
-      <button class="secondary" style="width:auto; padding:6px 12px;" onclick="closeUserProfile()">Готово</button>
+  <div class="modal-sheet">
+    <div class="modal-drag"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div class="modal-title" style="margin:0">👤 Профиль</div>
+      <button class="modal-close" onclick="closeUserProfile()">Готово</button>
     </div>
-    
     <div class="tabs">
-      <button class="tab active" onclick="switchTab('profile-tab')">Профиль</button>
-      <button class="tab" onclick="switchTab('history-tab')">История</button>
-      <button class="tab" onclick="switchTab('chart-tab')">График</button>
+      <button class="tab on" onclick="switchTab('profile-tab',this)">Профиль</button>
+      <button class="tab" onclick="switchTab('history-tab',this)">История</button>
+      <button class="tab" onclick="switchTab('chart-tab',this)">График</button>
     </div>
-    
-    <!-- Вкладка профиля -->
-    <div id="profile-tab" class="tab-content active">
-      <div class="profile-stats">
-        <div class="profile-stat">
-          <div class="profile-stat-value" id="profileHeight">- см</div>
-          <div class="profile-stat-label">Рост</div>
+    <div style="overflow-y:auto;flex:1">
+      <div id="profile-tab" class="tab-pane on">
+        <div class="profile-grid">
+          <div class="pstat"><div class="pstat-val" id="profileHeight">—</div><div class="pstat-lbl">Рост см</div></div>
+          <div class="pstat"><div class="pstat-val" id="profileWeight">—</div><div class="pstat-lbl">Вес кг</div></div>
+          <div class="pstat"><div class="pstat-val" id="profileIMC">—</div><div class="pstat-lbl">ИМТ</div></div>
+          <div class="pstat"><div class="pstat-val" id="profileWorkouts">0</div><div class="pstat-lbl">Тренировок</div></div>
         </div>
-        <div class="profile-stat">
-          <div class="profile-stat-value" id="profileWeight">- кг</div>
-          <div class="profile-stat-label">Вес</div>
+        <div class="label" style="margin-top:4px">Изменить параметры</div>
+        <div style="display:flex;gap:10px;margin-bottom:14px">
+          <input type="number" id="editHeight" placeholder="Рост (см)" min="100" max="250">
+          <input type="number" id="editWeight" placeholder="Вес (кг)" min="30" max="200" step="0.1">
         </div>
-        <div class="profile-stat">
-          <div class="profile-stat-value" id="profileIMC">-</div>
-          <div class="profile-stat-label">ИМТ</div>
-        </div>
-        <div class="profile-stat">
-          <div class="profile-stat-value" id="profileWorkouts">0</div>
-          <div class="profile-stat-label">Тренировок</div>
-        </div>
-      </div>
-      
-      <h3 style="margin: 20px 0 10px 0;">📝 Изменить параметры</h3>
-      <div class="profile-input-group">
-        <input type="number" id="editHeight" placeholder="Рост (см)" min="100" max="250">
-        <input type="number" id="editWeight" placeholder="Вес (кг)" min="30" max="200" step="0.1">
-      </div>
-      <button onclick="saveProfileParameters()" style="width:100%; margin-bottom: 15px;">💾 Сохранить</button>
-      
-      <div style="font-size: 12px; color: var(--text-secondary); text-align: center; margin-top: 10px;">
-        <div>ИМТ = вес (кг) / (рост (м))²</div>
-        <div style="margin-top: 5px;">
-          <span style="color: var(--success);">18.5-24.9</span> - норма,
-          <span style="color: var(--warning);">25-29.9</span> - избыток,
-          <span style="color: var(--danger);">≥30</span> - ожирение
+        <button onclick="saveProfileParameters()" style="width:100%">💾 Сохранить</button>
+        <div style="font-size:11px;color:var(--text-sub);text-align:center;margin-top:12px;line-height:1.8">
+          ИМТ = вес (кг) ÷ рост² (м)<br>
+          <span style="color:var(--success)">18.5–24.9</span> норма ·
+          <span style="color:var(--warning)">25–29.9</span> избыток ·
+          <span style="color:var(--danger)">≥30</span> ожирение
         </div>
       </div>
-    </div>
-    
-    <!-- Вкладка истории -->
-    <div id="history-tab" class="tab-content">
-      <div id="parametersHistory" style="overflow-y: auto; max-height: 300px;">
-        <!-- История будет загружена динамически -->
+      <div id="history-tab" class="tab-pane">
+        <div id="parametersHistory" style="max-height:340px;overflow-y:auto"></div>
       </div>
-    </div>
-    
-    <!-- Вкладка графика -->
-    <div id="chart-tab" class="tab-content">
-      <div class="chart-container">
-        <canvas id="parametersChart"></canvas>
-      </div>
-      <div style="display: flex; gap: 10px; margin-top: 10px;">
-        <button class="secondary" style="flex:1; font-size: 12px;" onclick="chartPeriod = 7; renderParametersChart()">Неделя</button>
-        <button class="secondary" style="flex:1; font-size: 12px;" onclick="chartPeriod = 30; renderParametersChart()">Месяц</button>
-        <button class="secondary" style="flex:1; font-size: 12px;" onclick="chartPeriod = 90; renderParametersChart()">3 месяца</button>
-        <button class="secondary" style="flex:1; font-size: 12px;" onclick="chartPeriod = 365; renderParametersChart()">Год</button>
+      <div id="chart-tab" class="tab-pane">
+        <div class="chart-wrap"><canvas id="parametersChart"></canvas></div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button class="ghost" style="flex:1;font-size:12px;padding:9px" onclick="chartPeriod=7;renderParametersChart()">7 дн</button>
+          <button class="ghost" style="flex:1;font-size:12px;padding:9px" onclick="chartPeriod=30;renderParametersChart()">30 дн</button>
+          <button class="ghost" style="flex:1;font-size:12px;padding:9px" onclick="chartPeriod=90;renderParametersChart()">90 дн</button>
+          <button class="ghost" style="flex:1;font-size:12px;padding:9px" onclick="chartPeriod=365;renderParametersChart()">Год</button>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Модальное окно сравнения пользователей -->
+<!-- ── MODAL: COMPARISON ──────────────────────────── -->
 <div class="modal" id="comparisonModal">
-  <div class="modal-card">
-    <div class="modal-handle"></div>
-    <div style="display:flex; justify-content:space-between; margin-bottom:20px; align-items: center;">
-      <h2 style="margin:0; font-size:20px;">👥 Сравнение пользователей</h2>
-      <button class="secondary" style="width:auto; padding:6px 12px;" onclick="closeUsersComparison()">Закрыть</button>
+  <div class="modal-sheet">
+    <div class="modal-drag"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div class="modal-title" style="margin:0">👥 Сравнение</div>
+      <button class="modal-close" onclick="closeUsersComparison()">Закрыть</button>
     </div>
-    
-    <div style="margin-bottom: 15px;">
-      <div class="select-wrapper">
+    <div style="margin-bottom:14px">
+      <div class="sel-wrap">
         <select id="comparisonExercise" onchange="renderUsersComparison()">
           <option value="">Все упражнения</option>
         </select>
       </div>
     </div>
-    
-    <div style="overflow-y:auto; flex:1; min-height: 300px;" id="comparisonContent">
-      <!-- Сравнение будет загружено динамически -->
-    </div>
+    <div style="overflow-y:auto;flex:1" id="comparisonContent"></div>
   </div>
 </div>
 
+<!-- ══════════════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════════ -->
 <script>
-// Константы и глобальные переменные
-const STORAGE_KEY_PREFIX = 'fitness_data_v8';
-const EXERCISE_KEY_PREFIX = 'fitness_exercises_v8';
-const USERS_KEY = 'fitness_users_v5';
-const CURRENT_USER_KEY = 'fitness_current_user_v5';
-const USER_PARAMS_KEY = 'fitness_user_params_v1';
+// ─── Constants ────────────────────────────────────
+const SK  = 'fitness_data_v8';
+const EK  = 'fitness_exercises_v8';
+const UK  = 'fitness_users_v5';
+const CUK = 'fitness_current_user_v5';
+const PK  = 'fitness_user_params_v1';
 
-// Инициализируем как пустые массивы/объекты
-let appData = [];
-let exercises = [];
-let currentSets = [];
-let users = [];
-let userParameters = {};
-let currentUser = null;
-let editMode = false;
-let editingId = null;
-let originalSetsBackup = null;
-let chartPeriod = 30;
-let parametersChart = null;
+// ─── State ────────────────────────────────────────
+let appData=[], exercises=[], currentSets=[], users=[];
+let userParameters={}, currentUser=null;
+let editMode=false, editingId=null, originalSetsBackup=null;
+let chartPeriod=30, parametersChart=null;
 
-// Функция сохранения параметров пользователей в localStorage
-function saveUserParametersToStorage() {
-  try {
-    localStorage.setItem(USER_PARAMS_KEY, JSON.stringify(userParameters));
-  } catch (e) {
-    console.error('Ошибка сохранения параметров пользователей:', e);
-  }
-}
+// ─── Init ─────────────────────────────────────────
+window.onload=()=>{
+  appData=[]; exercises=[]; currentSets=[]; users=[]; userParameters={};
 
-// Инициализация при загрузке
-window.onload = () => {
-  // Сначала инициализируем пустые массивы
-  appData = [];
-  exercises = [];
-  currentSets = [];
-  users = [];
-  userParameters = {};
-  
-  // Затем загружаем данные
   loadUsers();
   loadCurrentUser();
   loadUserParameters();
@@ -1479,2446 +851,913 @@ window.onload = () => {
   renderHistory();
   addSet();
   updateStats();
-  
-  // Восстанавливаем состояние из sessionStorage
-  const savedSets = sessionStorage.getItem(`currentSets_${currentUser?.id}`);
-  if (savedSets) {
-    try {
-      currentSets = JSON.parse(savedSets);
-      if (!Array.isArray(currentSets)) currentSets = [];
-    } catch (e) {
-      console.error('Ошибка парсинга savedSets:', e);
-      currentSets = [];
-    }
-    renderSets();
+  updateProgress();
+
+  const saved=sessionStorage.getItem(`currentSets_${currentUser?.id}`);
+  if(saved){
+    try{currentSets=JSON.parse(saved);if(!Array.isArray(currentSets))currentSets=[];}
+    catch(e){currentSets=[];}
+    renderSets();updateProgress();
   }
-  
-  // Автосохранение при разгрузке страницы
-  window.addEventListener('beforeunload', autoSaveCurrentSets);
-  
-  // Сохранение при скрытии страницы (для мобильных)
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) autoSaveCurrentSets();
-  });
-  
-  // Проверяем DOM элементы после загрузки
-  setTimeout(() => {
-    if (!initDOMCheck()) {
-      console.error('Не все необходимые DOM-элементы найдены. Приложение может работать некорректно.');
-      showToast('Ошибка загрузки интерфейса', 'error');
-    }
-  }, 100);
+
+  window.addEventListener('beforeunload',autoSave);
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)autoSave();});
 };
 
-// Загрузка пользователей
-function loadUsers() {
-  try {
-    const storedUsers = localStorage.getItem(USERS_KEY);
-    if (storedUsers) {
-      const parsed = JSON.parse(storedUsers);
-      users = Array.isArray(parsed) ? parsed : [];
-    } else {
-      users = [];
-    }
-    
-    // Если пользователей нет, создаем двух пользователей по умолчанию
-    if (users.length === 0) {
-      users = [
-        { id: 'user_ivan', name: 'Иван', createdAt: Date.now() },
-        { id: 'user_andrey', name: 'Андрей', createdAt: Date.now() + 1 }
+// ─── Users ────────────────────────────────────────
+function loadUsers(){
+  try{
+    const s=localStorage.getItem(UK);
+    users=s?JSON.parse(s):[];
+    if(!Array.isArray(users))users=[];
+    if(!users.length){
+      users=[
+        {id:'user_ivan',  name:'Иван',  createdAt:Date.now()},
+        {id:'user_andrey',name:'Андрей',createdAt:Date.now()+1}
       ];
       saveUsers();
     }
-  } catch (e) {
-    console.error('Ошибка загрузки пользователей:', e);
-    users = [
-      { id: 'user_ivan', name: 'Иван', createdAt: Date.now() },
-      { id: 'user_andrey', name: 'Андрей', createdAt: Date.now() + 1 }
-    ];
+  }catch(e){
+    users=[{id:'user_ivan',name:'Иван',createdAt:Date.now()}];
   }
 }
 
-function loadCurrentUser() {
-  try {
-    const storedCurrentUser = localStorage.getItem(CURRENT_USER_KEY);
-    if (storedCurrentUser) {
-      currentUser = JSON.parse(storedCurrentUser);
-      // Проверяем, что пользователь существует в списке
-      const userExists = users.some(u => u.id === currentUser.id);
-      if (!userExists) {
-        currentUser = users[0];
-        saveCurrentUser();
-      }
-    } else {
-      currentUser = users[0];
-      saveCurrentUser();
+function loadCurrentUser(){
+  try{
+    const s=localStorage.getItem(CUK);
+    currentUser=s?JSON.parse(s):null;
+    if(!currentUser||!users.some(u=>u.id===currentUser.id)){
+      currentUser=users[0];saveCurrentUser();
     }
-  } catch (e) {
-    console.error('Ошибка загрузки текущего пользователя:', e);
-    currentUser = users[0];
-  }
-  
-  // Обновляем селектор пользователей
+  }catch(e){currentUser=users[0];}
   renderUserSelector();
 }
 
-function loadUserParameters() {
-  try {
-    const storedParams = localStorage.getItem(USER_PARAMS_KEY);
-    if (storedParams) {
-      const parsed = JSON.parse(storedParams);
-      userParameters = typeof parsed === 'object' ? parsed : {};
-      
-      // Инициализируем параметры для пользователей, у которых их нет
-      users.forEach(user => {
-        if (!userParameters[user.id]) {
-          userParameters[user.id] = {
-            height: null,
-            weight: null,
-            history: []
-          };
-        }
-      });
-    } else {
-      // Инициализируем пустые параметры для всех пользователей
-      userParameters = {};
-      users.forEach(user => {
-        userParameters[user.id] = {
-          height: null,
-          weight: null,
-          history: []
-        };
-      });
-      saveUserParametersToStorage();
-    }
-  } catch (e) {
-    console.error('Ошибка загрузки параметров пользователей:', e);
-    userParameters = {};
+function loadUserParameters(){
+  try{
+    const s=localStorage.getItem(PK);
+    userParameters=s?JSON.parse(s):{};
+    if(typeof userParameters!=='object'||Array.isArray(userParameters))userParameters={};
+    users.forEach(u=>{
+      if(!userParameters[u.id])userParameters[u.id]={height:null,weight:null,history:[]};
+    });
+  }catch(e){
+    userParameters={};
+    users.forEach(u=>userParameters[u.id]={height:null,weight:null,history:[]});
   }
 }
 
-function saveUsers() {
-  try {
-    localStorage.setItem(USERS_KEY, JSON.stringify(users));
-  } catch (e) {
-    console.error('Ошибка сохранения пользователей:', e);
-  }
-}
+function saveUsers(){try{localStorage.setItem(UK,JSON.stringify(users));}catch(e){}}
+function saveCurrentUser(){try{localStorage.setItem(CUK,JSON.stringify(currentUser));}catch(e){}}
+function saveUserParams(){try{localStorage.setItem(PK,JSON.stringify(userParameters));}catch(e){}}
 
-function saveCurrentUser() {
-  try {
-    localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(currentUser));
-  } catch (e) {
-    console.error('Ошибка сохранения текущего пользователя:', e);
-  }
-}
-
-function renderUserSelector() {
-  const select = document.getElementById('userSelect');
-  if (!select) return;
-  
-  const oldValue = select.value;
-  
-  select.innerHTML = '';
-  
-  users.forEach(user => {
-    const option = document.createElement('option');
-    option.value = user.id;
-    option.textContent = user.name;
-    option.selected = user.id === currentUser.id;
-    select.appendChild(option);
+function renderUserSelector(){
+  const sel=document.getElementById('userSelect');
+  const av =document.getElementById('userAvatar');
+  if(!sel)return;
+  const old=sel.value;
+  sel.innerHTML='';
+  users.forEach(u=>{
+    const o=new Option(u.name,u.id);
+    o.selected=u.id===currentUser.id;
+    sel.add(o);
   });
-  
-  // Добавляем опцию для управления пользователями
-  const manageOption = document.createElement('option');
-  manageOption.value = 'manage';
-  manageOption.textContent = 'Управление...';
-  select.appendChild(manageOption);
-  
-  if (oldValue && users.some(u => u.id === oldValue)) {
-    select.value = oldValue;
-  }
+  sel.add(new Option('Управление...','manage'));
+  if(users.some(u=>u.id===old))sel.value=old;
+  if(av)av.textContent=currentUser.name[0].toUpperCase();
 }
 
-function switchUser() {
-  const select = document.getElementById('userSelect');
-  if (!select) return;
-  
-  const selectedValue = select.value;
-  
-  if (selectedValue === 'manage') {
+function switchUser(){
+  const sel=document.getElementById('userSelect');
+  if(!sel)return;
+  const v=sel.value;
+  if(v==='manage'){
     openUsersManager();
-    // Восстанавливаем текущего пользователя в селекторе
-    setTimeout(() => {
-      select.value = currentUser.id;
-    }, 100);
+    setTimeout(()=>{sel.value=currentUser.id;},100);
     return;
   }
-  
-  const newUser = users.find(u => u.id === selectedValue);
-  if (newUser && newUser.id !== currentUser.id) {
-    // Сохраняем текущие подходы перед переключением
-    autoSaveCurrentSets();
-    
-    // Переключаем пользователя
-    currentUser = newUser;
-    saveCurrentUser();
-    
-    // Загружаем данные нового пользователя
-    loadData();
-    renderExercises();
-    renderHistory();
-    updateStats();
-    
-    // Загружаем сохраненные подходы нового пользователя
-    const savedSets = sessionStorage.getItem(`currentSets_${currentUser.id}`);
-    if (savedSets) {
-      try {
-        currentSets = JSON.parse(savedSets);
-        if (!Array.isArray(currentSets)) currentSets = [];
-      } catch (e) {
-        console.error('Ошибка парсинга savedSets:', e);
-        currentSets = [];
-      }
-    } else {
-      currentSets = [];
-      addSet();
-    }
-    
-    renderSets();
-    
-    showToast(`Пользователь: ${currentUser.name}`, 'success');
+  const u=users.find(x=>x.id===v);
+  if(u&&u.id!==currentUser.id){
+    autoSave();
+    currentUser=u;saveCurrentUser();
+    loadData();renderExercises();renderHistory();updateStats();
+    const sv=sessionStorage.getItem(`currentSets_${currentUser.id}`);
+    if(sv){try{currentSets=JSON.parse(sv);if(!Array.isArray(currentSets))currentSets=[];}catch(e){currentSets=[];}}
+    else{currentSets=[];addSet();}
+    renderSets();renderUserSelector();updateProgress();
+    showToast(`Пользователь: ${currentUser.name}`,'success');
   }
 }
 
-function openUsersManager() {
-  renderUsersManagerList();
-  document.getElementById('usersModal').classList.add('active');
-  document.getElementById('newUserName').focus();
-}
+function openUsersManager(){renderUsersManagerList();document.getElementById('usersModal').classList.add('active');}
+function closeUsersManager(){document.getElementById('usersModal').classList.remove('active');renderUserSelector();}
 
-function closeUsersManager() {
-  document.getElementById('usersModal').classList.remove('active');
-  renderUserSelector();
-}
-
-function renderUsersManagerList() {
-  const container = document.getElementById('usersManagerList');
-  if (!container) return;
-  
-  container.innerHTML = '';
-  
-  if (users.length === 0) {
-    container.innerHTML = `
-      <div class="empty-state" style="padding: 40px 20px;">
-        <p>Нет пользователей</p>
-      </div>
-    `;
-    return;
-  }
-  
-  users.forEach((user, index) => {
-    const userElement = document.createElement('div');
-    userElement.className = 'input-row';
-    userElement.style.cssText = `
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      cursor: pointer;
-      border-radius: 8px;
-      margin-bottom: 4px;
-    `;
-    
-    const isCurrent = user.id === currentUser.id;
-    const params = userParameters[user.id] || { height: null, weight: null };
-    const bmi = params.height && params.weight ? 
-      (params.weight / ((params.height/100) * (params.height/100))).toFixed(1) : '-';
-    
-    userElement.innerHTML = `
-      <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
-        <span style="color: var(--text-secondary); font-size: 12px; width: 24px;">${index + 1}.</span>
-        <div style="flex: 1;">
-          <div style="font-weight: ${isCurrent ? '600' : '400'}; color: ${isCurrent ? 'var(--primary)' : 'var(--text)'};">${user.name}</div>
-          <div style="font-size: 11px; color: var(--text-secondary);">
-            ${params.height ? params.height + ' см' : 'Рост не указан'} • 
-            ${params.weight ? params.weight + ' кг' : 'Вес не указан'} • 
-            ИМТ: ${bmi}
-          </div>
+function renderUsersManagerList(){
+  const c=document.getElementById('usersManagerList');
+  if(!c)return;
+  c.innerHTML='';
+  if(!users.length){c.innerHTML='<div class="empty"><div class="empty-title">Нет пользователей</div></div>';return;}
+  users.forEach((u,i)=>{
+    const isCur=u.id===currentUser.id;
+    const p=userParameters[u.id]||{};
+    const bmi=p.height&&p.weight?(p.weight/((p.height/100)**2)).toFixed(1):'-';
+    const el=document.createElement('div');
+    el.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:10px;margin-bottom:6px;background:var(--input-bg);cursor:pointer;transition:background .15s';
+    el.innerHTML=`
+      <div style="display:flex;align-items:center;gap:10px;flex:1">
+        <div style="width:32px;height:32px;border-radius:50%;background:var(--grad-primary);display:flex;align-items:center;justify-content:center;font-weight:700;color:#000;font-size:14px;flex-shrink:0">${u.name[0].toUpperCase()}</div>
+        <div style="flex:1">
+          <div style="font-weight:${isCur?700:500};color:${isCur?'var(--primary)':'var(--text)'}">${u.name}${isCur?' <span style="font-size:10px;background:var(--success-dim);color:var(--success);padding:2px 6px;border-radius:4px;font-weight:700">текущий</span>':''}</div>
+          <div style="font-size:11px;color:var(--text-sub)">${p.height?p.height+' см':'—'} · ${p.weight?p.weight+' кг':'—'} · ИМТ ${bmi}</div>
         </div>
-        ${isCurrent ? '<span style="font-size: 10px; color: var(--success); background: rgba(50, 215, 75, 0.1); padding: 2px 6px; border-radius: 10px;">текущий</span>' : ''}
       </div>
-      <div style="display: flex; gap: 8px;">
-        <button class="header-btn" onclick="renameUser('${user.id}')" title="Переименовать" style="width: 32px; height: 32px; font-size: 12px;">✏️</button>
-        ${user.id !== 'user_ivan' ? `<button class="header-btn" onclick="removeUser('${user.id}')" title="Удалить" style="width: 32px; height: 32px; color: var(--danger);">🗑️</button>` : ''}
-      </div>
-    `;
-    
-    // Двойной клик для переключения
-    userElement.ondblclick = () => {
-      if (user.id !== currentUser.id) {
-        switchToUser(user.id);
-      }
-      closeUsersManager();
-    };
-    
-    container.appendChild(userElement);
+      <div style="display:flex;gap:6px">
+        <button class="hbtn" onclick="renameUser('${u.id}')" title="Переименовать" style="width:30px;height:30px;font-size:12px">✏️</button>
+        ${u.id!=='user_ivan'?`<button class="hbtn" onclick="removeUser('${u.id}')" style="width:30px;height:30px;font-size:12px;color:var(--danger)">🗑️</button>`:''}
+      </div>`;
+    el.ondblclick=()=>{if(u.id!==currentUser.id)switchToUser(u.id);closeUsersManager();};
+    c.appendChild(el);
   });
 }
 
-function addUser() {
-  const input = document.getElementById('newUserName');
-  if (!input) return;
-  
-  const value = input.value.trim();
-  
-  if (!value) {
-    showToast('Введите имя пользователя', 'error');
-    input.focus();
+function addUser(){
+  const inp=document.getElementById('newUserName');
+  const v=inp.value.trim();
+  if(!v){showToast('Введите имя','error');inp.focus();return;}
+  if(users.some(u=>u.name.toLowerCase()===v.toLowerCase())){showToast('Уже существует','warning');return;}
+  const nu={id:'user_'+Date.now()+'_'+Math.random().toString(36).substr(2,9),name:v,createdAt:Date.now()};
+  users.push(nu);
+  userParameters[nu.id]={height:null,weight:null,history:[]};
+  saveUsers();saveUserParams();
+  renderUsersManagerList();inp.value='';inp.focus();
+  showToast(`"${v}" добавлен`,'success');
+}
+
+function renameUser(id){
+  const u=users.find(x=>x.id===id);if(!u)return;
+  const n=prompt('Новое имя:',u.name);
+  if(!n||!n.trim()||n.trim()===u.name)return;
+  if(users.some(x=>x.id!==id&&x.name.toLowerCase()===n.trim().toLowerCase())){showToast('Уже существует','error');return;}
+  const old=u.name;u.name=n.trim();
+  saveUsers();renderUsersManagerList();renderUserSelector();
+  if(id===currentUser.id){currentUser=u;saveCurrentUser();}
+  showToast(`"${old}" → "${n.trim()}"`,'success');
+}
+
+function removeUser(id){
+  if(id==='user_ivan'){showToast('Нельзя удалить основного','warning');return;}
+  const u=users.find(x=>x.id===id);if(!u)return;
+  if(!confirm(`Удалить "${u.name}"? Все данные будут удалены.`))return;
+  if(id===currentUser.id){
+    currentUser=users.find(x=>x.id==='user_ivan')||users[0];
+    saveCurrentUser();loadData();renderExercises();renderHistory();updateStats();
+    currentSets=[];addSet();renderSets();
+    sessionStorage.removeItem(`currentSets_${id}`);
+  }
+  localStorage.removeItem(`${SK}_${id}`);
+  localStorage.removeItem(`${EK}_${id}`);
+  delete userParameters[id];saveUserParams();
+  users=users.filter(x=>x.id!==id);saveUsers();
+  renderUsersManagerList();renderUserSelector();
+  showToast(`"${u.name}" удалён`,'warning');
+}
+
+function switchToUser(id){
+  const u=users.find(x=>x.id===id);
+  if(!u||u.id===currentUser.id)return;
+  autoSave();currentUser=u;saveCurrentUser();
+  loadData();renderExercises();renderHistory();updateStats();
+  const sv=sessionStorage.getItem(`currentSets_${currentUser.id}`);
+  if(sv){try{currentSets=JSON.parse(sv);if(!Array.isArray(currentSets))currentSets=[];}catch(e){currentSets=[];}}
+  else{currentSets=[];addSet();}
+  renderSets();renderUserSelector();updateProgress();
+  showToast(`→ ${currentUser.name}`,'success');
+}
+
+// ─── Data ─────────────────────────────────────────
+function loadData(){
+  try{
+    const s=localStorage.getItem(`${SK}_${currentUser.id}`);
+    appData=s?JSON.parse(s):[];
+    if(!Array.isArray(appData))appData=[];
+  }catch(e){appData=[];}
+  try{
+    const s=localStorage.getItem(`${EK}_${currentUser.id}`);
+    exercises=s?JSON.parse(s):[];
+    if(!Array.isArray(exercises))exercises=[];
+  }catch(e){exercises=[];}
+  if(!exercises.length){
+    exercises=['Жим лежа','Приседания','Становая тяга','Жим стоя','Тяга блока'];
+    saveExercises();
+  }
+}
+
+function saveData(){
+  try{
+    if(!Array.isArray(appData))appData=[];
+    localStorage.setItem(`${SK}_${currentUser.id}`,JSON.stringify(appData));
+  }catch(e){showToast('Ошибка сохранения','error');}
+}
+
+function saveExercises(){
+  try{localStorage.setItem(`${EK}_${currentUser.id}`,JSON.stringify(exercises));}catch(e){}
+}
+
+function autoSave(){
+  if(currentSets.some(s=>s.weight||s.reps))
+    sessionStorage.setItem(`currentSets_${currentUser.id}`,JSON.stringify(currentSets));
+}
+
+// ─── Sets ─────────────────────────────────────────
+function addSet(){
+  const last=currentSets.length?currentSets[currentSets.length-1]:{reps:'',weight:''};
+  currentSets.push({id:Date.now()+Math.random(),reps:last.reps,weight:last.weight});
+  renderSets();updateStats();updateProgress();
+}
+
+function removeSet(i){
+  if(currentSets.length>1)currentSets.splice(i,1);
+  else currentSets[0]={reps:'',weight:''};
+  renderSets();updateStats();updateProgress();
+}
+
+function cleanNum(v,max){
+  let s=v.replace(/[^\d.]/g,'');
+  const p=s.split('.');
+  if(p.length>2)s=p[0]+'.'+p.slice(1).join('');
+  if(s.includes('.')){const[a,b]=s.split('.');if(b.length>1)s=a+'.'+b[0];}
+  if(s==='.')s='0.';
+  if(max&&parseFloat(s)>max)s=String(max);
+  return s;
+}
+
+function updateSet(i,field,val){
+  if(field==='weight')val=cleanNum(val,1000);
+  if(field==='reps') val=cleanNum(val,200);
+  if(currentSets[i])currentSets[i][field]=val;
+  updateStats();updateProgress();
+}
+
+function renderSets(){
+  const c=document.getElementById('setsContainer');
+  if(!c)return;
+  c.innerHTML='';
+  if(!currentSets.length){
+    c.innerHTML='<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">Нет подходов</div></div>';
     return;
   }
-  
-  if (users.some(u => u.name.toLowerCase() === value.toLowerCase())) {
-    showToast('Пользователь с таким именем уже существует', 'warning');
-    input.focus();
-    return;
-  }
-  
-  const newUser = {
-    id: 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-    name: value,
-    createdAt: Date.now()
-  };
-  
-  users.push(newUser);
-  // Инициализируем параметры для нового пользователя
-  userParameters[newUser.id] = {
-    height: null,
-    weight: null,
-    history: []
-  };
-  
-  saveUsers();
-  saveUserParametersToStorage();
-  renderUsersManagerList();
-  input.value = '';
-  input.focus();
-  
-  showToast(`Пользователь "${value}" добавлен`, 'success');
-}
-
-function renameUser(userId) {
-  const user = users.find(u => u.id === userId);
-  if (!user) return;
-  
-  const newName = prompt('Введите новое имя пользователя:', user.name);
-  
-  if (newName && newName.trim() && newName.trim() !== user.name) {
-    if (users.some(u => u.id !== userId && u.name.toLowerCase() === newName.trim().toLowerCase())) {
-      showToast('Пользователь с таким именем уже существует', 'error');
-      return;
-    }
-    
-    const oldName = user.name;
-    user.name = newName.trim();
-    
-    saveUsers();
-    renderUsersManagerList();
-    renderUserSelector();
-    
-    if (userId === currentUser.id) {
-      currentUser = user;
-      saveCurrentUser();
-    }
-    
-    showToast(`Пользователь переименован: "${oldName}" → "${newName.trim()}"`, 'success');
-  }
-}
-
-function removeUser(userId) {
-  if (userId === 'user_ivan') {
-    showToast('Основного пользователя нельзя удалить', 'warning');
-    return;
-  }
-  
-  const user = users.find(u => u.id === userId);
-  if (!user) return;
-  
-  if (!confirm(`Удалить пользователя "${user.name}"?\nВсе данные этого пользователя будут удалены.`)) {
-    return;
-  }
-  
-  // Если удаляем текущего пользователя, переключаемся на основного
-  if (userId === currentUser.id) {
-    currentUser = users.find(u => u.id === 'user_ivan');
-    saveCurrentUser();
-    
-    // Загружаем данные основного пользователя
-    loadData();
-    renderExercises();
-    renderHistory();
-    updateStats();
-    
-    currentSets = [];
-    addSet();
-    renderSets();
-    
-    // Удаляем сохраненные подходы
-    sessionStorage.removeItem(`currentSets_${userId}`);
-  }
-  
-  // Удаляем данные пользователя из localStorage
-  localStorage.removeItem(`${STORAGE_KEY_PREFIX}_${userId}`);
-  localStorage.removeItem(`${EXERCISE_KEY_PREFIX}_${userId}`);
-  
-  // Удаляем параметры пользователя
-  if (userParameters[userId]) {
-    delete userParameters[userId];
-    saveUserParametersToStorage();
-  }
-  
-  // Удаляем пользователя из списка
-  users = users.filter(u => u.id !== userId);
-  saveUsers();
-  renderUsersManagerList();
-  renderUserSelector();
-  
-  showToast(`Пользователь "${user.name}" удален`, 'warning');
-}
-
-function switchToUser(userId) {
-  const user = users.find(u => u.id === userId);
-  if (user && user.id !== currentUser.id) {
-    // Сохраняем текущие подходы
-    autoSaveCurrentSets();
-    
-    // Переключаем
-    currentUser = user;
-    saveCurrentUser();
-    
-    // Загружаем данные нового пользователя
-    loadData();
-    renderExercises();
-    renderHistory();
-    updateStats();
-    
-    // Загружаем сохраненные подходы
-    const savedSets = sessionStorage.getItem(`currentSets_${currentUser.id}`);
-    if (savedSets) {
-      try {
-        currentSets = JSON.parse(savedSets);
-        if (!Array.isArray(currentSets)) currentSets = [];
-      } catch (e) {
-        console.error('Ошибка парсинга savedSets:', e);
-        currentSets = [];
-      }
-    } else {
-      currentSets = [];
-      addSet();
-    }
-    
-    renderSets();
-    renderUserSelector();
-    
-    showToast(`Переключено на: ${currentUser.name}`, 'success');
-  }
-}
-
-// Загрузка данных с учетом текущего пользователя
-function loadData() {
-  try {
-    // Загружаем appData
-    const storageKey = `${STORAGE_KEY_PREFIX}_${currentUser.id}`;
-    const storedAppData = localStorage.getItem(storageKey);
-    if (storedAppData) {
-      const parsed = JSON.parse(storedAppData);
-      appData = Array.isArray(parsed) ? parsed : [];
-    } else {
-      appData = [];
-    }
-    
-    // Загружаем exercises
-    const exerciseKey = `${EXERCISE_KEY_PREFIX}_${currentUser.id}`;
-    const storedExercises = localStorage.getItem(exerciseKey);
-    if (storedExercises) {
-      const parsed = JSON.parse(storedExercises);
-      exercises = Array.isArray(parsed) ? parsed : [];
-    } else {
-      exercises = [];
-    }
-    
-    // Если упражнений нет, устанавливаем стандартные
-    if (!exercises.length) {
-      exercises = ['Жим лежа', 'Приседания', 'Становая тяга', 'Жим стоя', 'Тяга блока'];
-      saveExercises();
-    }
-  } catch (e) {
-    console.error('Ошибка загрузки данных:', e);
-    // Сбрасываем на значения по умолчанию
-    appData = [];
-    exercises = ['Жим лежа', 'Приседания', 'Становая тяга', 'Жим стоя', 'Тяга блока'];
-  }
-}
-
-// Сохранение данных с учетом текущего пользователя
-function saveData() {
-  try {
-    // Убедимся, что appData - это массив
-    if (!Array.isArray(appData)) {
-      console.warn('appData не является массивом, сбрасываем');
-      appData = [];
-    }
-    
-    const storageKey = `${STORAGE_KEY_PREFIX}_${currentUser.id}`;
-    localStorage.setItem(storageKey, JSON.stringify(appData));
-  } catch (e) {
-    console.error('Ошибка сохранения данных:', e);
-    showToast('Ошибка сохранения данных', 'error');
-  }
-}
-
-function saveExercises() {
-  try {
-    const exerciseKey = `${EXERCISE_KEY_PREFIX}_${currentUser.id}`;
-    localStorage.setItem(exerciseKey, JSON.stringify(exercises));
-  } catch (e) {
-    console.error('Ошибка сохранения упражнений:', e);
-  }
-}
-
-// Автосохранение текущих подходов с учетом пользователя
-function autoSaveCurrentSets() {
-  if (currentSets.some(set => set.weight || set.reps)) {
-    sessionStorage.setItem(`currentSets_${currentUser.id}`, JSON.stringify(currentSets));
-  }
-}
-
-// Работа с подходами
-function addSet() {
-  const lastSet = currentSets.length > 0 
-    ? currentSets[currentSets.length - 1] 
-    : { reps: '', weight: '' };
-    
-  currentSets.push({ 
-    id: Date.now() + Math.random(), 
-    reps: lastSet.reps, 
-    weight: lastSet.weight 
-  });
-  
-  renderSets();
-  updateStats();
-}
-
-function removeSet(idx) {
-  if (currentSets.length > 1) {
-    currentSets.splice(idx, 1);
-  } else {
-    currentSets[0] = { reps: '', weight: '' };
-  }
-  
-  renderSets();
-  updateStats();
-}
-
-// Функция для валидации ввода - только числа
-function validateNumberInput(value) {
-  // Удаляем все символы, кроме цифр и точки
-  let cleaned = value.replace(/[^\d.]/g, '');
-  
-  // Удаляем лишние точки (оставляем только первую)
-  const parts = cleaned.split('.');
-  if (parts.length > 2) {
-    cleaned = parts[0] + '.' + parts.slice(1).join('');
-  }
-  
-  // Ограничиваем дробную часть до 1 знака
-  if (cleaned.includes('.')) {
-    const [integer, decimal] = cleaned.split('.');
-    if (decimal.length > 1) {
-      cleaned = integer + '.' + decimal.substring(0, 1);
-    }
-  }
-  
-  return cleaned;
-}
-
-function updateSet(idx, field, value) {
-  // Валидация ввода - только числа
-  if (field === 'weight' || field === 'reps') {
-    // Очищаем ввод
-    value = validateNumberInput(value);
-    
-    // Ограничиваем максимальное значение
-    const numValue = parseFloat(value);
-    if (field === 'weight' && numValue > 1000) value = '1000';
-    if (field === 'reps' && numValue > 200) value = '200';
-    
-    // Не позволяем вводить только точку
-    if (value === '.') value = '0.';
-  }
-  
-  if (currentSets[idx]) {
-    currentSets[idx][field] = value;
-  }
-  
-  updateStats();
-}
-
-function renderSets() {
-  const container = document.getElementById('setsContainer');
-  if (!container) return;
-  
-  container.innerHTML = '';
-  
-  if (currentSets.length === 0) {
-    container.innerHTML = `
-      <div class="empty-state" style="padding: 30px 20px;">
-        <svg viewBox="0 0 24 24">
-          <path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
-        </svg>
-        <p>Добавьте подходы</p>
-      </div>
-    `;
-    return;
-  }
-  
-  currentSets.forEach((set, i) => {
-    const row = document.createElement('div');
-    row.className = 'set-row';
-    row.innerHTML = `
-      <span class="set-index">${i + 1}</span>
+  currentSets.forEach((set,i)=>{
+    const row=document.createElement('div');
+    row.className='set-row';
+    row.innerHTML=`
+      <span class="set-num">${i+1}</span>
       <div class="set-inputs">
-        <input 
-          type="text" 
-          inputmode="decimal"
-          placeholder="кг" 
-          value="${set.weight || ''}" 
-          oninput="updateSet(${i},'weight',this.value)"
-          pattern="[0-9]*[.]?[0-9]*"
-        >
-        <input 
-          type="text" 
-          inputmode="numeric"
-          placeholder="повт" 
-          value="${set.reps || ''}" 
-          oninput="updateSet(${i},'reps',this.value)"
-          pattern="[0-9]*"
-        >
-      </div>
-      <button class="btn-delete" onclick="removeSet(${i})" title="Удалить подход">
-        <svg viewBox="0 0 24 24">
-          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-        </svg>
-      </button>
-    `;
-    container.appendChild(row);
-  });
-  
-  // Обновляем счетчики подходов
-  const completedSets = currentSets.filter(s => s.reps && s.weight).length;
-  const completedSetsEl = document.getElementById('completedSets');
-  const totalSetsCountEl = document.getElementById('totalSetsCount');
-  
-  if (completedSetsEl) completedSetsEl.textContent = completedSets;
-  if (totalSetsCountEl) totalSetsCountEl.textContent = currentSets.length;
-}
-
-// Статистика текущей тренировки
-function updateStats() {
-  const validSets = currentSets.filter(s => s.reps && s.weight);
-  const statsContainer = document.getElementById('workoutStats');
-  
-  if (!statsContainer) return;
-  
-  if (validSets.length === 0) {
-    statsContainer.style.display = 'none';
-    return;
-  }
-  
-  statsContainer.style.display = 'flex';
-  
-  // Рассчитываем статистику
-  const totalVolume = validSets.reduce((sum, set) => {
-    const weight = parseFloat(set.weight) || 0;
-    const reps = parseInt(set.reps) || 0;
-    return sum + (weight * reps);
-  }, 0);
-  
-  const totalWeight = validSets.reduce((sum, set) => {
-    return sum + (parseFloat(set.weight) || 0);
-  }, 0);
-  
-  const bestSet = validSets.reduce((best, set) => {
-    const weight = parseFloat(set.weight) || 0;
-    const reps = parseInt(set.reps) || 0;
-    const current = weight * reps;
-    return current > best.value ? { set, value: current } : best;
-  }, { set: null, value: 0 });
-  
-  // Обновляем UI
-  const totalVolumeEl = document.getElementById('totalVolume');
-  const totalSetsEl = document.getElementById('totalSets');
-  const bestSetEl = document.getElementById('bestSet');
-  const avgWeightEl = document.getElementById('avgWeight');
-  
-  if (totalVolumeEl) totalVolumeEl.textContent = Math.round(totalVolume);
-  if (totalSetsEl) totalSetsEl.textContent = validSets.length;
-  if (bestSetEl) bestSetEl.textContent = bestSet.set 
-    ? `${bestSet.set.weight}×${bestSet.set.reps}`
-    : '-';
-  if (avgWeightEl) avgWeightEl.textContent = 
-    validSets.length > 0 ? Math.round(totalWeight / validSets.length) : 0;
-}
-
-// Сохранение тренировки
-async function saveWorkout() {
-  // Проверяем, что appData - массив
-  if (!Array.isArray(appData)) {
-    console.warn('appData не массив в saveWorkout, сбрасываем');
-    appData = [];
-  }
-  
-  const name = document.getElementById('exerciseSelect').value;
-  const validSets = currentSets.filter(s => s.reps && s.weight);
-  
-  if (!name || name === 'Выбрать упражнение...') {
-    showToast('Выберите упражнение', 'error');
-    return;
-  }
-  
-  if (!validSets.length) {
-    showToast('Заполните хотя бы один подход', 'error');
-    return;
-  }
-  
-  // Виброотклик
-  if (navigator.vibrate) navigator.vibrate(50);
-  
-  // Показываем индикатор загрузки
-  const saveBtn = document.getElementById('saveBtn');
-  const saveBtnText = document.getElementById('saveBtnText');
-  const saveBtnLoader = document.getElementById('saveBtnLoader');
-  
-  if (!saveBtn || !saveBtnText || !saveBtnLoader) {
-    showToast('Ошибка интерфейса', 'error');
-    return;
-  }
-  
-  saveBtn.disabled = true;
-  saveBtnText.textContent = 'Сохранение...';
-  saveBtnLoader.style.display = 'inline-block';
-  
-  // Имитация задержки для UX
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
-  const record = {
-    id: editingId || Date.now() + '-' + Math.random().toString(36).substr(2, 9),
-    name,
-    sets: JSON.parse(JSON.stringify(validSets)),
-    date: editingId ? (appData.find(x => x.id === editingId)?.date || Date.now()) : Date.now(),
-    volume: validSets.reduce((sum, set) => {
-      const weight = parseFloat(set.weight) || 0;
-      const reps = parseInt(set.reps) || 0;
-      return sum + (weight * reps);
-    }, 0),
-    userId: currentUser.id
-  };
-  
-  if (editingId) {
-    const index = appData.findIndex(x => x.id === editingId);
-    if (index !== -1) {
-      appData[index] = record;
-    } else {
-      // Если запись не найдена, добавляем как новую
-      appData.push(record);
-    }
-    editingId = null;
-    originalSetsBackup = null;
-    saveBtnText.textContent = '💾 Сохранить тренировку';
-  } else {
-    appData.push(record);
-  }
-  
-  saveData();
-  currentSets = [];
-  addSet(); // Добавляем один пустой подход после сохранения
-  sessionStorage.removeItem(`currentSets_${currentUser.id}`);
-  renderSets();
-  renderHistory();
-  updateStats();
-  
-  // Сбрасываем индикатор загрузки
-  saveBtn.disabled = false;
-  saveBtnText.textContent = '💾 Сохранить тренировку';
-  saveBtnLoader.style.display = 'none';
-  
-  // Показываем уведомление
-  showToast('Тренировка сохранена!', 'success');
-  
-  // Прокрутка к истории
-  const historyList = document.querySelector('#historyList');
-  if (historyList) {
-    window.scrollTo({
-      top: historyList.offsetTop - 100,
-      behavior: 'smooth'
-    });
-  }
-}
-
-// История тренировок
-function renderHistory() {
-  const container = document.getElementById('historyList');
-  const emptyState = document.getElementById('emptyHistory');
-  const filterSelect = document.getElementById('filterExercise');
-  
-  if (!container) return;
-  
-  // Получаем значение фильтра
-  const filter = filterSelect ? filterSelect.value : '';
-  
-  // Проверяем, что appData - массив
-  if (!Array.isArray(appData)) {
-    console.warn('appData не массив в renderHistory, сбрасываем');
-    appData = [];
-  }
-  
-  if (!appData.length) {
-    if (emptyState) emptyState.style.display = 'block';
-    container.innerHTML = '';
-    return;
-  }
-  
-  if (emptyState) emptyState.style.display = 'none';
-  container.innerHTML = '';
-  
-  // Фильтруем и сортируем данные
-  let filteredData = appData;
-  if (filter) {
-    filteredData = appData.filter(item => item.name === filter);
-  }
-  
-  // Сортируем по дате (новые сверху)
-  const sortedData = [...filteredData].sort((a, b) => {
-    const dateA = a.date || 0;
-    const dateB = b.date || 0;
-    return dateB - dateA;
-  });
-  
-  if (sortedData.length === 0) {
-    container.innerHTML = `
-      <div class="empty-state">
-        <p>Нет тренировок для выбранного упражнения</p>
-      </div>
-    `;
-    return;
-  }
-  
-  // Группировка по датам
-  const grouped = sortedData.reduce((groups, item) => {
-    const date = new Date(item.date).toLocaleDateString('ru-RU', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long'
-    });
-    
-    if (!groups[date]) groups[date] = [];
-    groups[date].push(item);
-    return groups;
-  }, {});
-  
-  // Рендеринг групп
-  Object.entries(grouped).forEach(([date, items]) => {
-    const groupElement = document.createElement('div');
-    groupElement.className = 'history-group';
-    
-    groupElement.innerHTML = `
-      <div class="history-date">
-        ${date}
-        <span style="font-size: 12px; color: var(--text-secondary); font-weight: normal;">
-          (${items.length} ${getPluralForm(items.length, ['тренировка', 'тренировки', 'тренировок'])})
-        </span>
-      </div>
-    `;
-    
-    items.forEach(item => {
-      if (!item.sets || !Array.isArray(item.sets)) {
-        console.warn('У элемента нет sets или это не массив:', item);
-        return;
-      }
-      
-      const itemElement = document.createElement('div');
-      itemElement.className = 'history-item';
-      
-      const totalVolume = item.sets.reduce((sum, set) => {
-        const weight = parseFloat(set.weight) || 0;
-        const reps = parseInt(set.reps) || 0;
-        return sum + (weight * reps);
-      }, 0);
-      
-      const setsHtml = item.sets.map((set, index) => `
-        <span class="tag" title="Подход ${index + 1}">
-          ${set.weight || 0}кг × ${set.reps || 0}
-        </span>
-      `).join('');
-      
-      const actions = editMode ? `
-        <div style="margin-top: 12px; display: flex; gap: 8px; justify-content: flex-end;">
-          <button class="secondary" 
-            style="width: auto; padding: 6px 12px; font-size: 13px;" 
-            onclick="editRec('${item.id}')"
-            title="Редактировать">
-            ✏️ Изменить
-          </button>
-          <button class="secondary" 
-            style="width: auto; padding: 6px 12px; font-size: 13px; color: var(--danger);" 
-            onclick="delRec('${item.id}')"
-            title="Удалить">
-            🗑️ Удалить
-          </button>
+        <div class="set-field">
+          <input type="text" inputmode="decimal" placeholder="вес" value="${set.weight||''}"
+            oninput="updateSet(${i},'weight',this.value)" pattern="[0-9]*[.]?[0-9]*">
+          <div class="set-unit">кг</div>
         </div>
-      ` : '';
-      
-      itemElement.innerHTML = `
-        <div style="display: flex; justify-content: space-between; margin-bottom: 8px; align-items: flex-start;">
+        <div class="set-field">
+          <input type="text" inputmode="numeric" placeholder="повт" value="${set.reps||''}"
+            oninput="updateSet(${i},'reps',this.value)" pattern="[0-9]*">
+          <div class="set-unit">раз</div>
+        </div>
+      </div>
+      <button class="del-btn" onclick="removeSet(${i})" title="Удалить">✕</button>`;
+    c.appendChild(row);
+  });
+  const done=currentSets.filter(s=>s.reps&&s.weight).length;
+  const total=currentSets.length;
+  const dEl=document.getElementById('completedSets');
+  const tEl=document.getElementById('totalSetsCount');
+  if(dEl)dEl.textContent=done;
+  if(tEl)tEl.textContent=total;
+}
+
+function updateProgress(){
+  const done=currentSets.filter(s=>s.reps&&s.weight).length;
+  const total=currentSets.length;
+  const pct=total?Math.round(done/total*100):0;
+  const fill=document.getElementById('progFill');
+  const lbl=document.getElementById('progLabel');
+  if(fill)fill.style.width=pct+'%';
+  if(lbl)lbl.textContent=pct+'%';
+}
+
+// ─── Stats bar ────────────────────────────────────
+function updateStats(){
+  const valid=currentSets.filter(s=>s.reps&&s.weight);
+  const box=document.getElementById('workoutStats');
+  if(!box)return;
+  if(!valid.length){box.style.display='none';return;}
+  box.style.display='grid';
+  const vol=valid.reduce((sum,s)=>sum+(parseFloat(s.weight)||0)*(parseInt(s.reps)||0),0);
+  const best=valid.reduce((b,s)=>{const v=(parseFloat(s.weight)||0)*(parseInt(s.reps)||0);return v>b.v?{s,v}:b},{s:null,v:0});
+  const avgW=valid.reduce((sum,s)=>sum+(parseFloat(s.weight)||0),0)/valid.length;
+  const v=id=>document.getElementById(id);
+  if(v('totalVolume'))v('totalVolume').textContent=Math.round(vol);
+  if(v('totalSets'))  v('totalSets').textContent=valid.length;
+  if(v('bestSet'))    v('bestSet').textContent=best.s?`${best.s.weight}×${best.s.reps}`:'—';
+  if(v('avgWeight'))  v('avgWeight').textContent=Math.round(avgW);
+}
+
+// ─── Save workout ─────────────────────────────────
+async function saveWorkout(){
+  if(!Array.isArray(appData))appData=[];
+  const name=document.getElementById('exerciseSelect').value;
+  const valid=currentSets.filter(s=>s.reps&&s.weight);
+  if(!name||name==='Выбрать упражнение...'){showToast('Выберите упражнение','error');return;}
+  if(!valid.length){showToast('Заполните хотя бы один подход','error');return;}
+  if(navigator.vibrate)navigator.vibrate(50);
+
+  const btn=document.getElementById('saveBtn');
+  const txt=document.getElementById('saveBtnText');
+  const ldr=document.getElementById('saveBtnLoader');
+  if(!btn)return;
+  btn.disabled=true;
+  if(txt)txt.textContent='Сохранение...';
+  if(ldr)ldr.style.display='inline-block';
+
+  await new Promise(r=>setTimeout(r,500));
+
+  const rec={
+    id: editingId||(Date.now()+'-'+Math.random().toString(36).substr(2,9)),
+    name,
+    sets:JSON.parse(JSON.stringify(valid)),
+    date: editingId?(appData.find(x=>x.id===editingId)?.date||Date.now()):Date.now(),
+    volume:valid.reduce((s,x)=>(parseFloat(x.weight)||0)*(parseInt(x.reps)||0)+s,0),
+    userId:currentUser.id
+  };
+
+  if(editingId){
+    const idx=appData.findIndex(x=>x.id===editingId);
+    if(idx!==-1)appData[idx]=rec;else appData.push(rec);
+    editingId=null;originalSetsBackup=null;
+    if(txt)txt.textContent='💾 Сохранить тренировку';
+  }else{
+    appData.push(rec);
+  }
+
+  saveData();
+  currentSets=[];addSet();
+  sessionStorage.removeItem(`currentSets_${currentUser.id}`);
+  renderSets();renderHistory();updateStats();updateProgress();
+
+  btn.disabled=false;
+  if(txt)txt.textContent='💾 Сохранить тренировку';
+  if(ldr)ldr.style.display='none';
+  showToast('Тренировка сохранена! 🎉','success');
+
+  const hl=document.getElementById('historyList');
+  if(hl)window.scrollTo({top:hl.offsetTop-80,behavior:'smooth'});
+}
+
+// ─── Render history ───────────────────────────────
+function renderHistory(){
+  const c=document.getElementById('historyList');
+  if(!c)return;
+  if(!Array.isArray(appData))appData=[];
+  const flt=document.getElementById('filterExercise');
+  const filter=flt?flt.value:'';
+
+  if(!appData.length){
+    c.innerHTML=`<div class="empty"><div class="empty-icon">📭</div><div class="empty-title">История пуста</div><div class="empty-sub">Начните добавлять тренировки!</div></div>`;
+    return;
+  }
+
+  let data=filter?appData.filter(x=>x.name===filter):appData;
+  data=[...data].sort((a,b)=>b.date-a.date);
+
+  if(!data.length){
+    c.innerHTML=`<div class="empty"><div class="empty-icon">🔍</div><div class="empty-title">Нет тренировок для фильтра</div></div>`;
+    return;
+  }
+
+  c.innerHTML='';
+  const grouped=data.reduce((g,item)=>{
+    const d=new Date(item.date).toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long'});
+    (g[d]=g[d]||[]).push(item);return g;
+  },{});
+
+  Object.entries(grouped).forEach(([date,items])=>{
+    const grp=document.createElement('div');
+    grp.className='hist-group';
+    grp.innerHTML=`<div class="hist-date">${date} <span style="font-weight:500;color:var(--text-muted)">${items.length} ${plural(items.length,['тренировка','тренировки','тренировок'])}</span></div>`;
+
+    items.forEach(item=>{
+      if(!Array.isArray(item.sets))return;
+      const vol=item.sets.reduce((s,x)=>(parseFloat(x.weight)||0)*(parseInt(x.reps)||0)+s,0);
+      const tags=item.sets.map((s,i)=>`<span class="tag">${s.weight||0}×${s.reps||0}</span>`).join('');
+      const actions=editMode?`<div class="hist-actions">
+        <button class="ghost" style="font-size:13px;padding:8px 14px;width:auto" onclick="editRec('${item.id}')">✏️ Изменить</button>
+        <button class="danger-ghost" style="font-size:13px;padding:8px 14px;width:auto" onclick="delRec('${item.id}')">🗑️ Удалить</button>
+      </div>`:'';
+      const el=document.createElement('div');
+      el.className='hist-item';
+      el.innerHTML=`
+        <div class="hist-head">
           <div>
-            <b style="font-size: 16px;">${item.name || 'Без названия'}</b>
-            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
-              ${new Date(item.date).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
-              • ${item.sets.length} ${getPluralForm(item.sets.length, ['подход', 'подхода', 'подходов'])}
-              • ${Math.round(totalVolume)} кг общий объем
+            <div class="hist-name">${item.name||'—'}</div>
+            <div class="hist-meta">
+              ${new Date(item.date).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}
+              · ${item.sets.length} ${plural(item.sets.length,['подход','подхода','подходов'])}
+              · объём ${Math.round(vol)} кг
             </div>
           </div>
-          <div style="font-size: 14px; color: var(--primary); font-weight: 600;">
-            ${Math.round(totalVolume)} кг
-          </div>
+          <div class="hist-vol">${Math.round(vol)}<span style="font-size:14px;font-family:inherit"> кг</span></div>
         </div>
-        <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px;">
-          ${setsHtml}
-        </div>
-        ${actions}
-      `;
-      
-      groupElement.appendChild(itemElement);
+        <div class="tags">${tags}</div>
+        ${actions}`;
+      grp.appendChild(el);
     });
-    
-    container.appendChild(groupElement);
+    c.appendChild(grp);
   });
 }
 
-// Вспомогательная функция для правильного склонения
-function getPluralForm(n, forms) {
-  n = Math.abs(n) % 100;
-  const n1 = n % 10;
-  if (n > 10 && n < 20) return forms[2];
-  if (n1 > 1 && n1 < 5) return forms[1];
-  if (n1 === 1) return forms[0];
-  return forms[2];
+function plural(n,f){n=Math.abs(n)%100;const n1=n%10;if(n>10&&n<20)return f[2];if(n1>1&&n1<5)return f[1];if(n1===1)return f[0];return f[2];}
+
+// ─── Edit / Delete ────────────────────────────────
+function editRec(id){
+  if(!Array.isArray(appData))return;
+  const rec=appData.find(x=>x.id===id);
+  if(!rec){showToast('Запись не найдена','error');return;}
+  document.getElementById('exerciseSelect').value=rec.name;
+  currentSets=JSON.parse(JSON.stringify(rec.sets||[]));
+  editingId=id;
+  originalSetsBackup=JSON.parse(JSON.stringify(rec.sets||[]));
+  const txt=document.getElementById('saveBtnText');
+  if(txt)txt.textContent='✏️ Обновить тренировку';
+  renderSets();updateStats();updateProgress();
+  window.scrollTo({top:0,behavior:'smooth'});
+  showToast('Редактирование…','warning');
 }
 
-// Редактирование записи
-function editRec(id) {
-  // Проверяем, что appData - массив
-  if (!Array.isArray(appData)) {
-    console.warn('appData не массив в editRec, сбрасываем');
-    appData = [];
-    return;
+function delRec(id){
+  if(!confirm('Удалить эту тренировку?'))return;
+  if(!Array.isArray(appData))appData=[];
+  appData=appData.filter(x=>x.id!==id);
+  saveData();renderHistory();
+  showToast('Тренировка удалена','error');
+}
+
+function clearHistory(){
+  if(!confirm('Удалить ВСЮ историю? Отменить нельзя.'))return;
+  appData=[];saveData();renderHistory();
+  showToast('История очищена','error');
+}
+
+// ─── Edit mode ────────────────────────────────────
+function toggleEditMode(){
+  if(editMode&&editingId&&originalSetsBackup){
+    if(!confirm('Отменить редактирование?'))return;
+    currentSets=[{id:Date.now()+Math.random(),reps:'',weight:''}];
+    editingId=null;originalSetsBackup=null;
+    const txt=document.getElementById('saveBtnText');
+    if(txt)txt.textContent='💾 Сохранить тренировку';
+    renderSets();updateStats();updateProgress();
+    showToast('Редактирование отменено','warning');
+    editMode=false;
+    const lb=document.getElementById('lockBtn');
+    if(lb)lb.classList.remove('on');
+    renderHistory();return;
   }
-  
-  const record = appData.find(x => x.id === id);
-  if (!record) {
-    showToast('Запись не найдена', 'error');
-    return;
+  editMode=!editMode;
+  const lb=document.getElementById('lockBtn');
+  if(lb){
+    if(editMode){lb.classList.add('on');showToast('Режим редактирования','warning');}
+    else{lb.classList.remove('on');showToast('Редактирование выключено','success');}
   }
-  
-  document.getElementById('exerciseSelect').value = record.name;
-  currentSets = JSON.parse(JSON.stringify(record.sets || []));
-  editingId = id;
-  
-  // Сохраняем копию оригинальных подходов для отмены
-  originalSetsBackup = JSON.parse(JSON.stringify(record.sets || []));
-  
-  const saveBtn = document.querySelector('.fab-container button');
-  if (saveBtn) {
-    saveBtn.innerHTML = '<span id="saveBtnText">✏️ Обновить тренировку</span><span id="saveBtnLoader" class="loader" style="display: none; margin-left: 8px;"></span>';
-  }
-  
-  renderSets();
-  updateStats();
-  
-  // Прокрутка к верху
-  window.scrollTo({
-    top: 0,
-    behavior: 'smooth'
+  renderHistory();
+}
+
+// ─── Hint ─────────────────────────────────────────
+function loadLastSessionHint(){
+  const name=document.getElementById('exerciseSelect').value;
+  const hint=document.getElementById('lastSessionHint');
+  if(!name||name==='Выбрать упражнение...'||!hint){if(hint)hint.style.display='none';return;}
+  if(!Array.isArray(appData)){hint.style.display='none';return;}
+  const last=[...appData.filter(x=>x.name===name)].sort((a,b)=>b.date-a.date)[0];
+  if(!last||!Array.isArray(last.sets)||!last.sets.length){hint.style.display='none';return;}
+  const best=last.sets.reduce((b,s)=>{const v=(parseFloat(s.weight)||0)*(parseInt(s.reps)||0);return v>b.v?{s,v}:b},{s:null,v:0});
+  if(!best.s){hint.style.display='none';return;}
+  const vol=last.sets.reduce((s,x)=>(parseFloat(x.weight)||0)*(parseInt(x.reps)||0)+s,0);
+  const days=Math.floor((Date.now()-last.date)/86400000);
+  const when=days===0?'сегодня':days===1?'вчера':`${days} дн. назад`;
+  const ht=document.getElementById('hintText');
+  if(ht)ht.innerHTML=`<span><b>${when}:</b> ${best.s.weight}кг×${best.s.reps} (лучший)</span><span style="color:var(--text-sub);font-size:11px">${last.sets.length} подхода · ${Math.round(vol)} кг</span>`;
+  hint.style.display='flex';
+}
+
+// ─── Exercise manager ─────────────────────────────
+function renderExercises(){
+  const sel=document.getElementById('exerciseSelect');
+  const flt=document.getElementById('filterExercise');
+  const cmp=document.getElementById('comparisonExercise');
+  if(!sel||!flt)return;
+  const sv=sel.value,fv=flt.value;
+  if(!Array.isArray(exercises)){exercises=['Жим лежа','Приседания'];saveExercises();}
+  sel.innerHTML='<option disabled selected>Выбрать упражнение...</option>';
+  flt.innerHTML='<option value="">Все упражнения</option>';
+  if(cmp)cmp.innerHTML='<option value="">Все упражнения</option>';
+  [...exercises].sort().forEach(e=>{
+    sel.add(new Option(e,e));
+    flt.add(new Option(e,e));
+    if(cmp)cmp.add(new Option(e,e));
   });
-  
-  showToast('Редактирование тренировки', 'warning');
+  if(exercises.includes(sv))sel.value=sv;
+  if(exercises.includes(fv))flt.value=fv;
 }
 
-// Удаление записи
-function delRec(id) {
-  if (!confirm('Вы уверены, что хотите удалить эту тренировку?')) return;
-  
-  // Проверяем, что appData - массив
-  if (!Array.isArray(appData)) {
-    console.warn('appData не массив в delRec, сбрасываем');
-    appData = [];
-    renderHistory();
-    return;
-  }
-  
-  appData = appData.filter(x => x.id !== id);
-  saveData();
-  renderHistory();
-  showToast('Тренировка удалена', 'error');
-}
-
-// Очистка всей истории
-function clearHistory() {
-  if (!confirm('Вы уверены, что хотите удалить ВСЮ историю тренировок? Это действие нельзя отменить.')) {
-    return;
-  }
-  
-  appData = [];
-  saveData();
-  renderHistory();
-  showToast('История очищена', 'error');
-}
-
-// Режим редактирования - с отменой редактирования при выходе
-function toggleEditMode() {
-  if (editMode && editingId && originalSetsBackup) {
-    // Отменяем редактирование
-    if (confirm('Отменить редактирование текущей тренировки?')) {
-      // Сбрасываем текущие подходы и оставляем один пустой подход
-      currentSets = [{ id: Date.now() + Math.random(), reps: '', weight: '' }];
-      editingId = null;
-      originalSetsBackup = null;
-      
-      // Сбрасываем кнопку сохранения
-      const saveBtn = document.querySelector('.fab-container button');
-      if (saveBtn) {
-        saveBtn.innerHTML = '<span id="saveBtnText">💾 Сохранить тренировку</span><span id="saveBtnLoader" class="loader" style="display: none; margin-left: 8px;"></span>';
-      }
-      
-      // Сбрасываем выбор упражнения
-      document.getElementById('exerciseSelect').value = 'Выбрать упражнение...';
-      
-      // Скрываем подсказку о последней тренировке
-      const hint = document.getElementById('lastSessionHint');
-      if (hint) {
-        hint.style.display = 'none';
-      }
-      
-      renderSets();
-      updateStats();
-      showToast('Редактирование отменено', 'warning');
-      
-      // Выйти из режима редактирования после отмены
-      editMode = false;
-      const lockBtn = document.getElementById('lockBtn');
-      if (lockBtn) {
-        lockBtn.classList.remove('active');
-        lockBtn.title = 'Режим редактирования выключен';
-      }
-      
-      renderHistory();
-      return; // Не переключаем editMode в конце функции
-    } else {
-      return; // Не выходим из режима редактирования
-    }
-  }
-  
-  editMode = !editMode;
-  const lockBtn = document.getElementById('lockBtn');
-  
-  if (!lockBtn) return;
-  
-  if (editMode) {
-    lockBtn.classList.add('active');
-    lockBtn.title = 'Режим редактирования включен';
-    showToast('Режим редактирования включен', 'warning');
-  } else {
-    lockBtn.classList.remove('active');
-    lockBtn.title = 'Режим редактирования выключен';
-    showToast('Режим редактирования выключен', 'success');
-  }
-  
-  renderHistory();
-}
-
-// Подсказка о прошлой тренировке
-function loadLastSessionHint() {
-  const name = document.getElementById('exerciseSelect').value;
-  const hint = document.getElementById('lastSessionHint');
-  
-  if (!name || name === 'Выбрать упражнение...' || !hint) {
-    if (hint) hint.style.display = 'none';
-    return;
-  }
-  
-  // Проверяем, что appData - массив
-  if (!Array.isArray(appData)) {
-    console.warn('appData не массив в loadLastSessionHint, сбрасываем');
-    appData = [];
-    hint.style.display = 'none';
-    return;
-  }
-  
-  const lastSessions = appData
-    .filter(x => x.name === name)
-    .sort((a, b) => b.date - a.date);
-  
-  if (lastSessions.length > 0) {
-    const last = lastSessions[0];
-    // Проверяем, что у last есть sets
-    if (!last.sets || !Array.isArray(last.sets) || last.sets.length === 0) {
-      hint.style.display = 'none';
-      return;
-    }
-    
-    const bestSet = last.sets.reduce((max, set) => {
-      const weight = parseFloat(set.weight) || 0;
-      const reps = parseInt(set.reps) || 0;
-      const current = weight * reps;
-      return current > max.value ? { set, value: current } : max;
-    }, { set: null, value: 0 });
-    
-    if (bestSet.set) {
-      const totalVolume = last.sets.reduce((sum, set) => {
-        const weight = parseFloat(set.weight) || 0;
-        const reps = parseInt(set.reps) || 0;
-        return sum + (weight * reps);
-      }, 0);
-      
-      const daysAgo = Math.floor((Date.now() - last.date) / (1000 * 60 * 60 * 24));
-      const daysText = daysAgo === 0 ? 'сегодня' : 
-                      daysAgo === 1 ? 'вчера' : 
-                      `${daysAgo} дней назад`;
-      
-      const hintText = document.getElementById('hintText');
-      if (hintText) {
-        hintText.innerHTML = `
-          <span>
-            <strong>${daysText}:</strong> ${bestSet.set.weight}кг × ${bestSet.set.reps} (лучший)
-          </span>
-          <span style="color: var(--text-secondary); font-size: 12px;">
-            ${last.sets.length} подхода • ${Math.round(totalVolume)}кг
-          </span>
-        `;
-      }
-      
-      hint.style.display = 'block';
-    } else {
-      hint.style.display = 'none';
-    }
-  } else {
-    hint.style.display = 'none';
-  }
-}
-
-// Управление упражнениями
-function renderExercises() {
-  const select = document.getElementById('exerciseSelect');
-  const filter = document.getElementById('filterExercise');
-  const comparisonExercise = document.getElementById('comparisonExercise');
-  
-  if (!select || !filter) return;
-  
-  const oldSelectValue = select.value;
-  const oldFilterValue = filter.value;
-  
-  // Очищаем и сортируем по алфавиту
-  select.innerHTML = '<option disabled selected>Выбрать упражнение...</option>';
-  filter.innerHTML = '<option value="">Все упражнения</option>';
-  if (comparisonExercise) {
-    comparisonExercise.innerHTML = '<option value="">Все упражнения</option>';
-  }
-  
-  // Проверяем, что exercises - массив
-  if (!Array.isArray(exercises)) {
-    console.warn('exercises не массив, сбрасываем');
-    exercises = ['Жим лежа', 'Приседания', 'Становая тяга', 'Жим стоя', 'Тяга блока'];
-    saveExercises();
-  }
-  
-  [...exercises].sort().forEach(exercise => {
-    select.add(new Option(exercise, exercise));
-    filter.add(new Option(exercise, exercise));
-    if (comparisonExercise) {
-      comparisonExercise.add(new Option(exercise, exercise));
-    }
-  });
-  
-  // Восстанавливаем значения
-  if (exercises.includes(oldSelectValue)) select.value = oldSelectValue;
-  if (exercises.includes(oldFilterValue)) filter.value = oldFilterValue;
-}
-
-function openExerciseManager() {
+function openExerciseManager(){
   renderExerciseManagerList();
   document.getElementById('exerciseModal').classList.add('active');
-  document.getElementById('newExerciseInput').focus();
+  setTimeout(()=>document.getElementById('newExerciseInput').focus(),300);
 }
+function closeExerciseManager(){document.getElementById('exerciseModal').classList.remove('active');renderExercises();}
 
-function closeExerciseManager() {
-  document.getElementById('exerciseModal').classList.remove('active');
-  renderExercises();
-}
-
-function renderExerciseManagerList() {
-  const container = document.getElementById('exerciseManagerList');
-  if (!container) return;
-  
-  container.innerHTML = '';
-  
-  if (exercises.length === 0) {
-    container.innerHTML = `
-      <div class="empty-state" style="padding: 40px 20px;">
-        <p>Нет сохраненных упражнений</p>
-      </div>
-    `;
-    return;
-  }
-  
-  [...exercises].sort().forEach((exercise, index) => {
-    const exerciseElement = document.createElement('div');
-    exerciseElement.className = 'input-row';
-    exerciseElement.style.cssText = `
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      cursor: pointer;
-      border-radius: 8px;
-      margin-bottom: 4px;
-    `;
-    
-    exerciseElement.innerHTML = `
-      <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
-        <span style="color: var(--text-secondary); font-size: 12px; width: 24px;">${index + 1}.</span>
-        <span style="flex: 1;">${exercise}</span>
-      </div>
-      <div style="display: flex; gap: 8px;">
-        <button class="header-btn" onclick="renameExercise(${index})" title="Переименовать" style="width: 32px; height: 32px; font-size: 12px;">✏️</button>
-        <button class="header-btn" onclick="removeExercise(${index})" title="Удалить" style="width: 32px; height: 32px; color: var(--danger);">🗑️</button>
-      </div>
-    `;
-    
-    // Двойной клик для быстрого выбора
-    exerciseElement.ondblclick = () => {
-      const select = document.getElementById('exerciseSelect');
-      if (select) {
-        select.value = exercise;
-        closeExerciseManager();
-        loadLastSessionHint();
-      }
-    };
-    
-    container.appendChild(exerciseElement);
+function renderExerciseManagerList(){
+  const c=document.getElementById('exerciseManagerList');if(!c)return;c.innerHTML='';
+  if(!exercises.length){c.innerHTML='<div class="empty"><div class="empty-title">Нет упражнений</div></div>';return;}
+  [...exercises].sort().forEach((ex,i)=>{
+    const el=document.createElement('div');
+    el.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:10px;margin-bottom:6px;background:var(--input-bg);cursor:pointer;transition:background .15s';
+    el.innerHTML=`
+      <span style="flex:1;font-weight:500">${ex}</span>
+      <div style="display:flex;gap:6px">
+        <button class="hbtn" onclick="renameExercise(${exercises.indexOf(ex)})" style="width:30px;height:30px;font-size:12px">✏️</button>
+        <button class="hbtn" onclick="removeExercise(${exercises.indexOf(ex)})" style="width:30px;height:30px;font-size:12px;color:var(--danger)">🗑️</button>
+      </div>`;
+    el.ondblclick=()=>{const s=document.getElementById('exerciseSelect');if(s){s.value=ex;closeExerciseManager();loadLastSessionHint();}};
+    c.appendChild(el);
   });
 }
 
-function filterExercises() {
-  const searchTerm = document.getElementById('searchExercise').value.toLowerCase();
-  const container = document.getElementById('exerciseManagerList');
-  if (!container) return;
-  
-  const items = container.getElementsByClassName('input-row');
-  
-  Array.from(items).forEach(item => {
-    const text = item.textContent.toLowerCase();
-    item.style.display = text.includes(searchTerm) ? 'flex' : 'none';
+function filterExercises(){
+  const q=document.getElementById('searchExercise').value.toLowerCase();
+  document.querySelectorAll('#exerciseManagerList > div').forEach(el=>{
+    el.style.display=el.textContent.toLowerCase().includes(q)?'flex':'none';
   });
 }
 
-function addExercise() {
-  const input = document.getElementById('newExerciseInput');
-  if (!input) return;
-  
-  const value = input.value.trim();
-  
-  if (!value) {
-    showToast('Введите название упражнения', 'error');
-    input.focus();
-    return;
-  }
-  
-  if (exercises.includes(value)) {
-    showToast('Это упражнение уже существует', 'warning');
-    input.focus();
-    return;
-  }
-  
-  exercises.push(value);
-  saveExercises();
-  renderExerciseManagerList();
-  input.value = '';
-  input.focus();
-  
-  showToast(`Упражнение "${value}" добавлено`, 'success');
+function addExercise(){
+  const inp=document.getElementById('newExerciseInput');
+  const v=inp.value.trim();
+  if(!v){showToast('Введите название','error');inp.focus();return;}
+  if(exercises.includes(v)){showToast('Уже существует','warning');inp.focus();return;}
+  exercises.push(v);saveExercises();renderExerciseManagerList();inp.value='';inp.focus();
+  showToast(`"${v}" добавлено`,'success');
 }
 
-function removeExercise(index) {
-  const exerciseName = exercises[index];
-  
-  if (!confirm(`Удалить упражнение "${exerciseName}"?\nВсе связанные тренировки будут сохранены.`)) {
-    return;
-  }
-  
-  exercises.splice(index, 1);
-  saveExercises();
-  renderExerciseManagerList();
-  
-  showToast(`Упражнение "${exerciseName}" удалено`, 'warning');
+function removeExercise(i){
+  if(!confirm(`Удалить "${exercises[i]}"?`))return;
+  const n=exercises[i];exercises.splice(i,1);saveExercises();renderExerciseManagerList();
+  showToast(`"${n}" удалено`,'warning');
 }
 
-function renameExercise(index) {
-  const newName = prompt('Введите новое название:', exercises[index]);
-  
-  if (newName && newName.trim() && newName.trim() !== exercises[index]) {
-    if (exercises.includes(newName.trim())) {
-      showToast('Упражнение с таким названием уже существует', 'error');
-      return;
-    }
-    
-    const oldName = exercises[index];
-    exercises[index] = newName.trim();
-    
-    // Обновляем все тренировки с этим упражнением
-    appData.forEach(record => {
-      if (record.name === oldName) {
-        record.name = newName.trim();
-      }
-    });
-    
-    saveExercises();
-    saveData();
-    renderExerciseManagerList();
-    renderExercises();
-    
-    showToast(`Упражнение переименовано: "${oldName}" → "${newName.trim()}"`, 'success');
-  }
+function renameExercise(i){
+  const n=prompt('Новое название:',exercises[i]);
+  if(!n||!n.trim()||n.trim()===exercises[i])return;
+  if(exercises.includes(n.trim())){showToast('Уже существует','error');return;}
+  const old=exercises[i];
+  exercises[i]=n.trim();
+  appData.forEach(r=>{if(r.name===old)r.name=n.trim();});
+  saveExercises();saveData();renderExerciseManagerList();renderExercises();
+  showToast(`"${old}" → "${n.trim()}"`,'success');
 }
 
-// Быстрые кнопки веса - ТОЛЬКО для последнего подхода
-function quickWeight(weight) {
-  if (currentSets.length === 0) {
-    showToast('Сначала добавьте подход', 'warning');
-    return;
-  }
-  
-  const lastIndex = currentSets.length - 1;
-  currentSets[lastIndex].weight = weight;
-  
-  renderSets();
-  updateStats();
-  showToast(`Вес ${weight}кг установлен для последнего подхода`, 'success');
+// ─── Quick weight ─────────────────────────────────
+function quickWeight(w){
+  if(!currentSets.length){showToast('Добавьте подход','warning');return;}
+  currentSets[currentSets.length-1].weight=w;
+  renderSets();updateStats();updateProgress();
+  showToast(`${w} кг установлен`,'success');
+}
+function resetLastSet(){
+  if(!currentSets.length){showToast('Нет подходов','warning');return;}
+  const l=currentSets.length-1;
+  currentSets[l].weight='';currentSets[l].reps='';
+  renderSets();updateStats();updateProgress();
+  showToast('Последний подход сброшен','warning');
 }
 
-// Сброс только последнего подхода
-function resetLastSet() {
-  if (currentSets.length === 0) {
-    showToast('Нет подходов для сброса', 'warning');
-    return;
-  }
-  
-  const lastIndex = currentSets.length - 1;
-  currentSets[lastIndex].weight = '';
-  currentSets[lastIndex].reps = '';
-  
-  renderSets();
-  updateStats();
-  showToast('Последний подход сброшен', 'warning');
-}
-
-// Экспорт в CSV
-function exportToCSV() {
-  if (!appData.length) {
-    showToast('История пуста', 'warning');
-    return;
-  }
-  
-  try {
-    let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
-    csvContent += "Дата;Время;Упражнение;Подход;Вес (кг);Повторы;Объем\n";
-    
-    const sortedData = [...appData].sort((a, b) => a.date - b.date);
-    
-    sortedData.forEach(workout => {
-      const date = new Date(workout.date);
-      const dateStr = date.toLocaleDateString('ru-RU');
-      const timeStr = date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-      
-      workout.sets.forEach((set, index) => {
-        const weight = parseFloat(set.weight) || 0;
-        const reps = parseInt(set.reps) || 0;
-        const volume = weight * reps;
-        csvContent += `${dateStr};${timeStr};"${workout.name}";${index + 1};"${weight}";"${reps}";"${volume}"\n`;
+// ─── Export / Import ──────────────────────────────
+function exportToCSV(){
+  if(!appData.length){showToast('История пуста','warning');return;}
+  try{
+    let csv='data:text/csv;charset=utf-8,\uFEFF';
+    csv+='Дата;Время;Упражнение;Подход;Вес (кг);Повторы;Объем\n';
+    [...appData].sort((a,b)=>a.date-b.date).forEach(w=>{
+      const d=new Date(w.date);
+      const ds=d.toLocaleDateString('ru-RU');
+      const ts=d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+      w.sets.forEach((s,i)=>{
+        const wt=parseFloat(s.weight)||0,rp=parseInt(s.reps)||0;
+        csv+=`${ds};${ts};"${w.name}";${i+1};"${wt}";"${rp}";"${wt*rp}"\n`;
       });
     });
-    
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `fitness_${currentUser.name}_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    showToast('Экспорт CSV завершен', 'success');
-  } catch (error) {
-    console.error('Ошибка экспорта:', error);
-    showToast('Ошибка при экспорте', 'error');
-  }
+    const a=document.createElement('a');
+    a.href=encodeURI(csv);
+    a.download=`fittrack_${currentUser.name}_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+    showToast('CSV экспортирован','success');
+  }catch(e){showToast('Ошибка экспорта','error');}
 }
 
-// Триггер для открытия выбора файла
-function triggerFileInput() {
-  document.getElementById('csvImport').click();
-}
-
-// Импорт из CSV - УПРОЩЕННАЯ И ИСПРАВЛЕННАЯ ФУНКЦИЯ
-function importFromCSV(event) {
-  const file = event.target.files[0];
-  if (!file) {
-    showToast('Файл не выбран', 'warning');
-    return;
-  }
-  
-  // Проверяем расширение файла
-  if (!file.name.toLowerCase().endsWith('.csv')) {
-    showToast('Пожалуйста, выберите CSV файл', 'error');
-    event.target.value = '';
-    return;
-  }
-  
-  const reader = new FileReader();
-  
-  reader.onload = function(e) {
-    try {
-      const content = e.target.result;
-      const lines = content.split('\n');
-      
-      // Пропускаем заголовок
-      const headers = lines[0].split(';').map(h => h.trim().replace(/"/g, ''));
-      
-      let importedCount = 0;
-      let skippedCount = 0;
-      
-      // Создаем временный массив для новых тренировок
-      const newWorkouts = [];
-      
-      for (let i = 1; i < lines.length; i++) {
-        const line = lines[i].trim();
-        if (!line) continue;
-        
-        try {
-          // Простая обработка CSV
-          const values = line.split(';').map(v => v.trim().replace(/"/g, ''));
-          
-          if (values.length >= 7) {
-            const [dateStr, timeStr, exerciseName, setIndexStr, weightStr, repsStr, volumeStr] = values;
-            
-            if (!exerciseName || exerciseName === '') {
-              skippedCount++;
-              continue;
-            }
-            
-            // Парсим дату
-            let date;
-            try {
-              if (dateStr.includes('.')) {
-                // Формат DD.MM.YYYY
-                const [day, month, year] = dateStr.split('.');
-                date = new Date(year, month - 1, day);
-                if (timeStr) {
-                  const [hours, minutes] = timeStr.split(':');
-                  date.setHours(parseInt(hours) || 0, parseInt(minutes) || 0);
-                }
-              } else {
-                // Пробуем стандартный парсинг
-                date = new Date(dateStr + ' ' + timeStr);
-              }
-            } catch (e) {
-              date = new Date();
-            }
-            
-            if (isNaN(date.getTime())) {
-              date = new Date();
-            }
-            
-            const weight = parseFloat(weightStr.replace(',', '.')) || 0;
-            const reps = parseInt(repsStr) || 0;
-            
-            if (weight > 0 && reps > 0 && exerciseName) {
-              // Ищем существующую тренировку на эту дату с этим упражнением
-              const existingIndex = newWorkouts.findIndex(w => 
-                w.name === exerciseName && 
-                Math.abs(new Date(w.date).getTime() - date.getTime()) < 24 * 60 * 60 * 1000
-              );
-              
-              if (existingIndex >= 0) {
-                // Добавляем подход к существующей тренировке
-                newWorkouts[existingIndex].sets.push({ weight, reps });
-                newWorkouts[existingIndex].volume += weight * reps;
-              } else {
-                // Создаем новую тренировку
-                const newWorkout = {
-                  id: Date.now() + '-' + Math.random().toString(36).substr(2, 9) + '-' + i,
-                  name: exerciseName,
-                  sets: [{ weight, reps }],
-                  date: date.getTime(),
-                  volume: weight * reps,
-                  userId: currentUser.id
-                };
-                newWorkouts.push(newWorkout);
-              }
-              
-              // Добавляем упражнение в список, если его нет
-              if (!exercises.includes(exerciseName)) {
-                exercises.push(exerciseName);
-              }
-              
-              importedCount++;
-            } else {
-              skippedCount++;
-            }
-          }
-        } catch (parseError) {
-          console.error(`Ошибка парсинга строки ${i}:`, line, parseError);
-          skippedCount++;
-        }
+function importFromCSV(ev){
+  const file=ev.target.files[0];
+  if(!file){showToast('Файл не выбран','warning');return;}
+  if(!file.name.toLowerCase().endsWith('.csv')){showToast('Нужен CSV файл','error');ev.target.value='';return;}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const lines=e.target.result.split('\n');
+      let imported=0;
+      const wks=[];
+      for(let i=1;i<lines.length;i++){
+        const ln=lines[i].trim();if(!ln)continue;
+        const v=ln.split(';').map(x=>x.trim().replace(/"/g,''));
+        if(v.length<7)continue;
+        const[ds,ts,en,,ws,rs]=v;
+        if(!en)continue;
+        let dt;
+        try{
+          if(ds.includes('.')){const[d,m,y]=ds.split('.');dt=new Date(y,m-1,d);if(ts){const[h,min]=ts.split(':');dt.setHours(+h||0,+min||0);}}
+          else dt=new Date(ds+' '+ts);
+        }catch{dt=new Date();}
+        if(isNaN(dt))dt=new Date();
+        const wt=parseFloat(ws.replace(',','.'))||0;
+        const rp=parseInt(rs)||0;
+        if(!wt||!rp||!en)continue;
+        const xi=wks.findIndex(w=>w.name===en&&Math.abs(new Date(w.date)-dt)<86400000);
+        if(xi>=0){wks[xi].sets.push({weight:wt,reps:rp});wks[xi].volume+=wt*rp;}
+        else wks.push({id:Date.now()+'-'+Math.random().toString(36).substr(2,9)+'-'+i,name:en,sets:[{weight:wt,reps:rp}],date:dt.getTime(),volume:wt*rp,userId:currentUser.id});
+        if(!exercises.includes(en))exercises.push(en);
+        imported++;
       }
-      
-      // Добавляем новые тренировки к существующим
-      if (newWorkouts.length > 0) {
-        appData.push(...newWorkouts);
-        
-        // Сохраняем упражнения
-        saveExercises();
-        // Сохраняем данные
-        saveData();
-        
-        // Обновляем интерфейс
-        renderExercises();
-        renderHistory();
-        
-        showToast(`Импорт завершен: ${importedCount} подходов добавлено`, 'success');
-      } else {
-        showToast('Не удалось импортировать данные из файла', 'warning');
-      }
-      
-    } catch (error) {
-      console.error('Ошибка импорта CSV:', error);
-      showToast('Ошибка при импорте CSV файла', 'error');
-    } finally {
-      // Сбрасываем input файла
-      event.target.value = '';
-    }
+      if(wks.length){
+        appData.push(...wks);saveExercises();saveData();
+        renderExercises();renderHistory();
+        showToast(`Импортировано ${imported} строк`,'success');
+      }else showToast('Нет данных для импорта','warning');
+    }catch(e){showToast('Ошибка импорта','error');}
+    finally{ev.target.value='';}
   };
-  
-  reader.onerror = function() {
-    showToast('Ошибка чтения файла', 'error');
-    event.target.value = '';
-  };
-  
-  reader.readAsText(file, 'UTF-8');
+  reader.onerror=()=>{showToast('Ошибка чтения файла','error');ev.target.value='';};
+  reader.readAsText(file,'UTF-8');
 }
 
-// Статистика
-function showStats() {
-  const container = document.getElementById('statsContent');
-  if (!container) return;
-  
-  if (!appData.length) {
-    container.innerHTML = `
-      <div class="empty-state">
-        <p>Недостаточно данных для статистики</p>
-      </div>
-    `;
-    document.getElementById('statsModal').classList.add('active');
-    return;
+// ─── Stats modal ──────────────────────────────────
+function showStats(){
+  const c=document.getElementById('statsContent');if(!c)return;
+  if(!appData.length){
+    c.innerHTML='<div class="empty"><div class="empty-icon">📊</div><div class="empty-title">Нет данных</div></div>';
+    document.getElementById('statsModal').classList.add('active');return;
   }
-  
-  // Рассчитываем статистику
-  const totalWorkouts = appData.length;
-  const totalExercises = [...new Set(appData.map(w => w.name))].length;
-  const totalSets = appData.reduce((sum, w) => sum + w.sets.length, 0);
-  const totalVolume = appData.reduce((sum, w) => sum + (w.volume || 0), 0);
-  
-  // Самые популярные упражнения
-  const exerciseCounts = appData.reduce((acc, w) => {
-    acc[w.name] = (acc[w.name] || 0) + 1;
-    return acc;
-  }, {});
-  
-  const popularExercises = Object.entries(exerciseCounts)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5);
-  
-  // Прогресс по времени
-  const firstWorkout = new Date(Math.min(...appData.map(w => w.date)));
-  const daysSinceStart = Math.floor((Date.now() - firstWorkout) / (1000 * 60 * 60 * 24));
-  
-  // Лучшие результаты по упражнениям
-  const bestResults = {};
-  appData.forEach(workout => {
-    if (!bestResults[workout.name]) {
-      bestResults[workout.name] = {
-        maxWeight: 0,
-        maxVolume: 0,
-        totalSets: 0,
-        totalWorkouts: 0
-      };
-    }
-    
-    const workoutBest = workout.sets.reduce((best, set) => {
-      const weight = parseFloat(set.weight) || 0;
-      const reps = parseInt(set.reps) || 0;
-      const volume = weight * reps;
-      
-      return {
-        maxWeight: Math.max(best.maxWeight, weight),
-        maxVolume: Math.max(best.maxVolume, volume)
-      };
-    }, { maxWeight: 0, maxVolume: 0 });
-    
-    bestResults[workout.name].maxWeight = Math.max(
-      bestResults[workout.name].maxWeight,
-      workoutBest.maxWeight
-    );
-    bestResults[workout.name].maxVolume = Math.max(
-      bestResults[workout.name].maxVolume,
-      workoutBest.maxVolume
-    );
-    bestResults[workout.name].totalSets += workout.sets.length;
-    bestResults[workout.name].totalWorkouts += 1;
+  const totalWk=appData.length;
+  const totalEx=[...new Set(appData.map(w=>w.name))].length;
+  const totalSt=appData.reduce((s,w)=>s+w.sets.length,0);
+  const totalVl=appData.reduce((s,w)=>s+(w.volume||0),0);
+  const exCnt=appData.reduce((a,w)=>{a[w.name]=(a[w.name]||0)+1;return a;},{});
+  const top=Object.entries(exCnt).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const best={};
+  appData.forEach(w=>{
+    if(!best[w.name])best[w.name]={maxW:0,tot:0,wks:0};
+    w.sets.forEach(s=>{best[w.name].maxW=Math.max(best[w.name].maxW,parseFloat(s.weight)||0);best[w.name].tot+=w.sets.length;});
+    best[w.name].wks++;
   });
-  
-  const bestResultsList = Object.entries(bestResults)
-    .sort((a, b) => b[1].maxWeight - a[1].maxWeight)
-    .slice(0, 5);
-  
-  // Параметры пользователя
-  const userParams = userParameters[currentUser.id] || {};
-  const bmi = userParams.height && userParams.weight ? 
-    (userParams.weight / ((userParams.height/100) * (userParams.height/100))).toFixed(1) : '-';
-  
-  container.innerHTML = `
-    <div class="profile-stats" style="margin: 0 0 20px 0;">
-      <div class="profile-stat">
-        <div class="profile-stat-value">${totalWorkouts}</div>
-        <div class="profile-stat-label">Тренировок</div>
-      </div>
-      <div class="profile-stat">
-        <div class="profile-stat-value">${totalExercises}</div>
-        <div class="profile-stat-label">Упражнений</div>
-      </div>
-      <div class="profile-stat">
-        <div class="profile-stat-value">${totalSets}</div>
-        <div class="profile-stat-label">Подходов</div>
-      </div>
-      <div class="profile-stat">
-        <div class="profile-stat-value">${Math.round(totalVolume)}</div>
-        <div class="profile-stat-label">кг общий объем</div>
-      </div>
+  const bestList=Object.entries(best).sort((a,b)=>b[1].maxW-a[1].maxW).slice(0,5);
+  const first=new Date(Math.min(...appData.map(w=>w.date)));
+  const days=Math.floor((Date.now()-first)/86400000);
+  const p=userParameters[currentUser.id]||{};
+  const bmi=p.height&&p.weight?(p.weight/((p.height/100)**2)).toFixed(1):'-';
+  c.innerHTML=`
+    <div class="profile-grid" style="margin:0 0 20px">
+      <div class="pstat"><div class="pstat-val">${totalWk}</div><div class="pstat-lbl">Тренировок</div></div>
+      <div class="pstat"><div class="pstat-val">${totalEx}</div><div class="pstat-lbl">Упражнений</div></div>
+      <div class="pstat"><div class="pstat-val">${totalSt}</div><div class="pstat-lbl">Подходов</div></div>
+      <div class="pstat"><div class="pstat-val">${Math.round(totalVl)}</div><div class="pstat-lbl">кг объём</div></div>
     </div>
-    
-    <h3 style="margin: 20px 0 10px 0;">👤 Параметры пользователя</h3>
-    <div style="background: var(--card-bg); border-radius: var(--radius); padding: 16px; margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.05);">
-      <div style="display: flex; justify-content: space-between; padding: 8px 0;">
-        <span>Рост:</span>
-        <span style="font-weight: 600; color: ${userParams.height ? 'var(--primary)' : 'var(--text-secondary)'};">${userParams.height ? userParams.height + ' см' : 'Не указан'}</span>
-      </div>
-      <div style="display: flex; justify-content: space-between; padding: 8px 0;">
-        <span>Вес:</span>
-        <span style="font-weight: 600; color: ${userParams.weight ? 'var(--primary)' : 'var(--text-secondary)'};">${userParams.weight ? userParams.weight + ' кг' : 'Не указан'}</span>
-      </div>
-      <div style="display: flex; justify-content: space-between; padding: 8px 0;">
-        <span>Индекс массы тела (ИМТ):</span>
-        <span style="font-weight: 600; color: ${bmi !== '-' ? 
-          (bmi < 18.5 ? 'var(--warning)' : 
-           bmi <= 24.9 ? 'var(--success)' : 
-           bmi <= 29.9 ? 'var(--warning)' : 'var(--danger)') : 'var(--text-secondary)'}">${bmi}</span>
-      </div>
+    <div class="label" style="margin-top:0">Параметры</div>
+    <div class="card" style="margin-bottom:20px">
+      ${[['Рост',p.height?p.height+' см':'—'],['Вес',p.weight?p.weight+' кг':'—'],['ИМТ',bmi]].map(([l,v])=>`
+        <div class="input-row" style="display:flex;justify-content:space-between">
+          <span style="color:var(--text-sub)">${l}</span>
+          <span style="font-weight:700;color:var(--primary)">${v}</span>
+        </div>`).join('')}
     </div>
-    
-    <h3 style="margin: 20px 0 10px 0;">🏆 Самые популярные упражнения</h3>
-    <div style="background: var(--card-bg); border-radius: var(--radius); padding: 16px; margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.05);">
-      ${popularExercises.map(([name, count], index) => `
-        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: ${index < popularExercises.length - 1 ? '1px solid var(--separator)' : 'none'};">
-          <span>${index + 1}. ${name}</span>
-          <span style="color: var(--primary); font-weight: 600;">${count} тренировок</span>
-        </div>
-      `).join('')}
+    <div class="label">Топ упражнений</div>
+    <div class="card" style="margin-bottom:20px">
+      ${top.map(([n,cnt],i)=>`
+        <div class="input-row" style="display:flex;justify-content:space-between${i===top.length-1?';border-bottom:none':''}">
+          <span>${i+1}. ${n}</span>
+          <span style="color:var(--primary);font-weight:700">${cnt} тр.</span>
+        </div>`).join('')}
     </div>
-    
-    <h3 style="margin: 20px 0 10px 0;">📈 Лучшие результаты</h3>
-    <div style="background: var(--card-bg); border-radius: var(--radius); padding: 16px; margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.05);">
-      ${bestResultsList.map(([name, stats], index) => `
-        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: ${index < bestResultsList.length - 1 ? '1px solid var(--separator)' : 'none'};">
-          <span>${index + 1}. ${name}</span>
-          <div style="text-align: right;">
-            <div style="font-weight: 600; color: var(--primary);">${Math.round(stats.maxWeight)} кг</div>
-            <div style="font-size: 11px; color: var(--text-secondary);">макс. вес</div>
-          </div>
-        </div>
-      `).join('')}
+    <div class="label">Лучшие результаты</div>
+    <div class="card" style="margin-bottom:20px">
+      ${bestList.map(([n,s],i)=>`
+        <div class="input-row" style="display:flex;justify-content:space-between${i===bestList.length-1?';border-bottom:none':''}">
+          <span>${i+1}. ${n}</span>
+          <span style="color:var(--primary);font-weight:700">${Math.round(s.maxW)} кг</span>
+        </div>`).join('')}
     </div>
-    
-    <h3 style="margin: 20px 0 10px 0;">ℹ️ Общая информация</h3>
-    <div style="background: var(--card-bg); border-radius: var(--radius); padding: 16px; border: 1px solid rgba(255, 255, 255, 0.05);">
-      <div style="display: flex; justify-content: space-between; padding: 8px 0;">
-        <span>Пользователь:</span>
-        <span style="font-weight: 600; color: var(--primary);">${currentUser.name}</span>
-      </div>
-      <div style="display: flex; justify-content: space-between; padding: 8px 0;">
-        <span>Начало отслеживания:</span>
-        <span>${firstWorkout.toLocaleDateString('ru-RU')}</span>
-      </div>
-      <div style="display: flex; justify-content: space-between; padding: 8px 0;">
-        <span>Дней тренировок:</span>
-        <span>${daysSinceStart}</span>
-      </div>
-      <div style="display: flex; justify-content: space-between; padding: 8px 0;">
-        <span>Средняя тренировка:</span>
-        <span>${Math.round(totalVolume / totalWorkouts)} кг</span>
-      </div>
-    </div>
-  `;
-  
+    <div class="label">Общее</div>
+    <div class="card">
+      ${[['Пользователь',currentUser.name],['Старт',first.toLocaleDateString('ru-RU')],['Дней активности',days],['Ср. объём/тр.',Math.round(totalVl/totalWk)+' кг']].map(([l,v],i,a)=>`
+        <div class="input-row" style="display:flex;justify-content:space-between${i===a.length-1?';border-bottom:none':''}">
+          <span style="color:var(--text-sub)">${l}</span>
+          <span style="font-weight:600">${v}</span>
+        </div>`).join('')}
+    </div>`;
   document.getElementById('statsModal').classList.add('active');
 }
+function closeStats(){document.getElementById('statsModal').classList.remove('active');}
 
-function closeStats() {
-  document.getElementById('statsModal').classList.remove('active');
-}
+// ─── Profile ──────────────────────────────────────
+function openUserProfile(){loadUserProfile();document.getElementById('profileModal').classList.add('active');}
+function closeUserProfile(){document.getElementById('profileModal').classList.remove('active');}
 
-// Профиль пользователя
-function openUserProfile() {
-  loadUserProfile();
-  document.getElementById('profileModal').classList.add('active');
-}
-
-function closeUserProfile() {
-  document.getElementById('profileModal').classList.remove('active');
-}
-
-function loadUserProfile() {
-  const params = userParameters[currentUser.id] || { height: null, weight: null, history: [] };
-  
-  // Обновляем значения в UI
-  document.getElementById('profileHeight').textContent = params.height ? params.height + ' см' : '- см';
-  document.getElementById('profileWeight').textContent = params.weight ? params.weight + ' кг' : '- кг';
-  
-  // Рассчитываем ИМТ
-  let bmi = '-';
-  if (params.height && params.weight) {
-    bmi = (params.weight / ((params.height/100) * (params.height/100))).toFixed(1);
-  }
-  document.getElementById('profileIMC').textContent = bmi;
-  
-  // Подсчитываем тренировки
-  const workoutCount = appData.length;
-  document.getElementById('profileWorkouts').textContent = workoutCount;
-  
-  // Заполняем поля ввода текущими значениями
-  document.getElementById('editHeight').value = params.height || '';
-  document.getElementById('editWeight').value = params.weight || '';
-  
-  // Загружаем историю
-  loadParametersHistory();
-  
-  // Рендерим график
+function loadUserProfile(){
+  const p=userParameters[currentUser.id]||{height:null,weight:null,history:[]};
+  const bmi=p.height&&p.weight?(p.weight/((p.height/100)**2)).toFixed(1):'—';
+  document.getElementById('profileHeight').textContent=p.height?p.height:'—';
+  document.getElementById('profileWeight').textContent=p.weight?p.weight:'—';
+  document.getElementById('profileIMC').textContent=bmi;
+  document.getElementById('profileWorkouts').textContent=appData.length;
+  document.getElementById('editHeight').value=p.height||'';
+  document.getElementById('editWeight').value=p.weight||'';
+  loadParamsHistory();
   renderParametersChart();
 }
 
-// Функция сохранения параметров из профиля
-function saveProfileParameters() {
-  const heightInput = document.getElementById('editHeight');
-  const weightInput = document.getElementById('editWeight');
-  
-  if (!heightInput || !weightInput) {
-    showToast('Ошибка: поля ввода не найдены', 'error');
-    return;
+function saveProfileParameters(){
+  const h=parseFloat(document.getElementById('editHeight').value);
+  const w=parseFloat(document.getElementById('editWeight').value);
+  if((h&&(h<100||h>250))||(w&&(w<30||w>200))){showToast('Некорректные значения','error');return;}
+  if(!userParameters[currentUser.id])userParameters[currentUser.id]={height:null,weight:null,history:[]};
+  const p=userParameters[currentUser.id];
+  const oh=p.height,ow=p.weight;
+  p.height=h||null;p.weight=w||null;
+  if((h&&h!==oh)||(w&&w!==ow)){
+    if(!p.history)p.history=[];
+    p.history.unshift({date:Date.now(),height:h||oh,weight:w||ow});
+    if(p.history.length>100)p.history=p.history.slice(0,100);
   }
-  
-  const height = parseFloat(heightInput.value);
-  const weight = parseFloat(weightInput.value);
-  
-  if ((height && (height < 100 || height > 250)) || (weight && (weight < 30 || weight > 200))) {
-    showToast('Некорректные значения роста или веса', 'error');
-    return;
-  }
-  
-  if (!userParameters[currentUser.id]) {
-    userParameters[currentUser.id] = { height: null, weight: null, history: [] };
-  }
-  
-  // Сохраняем новые значения
-  const oldHeight = userParameters[currentUser.id].height;
-  const oldWeight = userParameters[currentUser.id].weight;
-  
-  userParameters[currentUser.id].height = height || null;
-  userParameters[currentUser.id].weight = weight || null;
-  
-  // Добавляем запись в историю, если значения изменились
-  if ((height && height !== oldHeight) || (weight && weight !== oldWeight)) {
-    if (!userParameters[currentUser.id].history) {
-      userParameters[currentUser.id].history = [];
-    }
-    
-    userParameters[currentUser.id].history.push({
-      date: Date.now(),
-      height: height || oldHeight,
-      weight: weight || oldWeight
-    });
-    
-    // Сортируем историю по дате (новые сверху)
-    userParameters[currentUser.id].history.sort((a, b) => b.date - a.date);
-    
-    // Ограничиваем историю 100 записями
-    if (userParameters[currentUser.id].history.length > 100) {
-      userParameters[currentUser.id].history = userParameters[currentUser.id].history.slice(0, 100);
-    }
-  }
-  
-  saveUserParametersToStorage();
-  loadUserProfile();
-  
-  showToast('Параметры сохранены', 'success');
+  saveUserParams();loadUserProfile();
+  showToast('Параметры сохранены','success');
 }
 
-function loadParametersHistory() {
-  const container = document.getElementById('parametersHistory');
-  if (!container) return;
-  
-  const params = userParameters[currentUser.id] || { history: [] };
-  
-  if (!params.history || params.history.length === 0) {
-    container.innerHTML = `
-      <div class="empty-state" style="padding: 20px;">
-        <p>Нет истории изменений</p>
-        <p style="font-size: 12px; margin-top: 8px;">Добавьте рост и вес в профиле</p>
-      </div>
-    `;
+function loadParamsHistory(){
+  const c=document.getElementById('parametersHistory');if(!c)return;
+  const p=userParameters[currentUser.id]||{history:[]};
+  if(!p.history||!p.history.length){
+    c.innerHTML='<div class="empty"><div class="empty-title">Нет истории</div><div class="empty-sub">Добавьте рост и вес</div></div>';
     return;
   }
-  
-  container.innerHTML = '';
-  
-  // Группируем по датам
-  const grouped = params.history.reduce((groups, entry) => {
-    const date = new Date(entry.date).toLocaleDateString('ru-RU', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    });
-    
-    if (!groups[date]) groups[date] = [];
-    groups[date].push(entry);
-    return groups;
-  }, {});
-  
-  Object.entries(grouped).forEach(([date, entries]) => {
-    const groupElement = document.createElement('div');
-    groupElement.style.marginBottom = '15px';
-    
-    groupElement.innerHTML = `
-      <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px; color: var(--primary);">${date}</div>
-    `;
-    
-    entries.forEach(entry => {
-      const time = new Date(entry.date).toLocaleTimeString('ru-RU', { 
-        hour: '2-digit', 
-        minute: '2-digit' 
-      });
-      
-      const bmi = entry.height && entry.weight ? 
-        (entry.weight / ((entry.height/100) * (entry.height/100))).toFixed(1) : '-';
-      
-      const entryElement = document.createElement('div');
-      entryElement.style.cssText = `
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 8px;
-        padding: 12px;
-        margin-bottom: 8px;
-      `;
-      
-      entryElement.innerHTML = `
-        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-          <span style="font-size: 12px; color: var(--text-secondary);">${time}</span>
-          <span style="font-size: 12px; color: var(--primary); font-weight: 600;">ИМТ: ${bmi}</span>
-        </div>
-        <div style="display: flex; justify-content: space-between;">
-          <div>
-            <div style="font-size: 11px; color: var(--text-secondary);">Рост</div>
-            <div style="font-weight: 600;">${entry.height || '-'} см</div>
-          </div>
-          <div>
-            <div style="font-size: 11px; color: var(--text-secondary);">Вес</div>
-            <div style="font-weight: 600;">${entry.weight || '-'} кг</div>
-          </div>
-        </div>
-      `;
-      
-      groupElement.appendChild(entryElement);
-    });
-    
-    container.appendChild(groupElement);
+  c.innerHTML='';
+  p.history.forEach(e=>{
+    const bmi=e.height&&e.weight?(e.weight/((e.height/100)**2)).toFixed(1):'—';
+    const el=document.createElement('div');
+    el.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:10px;margin-bottom:8px;background:var(--input-bg)';
+    el.innerHTML=`
+      <div>
+        <div style="font-size:12px;color:var(--text-sub)">${new Date(e.date).toLocaleDateString('ru-RU')} ${new Date(e.date).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}</div>
+        <div style="font-weight:600;margin-top:4px">${e.height||'—'} см · ${e.weight||'—'} кг</div>
+      </div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--primary)">ИМТ ${bmi}</div>`;
+    c.appendChild(el);
   });
 }
 
-function renderParametersChart() {
-  const canvas = document.getElementById('parametersChart');
-  if (!canvas) return;
-  
-  const ctx = canvas.getContext('2d');
-  const params = userParameters[currentUser.id] || { history: [] };
-  
-  // Фильтруем историю по выбранному периоду
-  const cutoffDate = Date.now() - (chartPeriod * 24 * 60 * 60 * 1000);
-  const filteredHistory = params.history.filter(entry => entry.date >= cutoffDate);
-  
-  if (filteredHistory.length < 2) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    // Получаем значение CSS переменной
-    const textSecondary = getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim();
-    ctx.fillStyle = textSecondary || '#8E8E93';
-    ctx.font = '14px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('Недостаточно данных для графика', canvas.width/2, canvas.height/2);
+// BUG FIX: Chart.js options can't use CSS vars — use literal colors
+function renderParametersChart(){
+  const canvas=document.getElementById('parametersChart');if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const p=userParameters[currentUser.id]||{history:[]};
+  const cut=Date.now()-chartPeriod*86400000;
+  const hist=[...(p.history||[])].filter(e=>e.date>=cut).sort((a,b)=>a.date-b.date);
+
+  if(parametersChart){parametersChart.destroy();parametersChart=null;}
+
+  if(hist.length<2){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#6B7A99';ctx.font='14px Plus Jakarta Sans,sans-serif';
+    ctx.textAlign='center';ctx.fillText('Недостаточно данных',canvas.width/2,canvas.height/2);
     return;
   }
-  
-  // Сортируем по дате
-  const sortedHistory = [...filteredHistory].sort((a, b) => a.date - b.date);
-  
-  // Подготавливаем данные
-  const dates = sortedHistory.map(entry => 
-    new Date(entry.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })
-  );
-  
-  const weights = sortedHistory.map(entry => entry.weight).filter(w => w);
-  const heights = sortedHistory.map(entry => entry.height).filter(h => h);
-  
-  // Если есть предыдущий график, уничтожаем его
-  if (parametersChart) {
-    parametersChart.destroy();
-  }
-  
-  // Создаем новый график
-  parametersChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: dates,
-      datasets: [
-        {
-          label: 'Вес (кг)',
-          data: weights,
-          borderColor: 'rgb(10, 132, 255)',
-          backgroundColor: 'rgba(10, 132, 255, 0.1)',
-          tension: 0.3,
-          fill: true
-        },
-        {
-          label: 'Рост (см)',
-          data: heights,
-          borderColor: 'rgb(50, 215, 75)',
-          backgroundColor: 'rgba(50, 215, 75, 0.1)',
-          tension: 0.3,
-          fill: true
-        }
+
+  const labels=hist.map(e=>new Date(e.date).toLocaleDateString('ru-RU',{day:'numeric',month:'short'}));
+  const weights=hist.map(e=>e.weight||null);
+  const heights=hist.map(e=>e.height||null);
+
+  parametersChart=new Chart(ctx,{
+    type:'line',
+    data:{
+      labels,
+      datasets:[
+        {label:'Вес (кг)',data:weights,borderColor:'#00D4FF',backgroundColor:'rgba(0,212,255,0.08)',tension:0.4,fill:true,pointBackgroundColor:'#00D4FF',pointRadius:4,spanGaps:true},
+        {label:'Рост (см)',data:heights,borderColor:'#00FF88',backgroundColor:'rgba(0,255,136,0.06)',tension:0.4,fill:true,pointBackgroundColor:'#00FF88',pointRadius:4,spanGaps:true}
       ]
     },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          labels: {
-            color: 'var(--text)',
-            font: {
-              size: 12
-            }
-          }
-        },
-        tooltip: {
-          backgroundColor: 'var(--card-bg)',
-          titleColor: 'var(--text)',
-          bodyColor: 'var(--text)',
-          borderColor: 'var(--separator)',
-          borderWidth: 1
-        }
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{labels:{color:'#E8EDF5',font:{size:12,family:'Plus Jakarta Sans'}}},
+        tooltip:{backgroundColor:'#111827',titleColor:'#E8EDF5',bodyColor:'#E8EDF5',borderColor:'rgba(255,255,255,0.07)',borderWidth:1}
       },
-      scales: {
-        x: {
-          ticks: {
-            color: 'var(--text-secondary)',
-            maxRotation: 45
-          },
-          grid: {
-            color: 'rgba(255, 255, 255, 0.05)'
-          }
-        },
-        y: {
-          ticks: {
-            color: 'var(--text-secondary)'
-          },
-          grid: {
-            color: 'rgba(255, 255, 255, 0.05)'
-          }
-        }
+      scales:{
+        x:{ticks:{color:'#6B7A99'},grid:{color:'rgba(255,255,255,0.04)'}},
+        y:{ticks:{color:'#6B7A99'},grid:{color:'rgba(255,255,255,0.04)'}}
       }
     }
   });
 }
 
-// Сравнение пользователей
-function openUsersComparison() {
-  renderUsersComparison();
-  document.getElementById('comparisonModal').classList.add('active');
+// ─── Comparison ───────────────────────────────────
+function openUsersComparison(){renderUsersComparison();document.getElementById('comparisonModal').classList.add('active');}
+function closeUsersComparison(){document.getElementById('comparisonModal').classList.remove('active');}
+
+function loadUserData(uid){
+  try{const s=localStorage.getItem(`${SK}_${uid}`);const d=s?JSON.parse(s):[];return Array.isArray(d)?d:[];}
+  catch(e){return [];}
 }
 
-function closeUsersComparison() {
-  document.getElementById('comparisonModal').classList.remove('active');
-}
+function renderUsersComparison(){
+  const c=document.getElementById('comparisonContent');
+  const ex=(document.getElementById('comparisonExercise')||{}).value||'';
+  if(!c)return;
+  if(users.length<2){c.innerHTML='<div class="empty"><div class="empty-title">Нужно ≥2 пользователей</div></div>';return;}
+  const stats=users.map(u=>{
+    const d=loadUserData(u.id);
+    const fd=ex?d.filter(x=>x.name===ex):d;
+    const p=userParameters[u.id]||{};
+    const vol=fd.reduce((s,w)=>s+(w.volume||0),0);
+    let mx=0;fd.forEach(w=>w.sets.forEach(s=>{const wt=parseFloat(s.weight)||0;if(wt>mx)mx=wt;}));
+    const bmi=p.height&&p.weight?(p.weight/((p.height/100)**2)).toFixed(1):'-';
+    const last=fd.length?new Date(Math.max(...fd.map(w=>w.date))).toLocaleDateString('ru-RU',{day:'numeric',month:'short'}):'-';
+    return{id:u.id,name:u.name,height:p.height,weight:p.weight,bmi,wks:fd.length,sets:fd.reduce((s,w)=>s+w.sets.length,0),vol,avgVol:fd.length?Math.round(vol/fd.length):0,mx,last};
+  }).sort((a,b)=>b.vol-a.vol);
 
-function renderUsersComparison() {
-  const container = document.getElementById('comparisonContent');
-  const exerciseSelect = document.getElementById('comparisonExercise');
-  const selectedExercise = exerciseSelect ? exerciseSelect.value : '';
-  
-  if (!container) return;
-  
-  if (users.length < 2) {
-    container.innerHTML = `
-      <div class="empty-state" style="padding: 40px 20px;">
-        <p>Для сравнения нужно минимум 2 пользователя</p>
-        <p style="font-size: 12px; margin-top: 8px;">Добавьте пользователей в управлении</p>
-      </div>
-    `;
-    return;
-  }
-  
-  // Собираем статистику для каждого пользователя
-  const userStats = users.map(user => {
-    // Загружаем данные пользователя
-    const userAppData = loadUserData(user.id);
-    const params = userParameters[user.id] || { height: null, weight: null };
-    
-    // Фильтруем по упражнению, если выбрано
-    let filteredData = userAppData;
-    if (selectedExercise) {
-      filteredData = userAppData.filter(item => item.name === selectedExercise);
-    }
-    
-    // Рассчитываем статистику
-    const totalWorkouts = filteredData.length;
-    const totalSets = filteredData.reduce((sum, w) => sum + w.sets.length, 0);
-    const totalVolume = filteredData.reduce((sum, w) => sum + (w.volume || 0), 0);
-    const avgVolume = totalWorkouts > 0 ? Math.round(totalVolume / totalWorkouts) : 0;
-    
-    // Лучший результат (максимальный вес в одном подходе)
-    let maxWeight = 0;
-    filteredData.forEach(workout => {
-      workout.sets.forEach(set => {
-        const weight = parseFloat(set.weight) || 0;
-        if (weight > maxWeight) maxWeight = weight;
-      });
-    });
-    
-    // Последняя тренировка
-    const lastWorkout = filteredData.length > 0 ? 
-      new Date(Math.max(...filteredData.map(w => w.date))).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }) : 
-      'Нет';
-    
-    // Рассчитываем ИМТ
-    let bmi = '-';
-    if (params.height && params.weight) {
-      bmi = (params.weight / ((params.height/100) * (params.height/100))).toFixed(1);
-    }
-    
-    return {
-      id: user.id,
-      name: user.name,
-      height: params.height,
-      weight: params.weight,
-      bmi: bmi,
-      totalWorkouts,
-      totalSets,
-      totalVolume,
-      avgVolume,
-      maxWeight,
-      lastWorkout
-    };
+  let html=`<div style="overflow-x:auto"><table class="cmp-table">
+    <thead><tr><th>Пользователь</th><th>Рост/Вес</th><th>Тренировок</th><th>Объём</th><th>Рекорд</th></tr></thead>
+    <tbody>`;
+  stats.forEach(s=>{
+    const cur=s.id===currentUser.id;
+    html+=`<tr style="${cur?'background:rgba(0,212,255,.05)':''}">
+      <td>
+        <div style="font-weight:${cur?700:500};color:${cur?'var(--primary)':'var(--text)'}">${s.name}</div>
+        <div style="font-size:11px;color:var(--text-sub)">${s.last}</div>
+      </td>
+      <td>
+        <div>${s.height?s.height+' см':'—'}</div>
+        <div style="font-size:11px;color:var(--text-sub)">${s.weight?s.weight+' кг':'—'}</div>
+        <div style="font-size:10px;color:var(--${s.bmi!=='-'?(s.bmi<18.5||s.bmi>=25?'warning':'success'):'text-sub'})">${s.bmi!=='-'?'ИМТ '+s.bmi:''}</div>
+      </td>
+      <td class="cmp-val">${s.wks}</td>
+      <td class="cmp-val"><div>${Math.round(s.vol)} кг</div><div style="font-size:10px;color:var(--text-sub)">${s.avgVol} кг/тр.</div></td>
+      <td class="cmp-val">${Math.round(s.mx)} кг</td>
+    </tr>`;
   });
-  
-  // Сортируем по общему объему (от большего к меньшему)
-  userStats.sort((a, b) => b.totalVolume - a.totalVolume);
-  
-  // Строим таблицу сравнения
-  let tableHTML = `
-    <table class="comparison-table">
-      <thead>
-        <tr>
-          <th>Пользователь</th>
-          <th>Рост/Вес</th>
-          <th>Тренировок</th>
-          <th>Объем</th>
-          <th>Макс. вес</th>
-        </tr>
-      </thead>
-      <tbody>
-  `;
-  
-  userStats.forEach(stat => {
-    const isCurrent = stat.id === currentUser.id;
-    
-    tableHTML += `
-      <tr style="${isCurrent ? 'background: rgba(10, 132, 255, 0.1);' : ''}">
-        <td>
-          <div style="font-weight: ${isCurrent ? '600' : '400'}; color: ${isCurrent ? 'var(--primary)' : 'var(--text)'};">${stat.name}</div>
-          <div style="font-size: 11px; color: var(--text-secondary);">${stat.lastWorkout}</div>
-        </td>
-        <td>
-          <div>${stat.height ? stat.height + ' см' : '-'}</div>
-          <div style="font-size: 11px; color: var(--text-secondary);">${stat.weight ? stat.weight + ' кг' : '-'}</div>
-          <div style="font-size: 10px; color: ${stat.bmi !== '-' ? 
-            (stat.bmi < 18.5 ? 'var(--warning)' : 
-             stat.bmi <= 24.9 ? 'var(--success)' : 
-             stat.bmi <= 29.9 ? 'var(--warning)' : 'var(--danger)') : 'var(--text-secondary)'}">
-            ИМТ: ${stat.bmi}
-          </div>
-        </td>
-        <td class="comparison-value">${stat.totalWorkouts}</td>
-        <td class="comparison-value">
-          <div>${Math.round(stat.totalVolume)} кг</div>
-          <div style="font-size: 11px; color: var(--text-secondary);">${stat.avgVolume} кг/тр.</div>
-        </td>
-        <td class="comparison-value">${Math.round(stat.maxWeight)} кг</td>
-      </tr>
-    `;
-  });
-  
-  tableHTML += `
-      </tbody>
-    </table>
-    
-    <div style="margin-top: 20px; padding: 15px; background: rgba(10, 132, 255, 0.05); border-radius: var(--radius);">
-      <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">📊 Сводная статистика:</div>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-        <div style="text-align: center;">
-          <div style="font-size: 18px; font-weight: 700; color: var(--primary);">${userStats.length}</div>
-          <div style="font-size: 11px; color: var(--text-secondary);">Пользователей</div>
-        </div>
-        <div style="text-align: center;">
-          <div style="font-size: 18px; font-weight: 700; color: var(--primary);">${userStats.reduce((sum, s) => sum + s.totalWorkouts, 0)}</div>
-          <div style="font-size: 11px; color: var(--text-secondary);">Всего тренировок</div>
-        </div>
-        <div style="text-align: center;">
-          <div style="font-size: 18px; font-weight: 700; color: var(--primary);">${Math.round(userStats.reduce((sum, s) => sum + s.totalVolume, 0))}</div>
-          <div style="font-size: 11px; color: var(--text-secondary);">Общий объем (кг)</div>
-        </div>
-        <div style="text-align: center;">
-          <div style="font-size: 18px; font-weight: 700; color: var(--primary);">${Math.round(Math.max(...userStats.map(s => s.maxWeight)))}</div>
-          <div style="font-size: 11px; color: var(--text-secondary);">Рекорд веса</div>
-        </div>
-      </div>
-    </div>
-  `;
-  
-  container.innerHTML = tableHTML;
+  html+=`</tbody></table></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px">
+    ${[['👥','Пользователей',stats.length],['🏋️','Тренировок',stats.reduce((s,x)=>s+x.wks,0)],['📦','Общий объём кг',Math.round(stats.reduce((s,x)=>s+x.vol,0))],['🏆','Рекорд кг',Math.round(Math.max(...stats.map(s=>s.mx)))]].map(([ic,l,v])=>`
+      <div class="pstat">
+        <div style="font-size:24px;margin-bottom:4px">${ic}</div>
+        <div class="pstat-val" style="font-size:24px">${v}</div>
+        <div class="pstat-lbl">${l}</div>
+      </div>`).join('')}
+  </div>`;
+  c.innerHTML=html;
 }
 
-function loadUserData(userId) {
-  try {
-    const storageKey = `${STORAGE_KEY_PREFIX}_${userId}`;
-    const storedAppData = localStorage.getItem(storageKey);
-    if (storedAppData) {
-      const parsed = JSON.parse(storedAppData);
-      return Array.isArray(parsed) ? parsed : [];
-    }
-    return [];
-  } catch (e) {
-    console.error(`Ошибка загрузки данных пользователя ${userId}:`, e);
-    return [];
-  }
+// ─── Tabs ─────────────────────────────────────────
+// BUG FIX: original switchTab didn't receive the clicked button ref, causing querySelector to fail
+function switchTab(id,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.tab-pane').forEach(t=>t.classList.remove('on'));
+  if(btn)btn.classList.add('on');
+  const p=document.getElementById(id);
+  if(p)p.classList.add('on');
 }
 
-// Вспомогательные функции для вкладок
-function switchTab(tabId) {
-  // Убираем активный класс со всех вкладок
-  document.querySelectorAll('.tab').forEach(tab => {
-    tab.classList.remove('active');
-  });
-  
-  document.querySelectorAll('.tab-content').forEach(content => {
-    content.classList.remove('active');
-  });
-  
-  // Добавляем активный класс выбранной вкладке
-  document.querySelector(`[onclick="switchTab('${tabId}')"]`).classList.add('active');
-  document.getElementById(tabId).classList.add('active');
+// ─── Toast ────────────────────────────────────────
+function showToast(msg,type='info'){
+  const t=document.getElementById('toast');if(!t)return;
+  const icons={success:'✅',error:'❌',warning:'⚠️',info:'ℹ️'};
+  t.innerHTML=`${icons[type]||'ℹ️'} ${msg}`;
+  t.className=`toast ${type} show`;
+  clearTimeout(t._timer);
+  t._timer=setTimeout(()=>{t.classList.remove('show');},3000);
 }
 
-// Уведомления
-function showToast(message, type = 'info') {
-  const toast = document.getElementById('toast');
-  if (!toast) return;
-  
-  toast.textContent = message;
-  toast.className = `toast ${type}`;
-  toast.classList.add('show');
-  
-  // Иконка в зависимости от типа
-  let icon = 'ℹ️';
-  if (type === 'success') icon = '✅';
-  if (type === 'error') icon = '❌';
-  if (type === 'warning') icon = '⚠️';
-  
-  toast.innerHTML = `${icon} ${message}`;
-  
-  // Автоматическое скрытие
-  setTimeout(() => {
-    toast.classList.remove('show');
-  }, 3000);
-}
-
-// Проверяем, что все DOM-элементы существуют перед использованием
-function initDOMCheck() {
-  const requiredElements = [
-    'userSelect',
-    'exerciseSelect',
-    'filterExercise',
-    'setsContainer',
-    'historyList',
-    'saveBtn',
-    'exerciseModal',
-    'usersModal',
-    'statsModal',
-    'profileModal',
-    'comparisonModal',
-    'toast'
-  ];
-  
-  let allExist = true;
-  requiredElements.forEach(id => {
-    if (!document.getElementById(id)) {
-      console.error(`Элемент с id "${id}" не найден`);
-      allExist = false;
-    }
-  });
-  
-  return allExist;
-}
-
-// Закрытие модальных окон по клику на фон
-document.addEventListener('click', (e) => {
-  if (e.target.classList.contains('modal')) {
-    e.target.classList.remove('active');
-  }
+// ─── Event delegation ─────────────────────────────
+document.addEventListener('click',e=>{
+  if(e.target.classList.contains('modal'))e.target.classList.remove('active');
 });
 
-// Предотвращение закрытия при клике внутри модального окна
-document.querySelectorAll('.modal-card').forEach(card => {
-  card.addEventListener('click', (e) => {
-    e.stopPropagation();
-  });
-});
-
-// Горячие клавиши
-document.addEventListener('keydown', (e) => {
-  // Ctrl+S или Cmd+S для сохранения
-  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-    e.preventDefault();
-    saveWorkout();
-  }
-  
-  // Esc для закрытия модальных окон
-  if (e.key === 'Escape') {
-    document.querySelectorAll('.modal.active').forEach(modal => {
-      modal.classList.remove('active');
-    });
-  }
-  
-  // + для добавления подхода
-  if (e.key === '+' && !e.ctrlKey && !e.metaKey) {
-    e.preventDefault();
-    addSet();
-  }
-});
-
-// Обработка свайпов (для мобильных)
-let touchStartX = 0;
-let touchStartY = 0;
-
-document.addEventListener('touchstart', (e) => {
-  touchStartX = e.changedTouches[0].screenX;
-  touchStartY = e.changedTouches[0].screenY;
-});
-
-document.addEventListener('touchend', (e) => {
-  const touchEndX = e.changedTouches[0].screenX;
-  const touchEndY = e.changedTouches[0].screenY;
-  
-  const diffX = touchEndX - touchStartX;
-  const diffY = touchEndY - touchStartY;
-  
-  // Горизонтальный свайп вправо для быстрого сохранения
-  if (Math.abs(diffX) > 50 && Math.abs(diffY) < 30) {
-    if (diffX > 0) {
-      // Свайп вправо
-      const saveBtn = document.querySelector('.fab-container button');
-      if (saveBtn) {
-        saveBtn.style.transform = 'scale(0.95)';
-        setTimeout(() => {
-          saveBtn.style.transform = '';
-          saveWorkout();
-        }, 100);
-      }
-    }
-  }
-});
-
-// Адаптация для iPhone 13 Pro Max
-function isIPhone13ProMax() {
-  return /iPhone.*13.*Pro.*Max/.test(navigator.userAgent) || 
-         (window.screen.width === 428 && window.screen.height === 926);
-}
-
-if (isIPhone13ProMax()) {
-  console.log('iPhone 13 Pro Max detected - applying optimizations');
-  
-  // Увеличиваем размеры некоторых элементов для лучшей читаемости
-  document.addEventListener('DOMContentLoaded', function() {
-    const style = document.createElement('style');
-    style.textContent = `
-      @media only screen and (max-width: 430px) {
-        .container {
-          padding: 18px;
-        }
-        .header-sticky {
-          padding: 14px 18px;
-        }
-        .fab-container {
-          left: 18px;
-          right: 18px;
-        }
-        .set-inputs input {
-          font-size: 18px;
-          padding: 12px;
-        }
-        .header-btn {
-          width: 42px;
-          height: 42px;
-          font-size: 20px;
-        }
-      }
-    `;
-    document.head.appendChild(style);
-  });
-}
-
-// Добавим анимацию при наведении на элементы
-document.addEventListener('DOMContentLoaded', function() {
-  // Добавляем эффект пульсации для кнопки сохранения
-  const saveBtn = document.querySelector('.fab-container button');
-  if (saveBtn) {
-    saveBtn.addEventListener('mouseenter', function() {
-      this.classList.add('pulse');
-    });
-    
-    saveBtn.addEventListener('mouseleave', function() {
-      this.classList.remove('pulse');
-    });
-  }
-  
-  // Добавляем интерактивность для статистики
-  const statItems = document.querySelectorAll('.stat-item');
-  statItems.forEach(item => {
-    item.addEventListener('click', function() {
-      this.style.transform = 'scale(0.95)';
-      setTimeout(() => {
-        this.style.transform = '';
-      }, 200);
-    });
-  });
-  
-  // Улучшаем навигацию с клавиатуры
-  document.addEventListener('keydown', function(e) {
-    // Tab для навигации по элементам
-    if (e.key === 'Tab') {
-      document.querySelectorAll('button, input, select').forEach(el => {
-        el.addEventListener('focus', function() {
-          this.style.outline = '2px solid var(--primary)';
-          this.style.outlineOffset = '2px';
-        });
-        
-        el.addEventListener('blur', function() {
-          this.style.outline = 'none';
-        });
-      });
-    }
-  });
-  
-  // Показываем прогресс заполнения подходов
-  function updateSetsProgress() {
-    const completedSets = currentSets.filter(s => s.reps && s.weight).length;
-    const totalSets = currentSets.length;
-    const progress = totalSets > 0 ? (completedSets / totalSets) * 100 : 0;
-    
-    // Создаем или обновляем прогресс-бар
-    let progressBar = document.querySelector('.progress-container');
-    if (!progressBar) {
-      progressBar = document.createElement('div');
-      progressBar.className = 'progress-container';
-      progressBar.innerHTML = `
-        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-          <span style="font-size: 14px; color: var(--text-secondary);">Прогресс заполнения:</span>
-          <span style="font-size: 14px; font-weight: 600; color: var(--primary);">${completedSets}/${totalSets}</span>
-        </div>
-        <div class="progress-bar">
-          <div class="progress-fill" style="width: ${progress}%"></div>
-        </div>
-      `;
-      
-      const setsTitle = document.querySelector('h3:nth-of-type(2)');
-      if (setsTitle) {
-        setsTitle.parentNode.insertBefore(progressBar, setsTitle.nextElementSibling);
-      }
-    } else {
-      progressBar.innerHTML = `
-        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-          <span style="font-size: 14px; color: var(--text-secondary);">Прогресс заполнения:</span>
-          <span style="font-size: 14px; font-weight: 600; color: var(--primary);">${completedSets}/${totalSets}</span>
-        </div>
-        <div class="progress-bar">
-          <div class="progress-fill" style="width: ${progress}%"></div>
-        </div>
-      `;
-    }
-  }
-  
-  // Обновляем прогресс при изменении подходов
-  const originalUpdateSet = window.updateSet;
-  window.updateSet = function(idx, field, value) {
-    originalUpdateSet(idx, field, value);
-    updateSetsProgress();
-  };
-  
-  const originalAddSet = window.addSet;
-  window.addSet = function() {
-    originalAddSet();
-    updateSetsProgress();
-  };
-  
-  const originalRemoveSet = window.removeSet;
-  window.removeSet = function(idx) {
-    originalRemoveSet(idx);
-    updateSetsProgress();
-  };
-  
-  // Инициализируем прогресс-бар
-  setTimeout(updateSetsProgress, 100);
+document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();saveWorkout();}
+  if(e.key==='Escape')document.querySelectorAll('.modal.active').forEach(m=>m.classList.remove('active'));
 });
 </script>
 </body>
