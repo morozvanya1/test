@@ -571,11 +571,11 @@
       FinTrack
     </div>
     <div class="year-picker">
-      <button id="yearPrev" aria-label="Предыдущий год">
+      <button id="yearPrev" aria-label="Назад">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
       <span class="year-number" id="yearDisplay">2026</span>
-      <button id="yearNext" aria-label="Следующий год">
+      <button id="yearNext" aria-label="Вперёд">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
     </div>
@@ -685,8 +685,12 @@
   let currentYear = new Date().getFullYear();
   let currentTab = 'overview';
   let currentMonth = null;
-  let analyticsPeriod = 'year'; // 'year' | 'month'
+  let overviewYear = new Date().getFullYear();
+  let overviewMonth = new Date().getMonth()+1;
+  let analyticsPeriod = 'year'; // 'year' | 'month' | 'range'
   let analyticsMonth = new Date().getMonth()+1;
+  let analyticsRangeStart = `${new Date().getFullYear()}-01-01`;
+  let analyticsRangeEnd = new Date().toISOString().slice(0,10);
   let transactions = [];
   let expenseCategories = [...DEFAULT_EXPENSE_CATS];
   let incomeCategories = [...DEFAULT_INCOME_CATS];
@@ -746,6 +750,17 @@
     transactions.forEach(t => { if(t.year === year) t.type==='income' ? inc+=t.amount : exp+=t.amount; });
     return { income: inc, expense: exp };
   }
+  function getRangeTotals(start, end) {
+    let inc = 0, exp = 0;
+    transactions.forEach(t => {
+      if (t.date >= start && t.date <= end) t.type==='income' ? inc+=t.amount : exp+=t.amount;
+    });
+    return { income: inc, expense: exp };
+  }
+  function formatDateShort(dateStr) {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    return `${d} ${MONTHS[m-1]} ${y}`;
+  }
   function findCategory(type, catName) {
     const list = type==='income' ? incomeCategories : expenseCategories;
     return list.find(c => c.name === catName);
@@ -759,6 +774,22 @@
     return `<div class="cat-dot" style="background:${color};"></div>`;
   }
   function fmtMoney(n) { return n.toLocaleString('ru-RU'); }
+
+  // ─── Автоматический подбор цвета для новой категории ───
+  function hslToHex(h, s, l) {
+    s /= 100; l /= 100;
+    const k = n => (n + h / 30) % 12;
+    const a = s * Math.min(l, 1 - l);
+    const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+    const toHex = x => Math.round(255 * x).toString(16).padStart(2, '0');
+    return `#${toHex(f(0))}${toHex(f(8))}${toHex(f(4))}`;
+  }
+  function randomPaletteColor() {
+    const hue = Math.floor(Math.random() * 360);
+    const sat = 40 + Math.floor(Math.random() * 15);
+    const light = 55 + Math.floor(Math.random() * 10);
+    return hslToHex(hue, sat, light);
+  }
 
   function dayLabel(dateStr) {
     const [y, m, d] = dateStr.split('-').map(Number);
@@ -793,9 +824,8 @@
 
   // ─── Отрисовка ──────────────────────────────────
   function renderOverview() {
-    const now = new Date();
-    const month = now.getMonth()+1;
-    const year = currentYear;
+    const month = overviewMonth;
+    const year = overviewYear;
     const totals = getMonthTotals(year, month);
     const net = totals.income - totals.expense;
     const txList = getMonthTx(year, month).sort((a,b)=> new Date(b.date)-new Date(a.date)).slice(0,8);
@@ -886,18 +916,40 @@
   }
 
   function renderAnalytics() {
-    const isMonth = analyticsPeriod === 'month';
-    const totals = isMonth ? getMonthTotals(currentYear, analyticsMonth) : getYearTotals(currentYear);
-    const periodTitle = isMonth ? `${MONTHS_FULL[analyticsMonth-1]} ${currentYear}` : `Год ${currentYear}`;
+    const period = analyticsPeriod;
+    let totals, periodTitle;
+    if (period === 'month') {
+      totals = getMonthTotals(currentYear, analyticsMonth);
+      periodTitle = `${MONTHS_FULL[analyticsMonth-1]} ${currentYear}`;
+    } else if (period === 'range') {
+      totals = getRangeTotals(analyticsRangeStart, analyticsRangeEnd);
+      periodTitle = `${formatDateShort(analyticsRangeStart)} — ${formatDateShort(analyticsRangeEnd)}`;
+    } else {
+      totals = getYearTotals(currentYear);
+      periodTitle = `Год ${currentYear}`;
+    }
     const monthOptions = MONTHS_FULL.map((m,i) => `<option value="${i+1}" ${i+1===analyticsMonth?'selected':''}>${m}</option>`).join('');
 
     let html = `
       <div class="card">
         <div class="segmented" id="periodSegmented">
-          <button type="button" class="seg-btn neutral ${!isMonth?'active':''}" data-period="year">Год</button>
-          <button type="button" class="seg-btn neutral ${isMonth?'active':''}" data-period="month">Месяц</button>
+          <button type="button" class="seg-btn neutral ${period==='year'?'active':''}" data-period="year">Год</button>
+          <button type="button" class="seg-btn neutral ${period==='month'?'active':''}" data-period="month">Месяц</button>
+          <button type="button" class="seg-btn neutral ${period==='range'?'active':''}" data-period="range">Период</button>
         </div>
-        ${isMonth ? `<select class="input-field" id="analyticsMonthSelect" style="margin-bottom:0;">${monthOptions}</select>` : ''}
+        ${period==='month' ? `<select class="input-field" id="analyticsMonthSelect" style="margin:12px 0 0;">${monthOptions}</select>` : ''}
+        ${period==='range' ? `
+          <div style="display:flex; gap:10px; margin-top:12px;">
+            <div style="flex:1;">
+              <div style="font-size:11px; color:var(--text-secondary); font-weight:600; margin-bottom:4px;">С даты</div>
+              <input type="date" class="input-field" id="analyticsRangeStart" value="${analyticsRangeStart}" style="margin-bottom:0;">
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:11px; color:var(--text-secondary); font-weight:600; margin-bottom:4px;">По дату</div>
+              <input type="date" class="input-field" id="analyticsRangeEnd" value="${analyticsRangeEnd}" style="margin-bottom:0;">
+            </div>
+          </div>
+        ` : ''}
       </div>
       <div class="card">
         <div class="section-title">${periodTitle}</div>
@@ -934,6 +986,21 @@
         renderAnalytics();
       });
     }
+    const $rangeStart = document.getElementById('analyticsRangeStart');
+    const $rangeEnd = document.getElementById('analyticsRangeEnd');
+    if ($rangeStart && $rangeEnd) {
+      const onRangeChange = () => {
+        if ($rangeStart.value && $rangeEnd.value && $rangeStart.value <= $rangeEnd.value) {
+          analyticsRangeStart = $rangeStart.value;
+          analyticsRangeEnd = $rangeEnd.value;
+          renderAnalytics();
+        } else if ($rangeStart.value && $rangeEnd.value) {
+          showToast('Дата начала позже даты конца');
+        }
+      };
+      $rangeStart.addEventListener('change', onRangeChange);
+      $rangeEnd.addEventListener('change', onRangeChange);
+    }
     setTimeout(drawCharts, 50);
   }
 
@@ -945,12 +1012,15 @@
   function drawPie(type, canvasId, legendEl) {
     const ctx = document.getElementById(canvasId);
     if (!ctx) return;
-    const isMonth = analyticsPeriod === 'month';
+    const period = analyticsPeriod;
     const catMap = {};
     transactions.forEach(t => {
-      if (t.year === currentYear && t.type === type && (!isMonth || t.month === analyticsMonth)) {
-        catMap[t.category] = (catMap[t.category] || 0) + t.amount;
-      }
+      if (t.type !== type) return;
+      let match;
+      if (period === 'range') match = t.date >= analyticsRangeStart && t.date <= analyticsRangeEnd;
+      else if (period === 'month') match = t.year === currentYear && t.month === analyticsMonth;
+      else match = t.year === currentYear;
+      if (match) catMap[t.category] = (catMap[t.category] || 0) + t.amount;
     });
     const entries = Object.entries(catMap).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
     if (entries.length === 0) {
@@ -1032,12 +1102,12 @@
     $fab.style.display = 'none';
 
     document.getElementById('addExpenseCat').onclick = () => {
-      expenseCategories.push({ name:'Новая', color:'#cccccc' });
+      expenseCategories.push({ name:'Новая', color: randomPaletteColor() });
       saveCategories();
       renderSettings();
     };
     document.getElementById('addIncomeCat').onclick = () => {
-      incomeCategories.push({ name:'Новая', color:'#cccccc' });
+      incomeCategories.push({ name:'Новая', color: randomPaletteColor() });
       saveCategories();
       renderSettings();
     };
@@ -1125,10 +1195,26 @@
         }
         if(newTx.length===0) throw new Error('Некорректный формат');
         if(confirm(`Загружено ${newTx.length} записей. Заменить текущие данные?`)) {
+          let addedCount = 0;
+          const usedExpense = new Set(newTx.filter(t=>t.type==='expense' && t.category).map(t=>t.category));
+          const usedIncome = new Set(newTx.filter(t=>t.type==='income' && t.category).map(t=>t.category));
+          usedExpense.forEach(name => {
+            if (!expenseCategories.some(c=>c.name===name)) {
+              expenseCategories.push({ name, color: randomPaletteColor() });
+              addedCount++;
+            }
+          });
+          usedIncome.forEach(name => {
+            if (!incomeCategories.some(c=>c.name===name)) {
+              incomeCategories.push({ name, color: randomPaletteColor() });
+              addedCount++;
+            }
+          });
+          if (addedCount) saveCategories();
           transactions = newTx;
           saveData();
           renderCurrentTab();
-          showToast('Импортировано успешно');
+          showToast(addedCount ? `Импортировано, добавлено категорий: ${addedCount}` : 'Импортировано успешно');
         }
       } catch(ex) {
         showToast('Ошибка импорта CSV');
@@ -1181,8 +1267,29 @@
   function populateCategorySelect() {
     const type = $txType.value;
     const cats = type==='income' ? incomeCategories : expenseCategories;
-    $txCategory.innerHTML = cats.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+    $txCategory.innerHTML = cats.map(c => `<option value="${c.name}">${c.name}</option>`).join('')
+      + `<option value="__add_new__">+ Добавить категорию</option>`;
     if(!editingTxId && cats.length) $txCategory.value = cats[0].name;
+  }
+
+  function handleCategorySelectChange() {
+    if ($txCategory.value !== '__add_new__') return;
+    const type = $txType.value;
+    const list = type==='income' ? incomeCategories : expenseCategories;
+    const prevValue = list.length ? list[0].name : '';
+    const name = prompt('Название новой категории');
+    if (name && name.trim()) {
+      const trimmed = name.trim();
+      if (!list.some(c => c.name === trimmed)) {
+        list.push({ name: trimmed, color: randomPaletteColor() });
+        saveCategories();
+      }
+      populateCategorySelect();
+      $txCategory.value = trimmed;
+    } else {
+      populateCategorySelect();
+      $txCategory.value = prevValue;
+    }
   }
 
   function closeModal() {
@@ -1242,31 +1349,61 @@
     }
   }
 
+  function updateYearDisplay() {
+    if (currentTab === 'overview') {
+      $yearDisplay.textContent = `${MONTHS[overviewMonth-1]} ${overviewYear}`;
+    } else {
+      $yearDisplay.textContent = currentYear;
+    }
+  }
+
+  function shiftOverviewMonth(delta) {
+    overviewMonth += delta;
+    if (overviewMonth < 1) { overviewMonth = 12; overviewYear--; }
+    if (overviewMonth > 12) { overviewMonth = 1; overviewYear++; }
+  }
+
   function setTab(tab) {
     currentTab = tab;
     if(tab !== 'history') currentMonth = null;
     document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
     document.querySelector(`.nav-item[data-tab="${tab}"]`).classList.add('active');
+    updateYearDisplay();
     renderCurrentTab();
   }
 
   // ─── Обработчики событий ───────────────────────
   document.getElementById('yearPrev').addEventListener('click', () => {
-    currentYear--;
-    $yearDisplay.textContent = currentYear;
+    if (currentTab === 'overview') shiftOverviewMonth(-1);
+    else currentYear--;
+    updateYearDisplay();
     renderCurrentTab();
   });
   document.getElementById('yearNext').addEventListener('click', () => {
-    currentYear++;
-    $yearDisplay.textContent = currentYear;
+    if (currentTab === 'overview') shiftOverviewMonth(1);
+    else currentYear++;
+    updateYearDisplay();
     renderCurrentTab();
   });
   document.getElementById('yearDisplay').addEventListener('click', () => {
-    const newYear = prompt('Введите год', String(currentYear));
-    if(newYear && /^\d{4}$/.test(newYear)) {
-      currentYear = parseInt(newYear);
-      $yearDisplay.textContent = currentYear;
-      renderCurrentTab();
+    if (currentTab === 'overview') {
+      const input = prompt('Месяц и год в формате ММ.ГГГГ', `${String(overviewMonth).padStart(2,'0')}.${overviewYear}`);
+      if (input) {
+        const m = input.match(/^(\d{1,2})\.(\d{4})$/);
+        if (m && +m[1]>=1 && +m[1]<=12) {
+          overviewMonth = parseInt(m[1]);
+          overviewYear = parseInt(m[2]);
+          updateYearDisplay();
+          renderCurrentTab();
+        }
+      }
+    } else {
+      const newYear = prompt('Введите год', String(currentYear));
+      if(newYear && /^\d{4}$/.test(newYear)) {
+        currentYear = parseInt(newYear);
+        updateYearDisplay();
+        renderCurrentTab();
+      }
     }
   });
 
@@ -1282,6 +1419,7 @@
     });
   });
 
+  $txCategory.addEventListener('change', handleCategorySelectChange);
   document.getElementById('txForm').addEventListener('submit', handleSubmit);
   document.getElementById('modalCancel').addEventListener('click', closeModal);
   document.getElementById('modalDelete').addEventListener('click', deleteInModal);
@@ -1291,7 +1429,7 @@
 
   // ─── Старт ──────────────────────────────────────
   loadData();
-  $yearDisplay.textContent = currentYear;
+  updateYearDisplay();
   setTab('overview');
 })();
 </script>
